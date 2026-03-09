@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>発注業務の経験依存 | 小売業 | SRD MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#b91c1c">6</div>
+            <div><p class="text-xs text-gray-400">小売業</p><p class="font-bold text-sm">発注業務の経験依存</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full" style="background:#fee2e2;color:#b91c1c">店長</span>
+            <span class="text-xs text-gray-400">MVP Demo</span>
+        </div>
+    </div>
+</nav>
+<div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fee2e2;color:#b91c1c">
+        <strong>課題:</strong> 発注数量がベテランの勘頼り
+    </div>
+    
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="md:col-span-2 bg-white rounded-xl p-6 shadow-sm border">
+                <h3 class="font-bold text-gray-700 mb-4">新規入力</h3>
+                <div id="formContainer" class="space-y-4"></div>
+                <button onclick="submitForm()" class="mt-4 w-full py-2.5 rounded-lg text-white font-medium hover:opacity-90 transition" style="background:#b91c1c">保存する</button>
+                <div id="successMsg" class="hidden mt-3 p-3 bg-green-50 text-green-700 rounded-lg text-sm text-center">保存しました</div>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm border">
+                <h3 class="font-bold text-gray-700 mb-3">最近の記録</h3>
+                <div id="recentList" class="space-y-3"></div>
+            </div>
+        </div>
+</div>
+<footer class="text-center py-4 text-xs text-gray-400 mt-8">
+    SRD × DX Solution Demo | 小売業 #3 | Powered by Stella Group
+</footer>
+<script>
+
+        const formFields = [
+            { id: 'f1', label: '日付', type: 'date', value: new Date().toISOString().split('T')[0] },
+            { id: 'f2', label: '担当者', type: 'select', options: ['田中太郎', '山本花子', '佐藤一郎', '鈴木次郎'] },
+            { id: 'f3', label: '内容', type: 'textarea', placeholder: '詳細を入力...' },
+            { id: 'f4', label: '金額', type: 'number', placeholder: '0' },
+            { id: 'f5', label: '備考', type: 'text', placeholder: '備考があれば入力' },
+        ];
+        const recentEntries = [
+            { date: '2026-03-08', user: '田中太郎', summary: '現場A - 完了報告', amount: '¥450,000' },
+            { date: '2026-03-07', user: '山本花子', summary: '見積書作成 - B社向け', amount: '¥1,200,000' },
+            { date: '2026-03-06', user: '佐藤一郎', summary: '月次レポート提出', amount: '-' },
+        ];
+
+        const fc = document.getElementById('formContainer');
+        formFields.forEach(f => {
+            let input = '';
+            if (f.type === 'textarea') input = `<textarea class="w-full border rounded-lg p-2 text-sm" rows="3" placeholder="${f.placeholder||''}"></textarea>`;
+            else if (f.type === 'select') input = `<select class="w-full border rounded-lg p-2 text-sm">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
+            else input = `<input type="${f.type}" class="w-full border rounded-lg p-2 text-sm" value="${f.value||''}" placeholder="${f.placeholder||''}">`;
+            fc.innerHTML += `<div><label class="text-sm font-medium text-gray-600">${f.label}</label><div class="mt-1">${input}</div></div>`;
+        });
+        const rl = document.getElementById('recentList');
+        recentEntries.forEach(e => {
+            rl.innerHTML += `<div class="p-3 bg-gray-50 rounded-lg"><p class="text-xs text-gray-400">${e.date} | ${e.user}</p><p class="text-sm font-medium mt-1">${e.summary}</p><p class="text-xs text-gray-500 mt-1">${e.amount}</p></div>`;
+        });
+function submitForm() { const m = document.getElementById('successMsg'); m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 2000); }
+</script>
+</body>
+</html>

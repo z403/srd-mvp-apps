@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>融資審査・稟議のペーパーワーク | 金融業・保険業 | SRD MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#1e3a5f">11</div>
+            <div><p class="text-xs text-gray-400">金融業・保険業</p><p class="font-bold text-sm">融資審査・稟議のペーパーワーク</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full" style="background:#dbeafe;color:#1e3a5f">融資部門</span>
+            <span class="text-xs text-gray-400">MVP Demo</span>
+        </div>
+    </div>
+</nav>
+<div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#dbeafe;color:#1e3a5f">
+        <strong>課題:</strong> 紙ベースの稟議書回覧に数日〜数週間
+    </div>
+    
+        <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
+            <h3 class="font-bold text-gray-700 mb-4">承認フロー</h3>
+            <div id="workflowSteps" class="flex items-start gap-2 overflow-x-auto"></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <h3 class="font-bold text-gray-700 mb-3">添付書類</h3>
+            <div id="docList" class="space-y-2"></div>
+        </div>
+</div>
+<footer class="text-center py-4 text-xs text-gray-400 mt-8">
+    SRD × DX Solution Demo | 金融業・保険業 #1 | Powered by Stella Group
+</footer>
+<script>
+
+        const steps = [
+            { name: '申請', status: 'done', user: '田中太郎', date: '2026-03-05', comment: '融資額: ¥50,000,000' },
+            { name: '一次審査', status: 'done', user: '山本部長', date: '2026-03-06', comment: '財務状況良好。条件付き承認' },
+            { name: '二次審査', status: 'current', user: '佐藤課長', date: '-', comment: '審査中...' },
+            { name: '最終承認', status: 'pending', user: '鈴木取締役', date: '-', comment: '' },
+            { name: '実行', status: 'pending', user: '経理部', date: '-', comment: '' },
+        ];
+        const documents = [
+            { name: '融資申込書.pdf', size: '2.4MB', date: '2026-03-05' },
+            { name: '決算書（3期分）.pdf', size: '8.1MB', date: '2026-03-05' },
+            { name: '事業計画書.pdf', size: '1.8MB', date: '2026-03-05' },
+        ];
+
+        const ws = document.getElementById('workflowSteps');
+        steps.forEach((s, i) => {
+            const icon = s.status==='done'?'✓':s.status==='current'?'●':'○';
+            const bg = s.status==='done'?'#1e3a5f':s.status==='current'?'#f59e0b':'#d1d5db';
+            const line = i < steps.length-1 ? `<div class="flex-1 h-0.5 mt-4 mx-1" style="background:${s.status==='done'?'#1e3a5f':'#d1d5db'}"></div>` : '';
+            ws.innerHTML += `<div class="flex-1 min-w-[140px] text-center">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm mx-auto" style="background:${bg}">${icon}</div>
+                <p class="text-xs font-medium mt-2">${s.name}</p>
+                <p class="text-xs text-gray-400">${s.user}</p>
+                <p class="text-xs text-gray-400">${s.date}</p>
+                <p class="text-xs text-gray-500 mt-1">${s.comment}</p></div>${line}`;
+        });
+        const dl = document.getElementById('docList');
+        documents.forEach(d => {
+            dl.innerHTML += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"><div class="flex items-center gap-2"><span>📄</span><span class="text-sm">${d.name}</span></div><span class="text-xs text-gray-400">${d.size} | ${d.date}</span></div>`;
+        });
+function submitForm() { const m = document.getElementById('successMsg'); m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 2000); }
+</script>
+</body>
+</html>

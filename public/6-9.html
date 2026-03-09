@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>売価変更の伝達ミス | 小売業 | SRD MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#b91c1c">6</div>
+            <div><p class="text-xs text-gray-400">小売業</p><p class="font-bold text-sm">売価変更の伝達ミス</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full" style="background:#fee2e2;color:#b91c1c">本部・店舗</span>
+            <span class="text-xs text-gray-400">MVP Demo</span>
+        </div>
+    </div>
+</nav>
+<div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fee2e2;color:#b91c1c">
+        <strong>課題:</strong> セール価格が全店に行き渡らない
+    </div>
+    <div class="space-y-3" id="alertList"></div>
+</div>
+<footer class="text-center py-4 text-xs text-gray-400 mt-8">
+    SRD × DX Solution Demo | 小売業 #9 | Powered by Stella Group
+</footer>
+<script>
+
+        const alerts = [
+            { id: 1, type: 'danger', title: '車検期限切れ間近', detail: '品川 300 あ 1234 - 残り3日（2026-03-12）', time: '2時間前' },
+            { id: 2, type: 'warning', title: '在庫不足アラート', detail: '商品A（SKU-001）残り5個 - 発注点: 10個', time: '3時間前' },
+            { id: 3, type: 'info', title: 'フォローアップ期限', detail: '田中工業 - 見積提出から14日経過。連絡を推奨', time: '5時間前' },
+            { id: 4, type: 'danger', title: '未入金アラート', detail: '佐藤商事 - 請求書#2024-089 ¥1,500,000 期限超過7日', time: '1日前' },
+            { id: 5, type: 'warning', title: '資格更新通知', detail: '山本花子 - 第一種電気工事士 更新まで30日', time: '2日前' },
+            { id: 6, type: 'info', title: '定期点検予定', detail: '車両C - 12ヶ月点検 2026-03-20', time: '3日前' },
+        ];
+
+        const al = document.getElementById('alertList');
+        alerts.forEach(a => {
+            const styles = {
+                danger: 'border-red-200 bg-red-50',
+                warning: 'border-yellow-200 bg-yellow-50',
+                info: 'border-blue-200 bg-blue-50',
+            };
+            const icons = { danger: '🔴', warning: '🟡', info: '🔵' };
+            al.innerHTML += `<div class="rounded-xl p-4 border ${styles[a.type]} flex items-start gap-3">
+                <span class="text-lg">${icons[a.type]}</span>
+                <div class="flex-1"><p class="font-medium text-sm">${a.title}</p><p class="text-xs text-gray-600 mt-1">${a.detail}</p></div>
+                <div class="flex flex-col items-end gap-1"><span class="text-xs text-gray-400">${a.time}</span>
+                <button class="text-xs px-2 py-1 rounded text-white" style="background:#b91c1c">対応</button></div></div>`;
+        });
+function submitForm() { const m = document.getElementById('successMsg'); m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 2000); }
+</script>
+</body>
+</html>

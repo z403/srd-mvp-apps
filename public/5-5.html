@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>営業の属人化 | 卸売業 | SRD MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#0e7490">5</div>
+            <div><p class="text-xs text-gray-400">卸売業</p><p class="font-bold text-sm">営業の属人化</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full" style="background:#cffafe;color:#0e7490">営業</span>
+            <span class="text-xs text-gray-400">MVP Demo</span>
+        </div>
+    </div>
+</nav>
+<div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#cffafe;color:#0e7490">
+        <strong>課題:</strong> 得意先との関係が特定営業マンに紐づき離反リスク
+    </div>
+    <div class="flex gap-4 overflow-x-auto pb-4" id="kanbanBoard"></div>
+</div>
+<footer class="text-center py-4 text-xs text-gray-400 mt-8">
+    SRD × DX Solution Demo | 卸売業 #5 | Powered by Stella Group
+</footer>
+<script>
+
+        const columns = [
+            { title: '未着手', color: '#94a3b8', items: [
+                { id: 1, title: '新規案件A - 田中工業', priority: '高', assignee: '山本', date: '03/15' },
+                { id: 2, title: '見積依頼 - 佐藤商事', priority: '中', assignee: '田中', date: '03/12' },
+            ]},
+            { title: '進行中', color: '#3b82f6', items: [
+                { id: 3, title: '現場B施工 - 鈴木建設', priority: '高', assignee: '佐藤', date: '03/10' },
+                { id: 4, title: '設計レビュー - 高橋設計', priority: '低', assignee: '山本', date: '03/20' },
+                { id: 5, title: '資材手配 - 渡辺工務店', priority: '中', assignee: '田中', date: '03/18' },
+            ]},
+            { title: '確認待ち', color: '#f59e0b', items: [
+                { id: 6, title: '検査報告 - 伊藤工業', priority: '高', assignee: '佐藤', date: '03/08' },
+            ]},
+            { title: '完了', color: '#10b981', items: [
+                { id: 7, title: '引渡し - 加藤住宅', priority: '中', assignee: '山本', date: '03/05' },
+                { id: 8, title: '月次報告書', priority: '低', assignee: '田中', date: '03/01' },
+            ]},
+        ];
+
+        const kb = document.getElementById('kanbanBoard');
+        columns.forEach(col => {
+            let cards = col.items.map(item => {
+                const pc = item.priority==='高'?'text-red-600 bg-red-50':item.priority==='中'?'text-yellow-600 bg-yellow-50':'text-gray-500 bg-gray-50';
+                return `<div class="bg-white rounded-lg p-3 shadow-sm border cursor-move hover:shadow-md transition">
+                    <p class="text-sm font-medium">${item.title}</p>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-xs px-2 py-0.5 rounded ${pc}">${item.priority}</span>
+                        <span class="text-xs text-gray-400">${item.assignee} | ${item.date}</span>
+                    </div></div>`;
+            }).join('');
+            kb.innerHTML += `<div class="min-w-[280px] flex-1">
+                <div class="flex items-center gap-2 mb-3"><div class="w-3 h-3 rounded-full" style="background:${col.color}"></div>
+                <h3 class="font-bold text-sm text-gray-700">${col.title}</h3><span class="text-xs text-gray-400 bg-gray-100 px-2 rounded-full">${col.items.length}</span></div>
+                <div class="space-y-2 bg-gray-50 rounded-xl p-3 min-h-[200px]">${cards}</div></div>`;
+        });
+function submitForm() { const m = document.getElementById('successMsg'); m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 2000); }
+</script>
+</body>
+</html>

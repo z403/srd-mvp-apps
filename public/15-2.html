@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水道管・ガス管の老朽化管理 | 電気・ガス・水道業 | SRD MVP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:#854d0e">15</div>
+            <div><p class="text-xs text-gray-400">電気・ガス・水道業</p><p class="font-bold text-sm">水道管・ガス管の老朽化管理</p></div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full" style="background:#fef3c7;color:#854d0e">設備管理</span>
+            <span class="text-xs text-gray-400">MVP Demo</span>
+        </div>
+    </div>
+</nav>
+<div class="max-w-6xl mx-auto px-4 py-4">
+    <div class="mb-4 p-3 rounded-lg text-sm" style="background:#fef3c7;color:#854d0e">
+        <strong>課題:</strong> 約15%が耐用年数超過。更新計画にデータ不足
+    </div>
+    
+        <div class="space-y-4" id="trackingList"></div>
+</div>
+<footer class="text-center py-4 text-xs text-gray-400 mt-8">
+    SRD × DX Solution Demo | 電気・ガス・水道業 #2 | Powered by Stella Group
+</footer>
+<script>
+
+        const trackingItems = [
+            { id: 'TRK-001', name: '車両A (品川 300 あ 1234)', status: '配送中', location: '東京都港区', time: '10:32', progress: 75 },
+            { id: 'TRK-002', name: '車両B (横浜 500 い 5678)', status: '荷積み中', location: '神奈川県横浜市', time: '10:28', progress: 25 },
+            { id: 'TRK-003', name: '車両C (千葉 400 う 9012)', status: '配送完了', location: '千葉県千葉市', time: '09:45', progress: 100 },
+            { id: 'TRK-004', name: '車両D (埼玉 200 え 3456)', status: '待機中', location: '埼玉県さいたま市', time: '-', progress: 0 },
+            { id: 'TRK-005', name: '車両E (東京 100 お 7890)', status: '配送中', location: '東京都新宿区', time: '10:15', progress: 50 },
+        ];
+
+        const tl = document.getElementById('trackingList');
+        trackingItems.forEach(item => {
+            const sc = item.status==='配送完了'?'bg-green-100 text-green-700':item.status==='配送中'?'bg-blue-100 text-blue-700':item.status==='荷積み中'?'bg-yellow-100 text-yellow-700':'bg-gray-100 text-gray-600';
+            tl.innerHTML += `<div class="bg-white rounded-xl p-4 shadow-sm border">
+                <div class="flex justify-between items-start">
+                    <div><p class="font-medium text-sm">${item.name}</p><p class="text-xs text-gray-400 mt-1">${item.id} | ${item.location} | ${item.time}</p></div>
+                    <span class="px-2 py-1 rounded-full text-xs ${sc}">${item.status}</span>
+                </div>
+                <div class="mt-3"><div class="w-full bg-gray-200 rounded-full h-2"><div class="h-2 rounded-full transition-all" style="width:${item.progress}%;background:#854d0e"></div></div>
+                <p class="text-xs text-gray-400 mt-1 text-right">${item.progress}%</p></div></div>`;
+        });
+function submitForm() { const m = document.getElementById('successMsg'); m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 2000); }
+</script>
+</body>
+</html>
