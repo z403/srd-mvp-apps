@@ -2,6 +2,16 @@
 
 import random
 
+
+# Profile helper: get value from profile with fallback
+def _p(m, key, default):
+    """Get a profile value with fallback to default."""
+    prof = m.get("profile")
+    if prof and key in prof:
+        return prof[key]
+    return default
+
+
 from .components import (
     comp_kpi,
     comp_stat_big,
@@ -150,81 +160,143 @@ KPI_BANK = {
 }
 
 
-def gen_mock(ftype, ch, colors):
-    """Generate all mock data for a challenge."""
+def gen_mock(ftype, ch, colors, profile=None):
+    """Generate all mock data for a challenge, using profile for domain-specific content."""
     rng = random.Random(ch["industry_no"] * 100 + ch["challenge_no"])
     p, s, bg = colors
 
-    # KPIs
-    bank = KPI_BANK.get(ftype, KPI_BANK["kanban"])
-    kpis = []
-    for title, unit, lo, hi, chg_tpl, icon in bank:
-        v = rng.randint(lo, hi)
-        cv = rng.randint(1, max(2, v // 5))
-        up = "-" not in chg_tpl if chg_tpl else False
-        change = chg_tpl.format(v=cv) if chg_tpl else ""
-        kpis.append((title, f"{v}{unit}", change, up, icon))
+    # KPIs — use profile if available, else fall back to KPI_BANK
+    if profile and "kpis" in profile:
+        kpis = []
+        for kd in profile["kpis"]:
+            v = rng.randint(kd["lo"], kd["hi"])
+            cv = rng.randint(1, max(2, v // 5))
+            chg_tpl = kd.get("change_tpl", "")
+            up = "-" not in chg_tpl if chg_tpl else False
+            change = chg_tpl.format(v=cv) if chg_tpl else ""
+            kpis.append((kd["title"], f"{v}{kd['unit']}", change, up, kd["icon"]))
+    else:
+        bank = KPI_BANK.get(ftype, KPI_BANK["kanban"])
+        kpis = []
+        for title, unit, lo, hi, chg_tpl, icon in bank:
+            v = rng.randint(lo, hi)
+            cv = rng.randint(1, max(2, v // 5))
+            up = "-" not in chg_tpl if chg_tpl else False
+            change = chg_tpl.format(v=cv) if chg_tpl else ""
+            kpis.append((title, f"{v}{unit}", change, up, icon))
 
     # Chart data
     chart1 = [rng.randint(20, 90) for _ in range(12)]
     chart2 = [rng.randint(10, 60) for _ in range(6)]
     chart_pie = [rng.randint(10, 40) for _ in range(5)]
 
-    # Table rows
+    # Table rows — use profile for domain-specific columns
+    names = profile["person_names"] if profile and "person_names" in profile else NAMES
+    depts = (
+        profile["table_depts"]
+        if profile and "table_depts" in profile
+        else [
+            "営業部",
+            "製造部",
+            "管理部",
+            "開発部",
+            "品質部",
+            "物流部",
+            "CS部",
+            "人事部",
+        ]
+    )
+    statuses = (
+        profile["table_statuses"]
+        if profile and "table_statuses" in profile
+        else STATUSES
+    )
+    amt_range = profile.get("table_amount_range", [10, 999]) if profile else [10, 999]
+    amt_unit = profile.get("table_amount_unit", "万") if profile else "万"
+
     rows = []
-    depts = [
-        "営業部",
-        "製造部",
-        "管理部",
-        "開発部",
-        "品質部",
-        "物流部",
-        "CS部",
-        "人事部",
-    ]
     for i in range(12):
+        amt_val = rng.randint(amt_range[0], amt_range[1])
+        if amt_unit == "万":
+            amt_str = f"¥{amt_val:,}万"
+        elif amt_unit in ("h", "個", "件", "頁", "名"):
+            amt_str = f"{amt_val}{amt_unit}"
+        else:
+            amt_str = f"{amt_val}{amt_unit}"
         rows.append(
             [
                 f"#{rng.randint(1000, 9999)}",
-                NAMES[i % len(NAMES)],
+                names[i % len(names)],
                 depts[rng.randint(0, len(depts) - 1)],
-                STATUSES[rng.randint(0, len(STATUSES) - 1)],
+                statuses[rng.randint(0, len(statuses) - 1)],
                 f"2026/{rng.randint(1, 3):02d}/{rng.randint(1, 28):02d}",
-                f"¥{rng.randint(10, 999):,}万",
+                amt_str,
             ]
         )
 
-    # Activities
-    actions = ["を更新", "を完了", "にコメント", "を作成", "を承認", "に対応"]
+    # Activities — use profile actions
+    actions = (
+        profile["activity_actions"]
+        if profile and "activity_actions" in profile
+        else [
+            "を更新",
+            "を完了",
+            "にコメント",
+            "を作成",
+            "を承認",
+            "に対応",
+        ]
+    )
     activities = [
         {
-            "user": NAMES[i % len(NAMES)],
+            "user": names[i % len(names)],
             "text": actions[rng.randint(0, len(actions) - 1)],
             "time": f"{rng.randint(1, 48)}時間前",
         }
         for i in range(8)
     ]
 
-    # Timeline items
-    tl_items = [
-        {
-            "title": f"フェーズ{i + 1}",
-            "date": f"2026/{rng.randint(1, 6):02d}/{rng.randint(1, 28):02d}",
-            "desc": f"ステップ{i + 1}の作業",
-            "done": i < rng.randint(2, 5),
-        }
-        for i in range(6)
-    ]
+    # Timeline items — use profile phases
+    if profile and "timeline_phases" in profile:
+        phases = profile["timeline_phases"]
+        done_count = rng.randint(2, 5)
+        tl_items = [
+            {
+                "title": phases[i]["title"],
+                "date": f"2026/{rng.randint(1, 6):02d}/{rng.randint(1, 28):02d}",
+                "desc": phases[i]["desc"],
+                "done": i < done_count,
+            }
+            for i in range(min(6, len(phases)))
+        ]
+    else:
+        tl_items = [
+            {
+                "title": f"フェーズ{i + 1}",
+                "date": f"2026/{rng.randint(1, 6):02d}/{rng.randint(1, 28):02d}",
+                "desc": f"ステップ{i + 1}の作業",
+                "done": i < rng.randint(2, 5),
+            }
+            for i in range(6)
+        ]
 
-    # Kanban cards
+    # Kanban cards — use profile items
     kanban_cols = {"未着手": [], "進行中": [], "レビュー": [], "完了": []}
     priorities = ["高", "中", "低"]
+    kb_items = (
+        profile["kanban_items"] if profile and "kanban_items" in profile else None
+    )
+    kb_prefix = profile.get("kanban_prefix", "タスク") if profile else "タスク"
     for i in range(16):
         col_key = list(kanban_cols.keys())[rng.randint(0, 3)]
+        if kb_items:
+            title = kb_items[i % len(kb_items)]
+        else:
+            title = f"{kb_prefix}-{rng.randint(100, 999)}"
         kanban_cols[col_key].append(
             {
-                "title": f"タスク-{rng.randint(100, 999)}",
-                "assignee": NAMES[rng.randint(0, len(NAMES) - 1)],
+                "title": title,
+                "assignee": names[rng.randint(0, len(names) - 1)],
                 "priority": priorities[rng.randint(0, 2)],
                 "due": f"{rng.randint(1, 3)}/{rng.randint(1, 28)}",
             }
@@ -243,6 +315,7 @@ def gen_mock(ftype, ch, colors):
         "p": p,
         "s": s,
         "bg": bg,
+        "profile": profile,
     }
 
 
@@ -255,12 +328,17 @@ def dash_kpi_line_activity(ch, colors, m):
     """V1: 4 KPIs + line chart + activity feed"""
     p, s, bg = colors
     kpis = "".join(comp_kpi(*k, p) for k in m["kpis"][:4])
-    chart = comp_chart_box("dC1", "月次推移", 260, "lg:col-span-2")
+    chart = comp_chart_box(
+        "dC1",
+        _p(m, "chart_titles", {}).get("monthly_trend", "月次推移"),
+        260,
+        "lg:col-span-2",
+    )
     acts = comp_activities(m["activities"], p)
     html = (
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">{kpis}</div>'
         f'<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">{chart}'
-        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">最近の更新</h3>'
+        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">{_p(m, "activity_section_title", "最近の更新")}</h3>'
         f'<div class="space-y-4">{acts}</div></div></div>'
     )
     ds = [
@@ -302,8 +380,8 @@ def dash_stats_donut_bar(ch, colors, m):
     html = (
         f'<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">{stats}</div>'
         f'<div class="grid grid-cols-1 md:grid-cols-2 gap-5">'
-        f"{comp_chart_box('dC1', '構成比', 240)}"
-        f"{comp_chart_box('dC2', '月別推移', 240)}</div>"
+        f"{comp_chart_box('dC1', _p(m, 'chart_titles', {}).get('composition', '構成比'), 240)}"
+        f"{comp_chart_box('dC2', _p(m, 'chart_titles', {}).get('monthly_trend', '月別推移'), 240)}</div>"
     )
     pie_ds = [
         {
@@ -321,7 +399,12 @@ def dash_stats_donut_bar(ch, colors, m):
         }
     ]
     js = (
-        js_chart("dC1", "doughnut", ["A", "B", "C", "D", "E"], pie_ds)
+        js_chart(
+            "dC1",
+            "doughnut",
+            _p(m, "chart_pie_labels", ["A", "B", "C", "D", "E"]),
+            pie_ds,
+        )
         + "\n"
         + js_chart("dC2", "bar", MONTHS[:6], bar_ds)
     )
@@ -340,7 +423,9 @@ def dash_rings_radar(ch, colors, m):
     p, s, bg = colors
     rings = "".join(
         comp_progress_ring(m["rng"].randint(40, 95), label, p if i % 2 == 0 else s)
-        for i, label in enumerate(["品質", "効率", "遵守", "満足度"])
+        for i, label in enumerate(
+            _p(m, "progress_ring_labels", ["品質", "効率", "遵守", "満足度"])
+        )
     )
     html = (
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">'
@@ -350,8 +435,8 @@ def dash_rings_radar(ch, colors, m):
         f'<div class="card p-5 flex justify-center">{comp_progress_ring(m["rng"].randint(40, 95), "満足度", s)}</div>'
         f"</div>"
         f'<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">'
-        f"{comp_chart_box('dC1', '能力マップ', 280)}"
-        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">最近のアクティビティ</h3>'
+        f"{comp_chart_box('dC1', _p(m, 'chart_titles', {}).get('performance', '能力マップ'), 280)}"
+        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">{_p(m, "activity_section_title", "最近のアクティビティ")}</h3>'
         f'<div class="space-y-3">{comp_activities(m["activities"], p, 5)}</div></div></div>'
     )
     radar_ds = [
@@ -364,7 +449,10 @@ def dash_rings_radar(ch, colors, m):
         }
     ]
     js = js_chart(
-        "dC1", "radar", ["営業", "品質", "効率", "技術", "CS", "管理"], radar_ds
+        "dC1",
+        "radar",
+        _p(m, "chart_radar_labels", ["営業", "品質", "効率", "技術", "CS", "管理"]),
+        radar_ds,
     )
     return {
         "id": "dashboard",
@@ -382,10 +470,10 @@ def dash_metrics_area(ch, colors, m):
     kpis = "".join(comp_kpi(*k, p) for k in m["kpis"][:4])
     html = (
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">{kpis}</div>'
-        f"{comp_chart_box('dC1', 'トレンド分析', 300)}"
+        f"{comp_chart_box('dC1', _p(m, 'chart_titles', {}).get('monthly_trend', 'トレンド分析'), 300)}"
         f'<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">'
-        f"{comp_chart_box('dC2', 'カテゴリ別', 200)}"
-        f"{comp_chart_box('dC3', '比較', 200)}"
+        f"{comp_chart_box('dC2', _p(m, 'chart_titles', {}).get('composition', 'カテゴリ別'), 200)}"
+        f"{comp_chart_box('dC3', _p(m, 'chart_titles', {}).get('comparison', '比較'), 200)}"
         f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">アラート</h3>'
         f'<div class="space-y-2">{"".join(f"""<div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">{a["user"]} — {a["text"]}</span></div>""" for a in m["activities"][:3])}</div></div></div>'
     )
@@ -424,7 +512,12 @@ def dash_metrics_area(ch, colors, m):
     js = (
         js_chart("dC1", "line", MONTHS, area_ds)
         + "\n"
-        + js_chart("dC2", "doughnut", ["A", "B", "C", "D"], pie_ds)
+        + js_chart(
+            "dC2",
+            "doughnut",
+            _p(m, "chart_pie_labels", ["A", "B", "C", "D", "E"])[:4],
+            pie_ds,
+        )
         + "\n"
         + js_chart("dC3", "bar", MONTHS[:6], bar_ds, True)
     )
@@ -446,7 +539,7 @@ def dash_timeline_hbar(ch, colors, m):
         f'<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">'
         f'<div class="card p-5 lg:col-span-2">'
         f'<h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3>{tl}</div>'
-        f"{comp_chart_box('dC1', 'カテゴリ別実績', 280)}</div>"
+        f"{comp_chart_box('dC1', _p(m, 'chart_titles', {}).get('comparison', 'カテゴリ別実績'), 280)}</div>"
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">'
         f"{''.join(comp_kpi(*k, p) for k in m['kpis'][:4])}</div>"
     )
@@ -456,7 +549,7 @@ def dash_timeline_hbar(ch, colors, m):
     js = js_chart(
         "dC1",
         "bar",
-        ["営業", "設計", "製造", "品質", "管理", "CS"],
+        _p(m, "chart_bar_labels", ["営業", "設計", "製造", "品質", "管理", "CS"]),
         hbar_ds,
         horizontal=True,
     )
@@ -475,7 +568,10 @@ def dash_table_chart(ch, colors, m):
     p, s, bg = colors
     kpis = "".join(comp_kpi(*k, p) for k in m["kpis"][:4])
     tbl = comp_table(
-        "dTbl", ["ID", "担当", "部門", "状態", "日付", "金額"], m["rows"][:6], p
+        "dTbl",
+        _p(m, "table_headers", ["ID", "担当", "部門", "状態", "日付", "金額"]),
+        m["rows"][:6],
+        p,
     )
     html = (
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">{kpis}</div>'
@@ -695,7 +791,9 @@ function wizPrev(){{if(wizCur>0)wizGo(wizCur-1)}}
 def feat_checklist(ch, colors, m):
     p, s, bg = colors
     rng = m["rng"]
-    groups = ["基本チェック", "安全確認", "品質検証", "最終確認"]
+    groups = _p(
+        m, "checklist_groups", ["基本チェック", "安全確認", "品質検証", "最終確認"]
+    )
     items_html = ""
     total = 0
     checked = 0
@@ -871,7 +969,9 @@ def feat_timeline(ch, colors, m):
 def feat_documents(ch, colors, m):
     p, s, bg = colors
     rng = m["rng"]
-    categories = ["契約書", "報告書", "設計書", "議事録", "マニュアル"]
+    categories = _p(
+        m, "document_categories", ["契約書", "報告書", "設計書", "議事録", "マニュアル"]
+    )
     icons_map = {
         "契約書": "file-text",
         "報告書": "file-bar-chart",
@@ -1025,7 +1125,11 @@ def feat_chat(ch, colors, m):
             "ありがとうございます",
             "進捗報告です",
         ]
-        avatar = "" if is_me else f'<div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] text-white shrink-0" style="background:{s}">{name[0]}</div>'
+        avatar = (
+            ""
+            if is_me
+            else f'<div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] text-white shrink-0" style="background:{s}">{name[0]}</div>'
+        )
         ta = "text-right" if is_me else ""
         ago = rng.randint(1, 59)
         msgs += (
@@ -1255,10 +1359,19 @@ def feat_analytics(ch, colors, m):
     js = (
         js_chart("anC1", "line", MONTHS, line_ds, True)
         + "\n"
-        + js_chart("anC2", "doughnut", ["A", "B", "C", "D", "E"], pie_ds)
+        + js_chart(
+            "anC2",
+            "doughnut",
+            _p(m, "chart_pie_labels", ["A", "B", "C", "D", "E"]),
+            pie_ds,
+        )
         + "\n"
         + js_chart(
-            "anC3", "bar", ["営業", "設計", "製造", "品質", "管理", "CS"], bar_ds, True
+            "anC3",
+            "bar",
+            _p(m, "chart_bar_labels", ["営業", "設計", "製造", "品質", "管理", "CS"]),
+            bar_ds,
+            True,
         )
         + "\n"
         + js_chart("anC4", "doughnut", ["達成", "残り"], gauge_ds)
@@ -1301,7 +1414,10 @@ def data_table_view(ch, colors, m):
     """Full table with search and sort."""
     p, s, bg = colors
     tbl = comp_table(
-        "dataTbl", ["ID", "担当", "部門", "ステータス", "更新日", "金額"], m["rows"], p
+        "dataTbl",
+        _p(m, "table_headers", ["ID", "担当", "部門", "ステータス", "更新日", "金額"]),
+        m["rows"],
+        p,
     )
     html = (
         f'<div class="flex items-center justify-between mb-5 gap-3">'
@@ -1561,7 +1677,7 @@ def detail_card_summary(ch, colors, m):
         f'<div class="grid grid-cols-2 md:grid-cols-4 gap-3">'
         f'{"".join(f"""<div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:{p}">{m["kpis"][i][1]}</div><div class="text-[11px] text-gray-400 mt-1">{m["kpis"][i][0]}</div></div>""" for i in range(min(4, len(m["kpis"]))))}'
         f"</div></div>"
-        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">最近のアクティビティ</h3>'
+        f'<div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">{_p(m, "activity_section_title", "最近のアクティビティ")}</h3>'
         f'<div class="space-y-3">{comp_activities(m["activities"], p, 5)}</div></div></div>'
     )
     return {
@@ -1594,10 +1710,10 @@ def report_multi_chart(ch, colors, m):
         f'<div class="flex gap-2">{"".join(f"""<button class="text-[12px] px-3 py-1.5 rounded-lg {"text-white" if i == 0 else "border text-gray-500 hover:bg-gray-50"} cursor-pointer transition-colors" {"style=background:" + p if i == 0 else ""}>{t}</button>""" for i, t in enumerate(["月次", "週次", "日次"]))}</div>'
         f"{comp_btn_outline('エクスポート', p, 'download')}</div>"
         f'<div class="grid grid-cols-1 md:grid-cols-2 gap-5">'
-        f"{comp_chart_box('rpC1', '売上推移', 240)}"
-        f"{comp_chart_box('rpC2', 'カテゴリ別構成', 240)}"
-        f"{comp_chart_box('rpC3', '月次比較', 240)}"
-        f"{comp_chart_box('rpC4', 'パフォーマンス', 240)}</div>"
+        f"{comp_chart_box('rpC1', _p(m, 'chart_titles', {}).get('monthly_trend', '売上推移'), 240)}"
+        f"{comp_chart_box('rpC2', _p(m, 'chart_titles', {}).get('composition', 'カテゴリ別構成'), 240)}"
+        f"{comp_chart_box('rpC3', _p(m, 'chart_titles', {}).get('comparison', '月次比較'), 240)}"
+        f"{comp_chart_box('rpC4', _p(m, 'chart_titles', {}).get('performance', 'パフォーマンス'), 240)}</div>"
     )
     ds1 = [
         {
@@ -1644,11 +1760,21 @@ def report_multi_chart(ch, colors, m):
     js = (
         js_chart("rpC1", "line", MONTHS, ds1)
         + "\n"
-        + js_chart("rpC2", "doughnut", ["A", "B", "C", "D", "E"], ds2)
+        + js_chart(
+            "rpC2",
+            "doughnut",
+            _p(m, "chart_pie_labels", ["A", "B", "C", "D", "E"]),
+            ds2,
+        )
         + "\n"
         + js_chart("rpC3", "bar", MONTHS[:6], ds3, True)
         + "\n"
-        + js_chart("rpC4", "radar", ["営業", "品質", "効率", "技術", "CS", "管理"], ds4)
+        + js_chart(
+            "rpC4",
+            "radar",
+            _p(m, "chart_radar_labels", ["営業", "品質", "効率", "技術", "CS", "管理"]),
+            ds4,
+        )
     )
     return {
         "id": "report",
@@ -1663,7 +1789,11 @@ def report_multi_chart(ch, colors, m):
 def report_table_totals(ch, colors, m):
     p, s, bg = colors
     rng = m["rng"]
-    headers = ["月", "件数", "売上(万)", "原価(万)", "粗利(万)", "粗利率"]
+    headers = _p(
+        m,
+        "report_table_headers",
+        ["月", "件数", "売上(万)", "原価(万)", "粗利(万)", "粗利率"],
+    )
     rows = []
     t_cnt, t_rev, t_cost = 0, 0, 0
     for i, mo in enumerate(MONTHS[:6]):
@@ -1691,10 +1821,10 @@ def report_table_totals(ch, colors, m):
     tbl = comp_table("rpTbl", headers, rows, p)
     html = (
         f'<div class="flex items-center justify-between mb-5">'
-        f'<h3 class="font-semibold text-[14px] text-gray-700">月次実績レポート</h3>'
+        f'<h3 class="font-semibold text-[14px] text-gray-700">{_p(m, "chart_titles", {}).get("monthly_trend", "月次推移")}レポート</h3>'
         f"{comp_btn_outline('エクスポート', p, 'download')}</div>"
         f"{tbl}"
-        f'<div class="mt-5">{comp_chart_box("rpC1", "月次推移", 240)}</div>'
+        f'<div class="mt-5">{comp_chart_box("rpC1", _p(m, "chart_titles", {}).get("monthly_trend", "月次推移"), 240)}</div>'
     )
     bar_ds = [
         {
@@ -1718,14 +1848,16 @@ def report_table_totals(ch, colors, m):
 def report_trend(ch, colors, m):
     p, s, bg = colors
     kpis = "".join(comp_kpi(*k, p) for k in m["kpis"][:4])
+    kpi1 = m["kpis"][0][0] if m["kpis"] else "主要指標"
+    kpi2 = m["kpis"][1][0] if len(m["kpis"]) > 1 else "副指標"
     html = (
         f'<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">{kpis}</div>'
-        f"{comp_chart_box('rpC1', 'トレンド分析', 320)}"
+        f"{comp_chart_box('rpC1', f'{kpi1}トレンド分析', 320)}"
         f'<div class="card p-5 mt-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-3">分析サマリー</h3>'
         f'<div class="grid grid-cols-1 md:grid-cols-3 gap-3">'
-        f'<div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">前月比+12%の成長</p></div>'
-        f'<div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">コスト率が上昇傾向</p></div>'
-        f'<div class="p-3 rounded-lg" style="background:{bg}"><p class="text-[11px] font-medium mb-1" style="color:{p}">予測</p><p class="text-[13px]" style="color:{p}">Q2達成確率78%</p></div></div></div>'
+        f'<div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">{kpi1}が前月比改善</p></div>'
+        f'<div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">{kpi2}が変動傾向</p></div>'
+        f'<div class="p-3 rounded-lg" style="background:{bg}"><p class="text-[11px] font-medium mb-1" style="color:{p}">予測</p><p class="text-[13px]" style="color:{p}">Q2目標達成見込み</p></div></div></div>'
     )
     ds = [
         {
@@ -1766,7 +1898,9 @@ def report_trend(ch, colors, m):
 def report_comparison(ch, colors, m):
     p, s, bg = colors
     rng = m["rng"]
-    categories = ["営業", "製造", "品質", "管理", "開発", "CS"]
+    categories = _p(
+        m, "chart_bar_labels", ["営業", "製造", "品質", "管理", "開発", "CS"]
+    )
     this_period = [rng.randint(30, 90) for _ in categories]
     last_period = [max(10, v - rng.randint(0, 20)) for v in this_period]
     # Summary cards

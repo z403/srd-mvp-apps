@@ -370,6 +370,16 @@ el.style.display=el.dataset.search.toLowerCase().includes(q)?'':'none'}});
 # ════════════════════════════════════════════════════════════
 
 
+def load_profiles():
+    """Load challenge profiles from JSON file."""
+    import json
+
+    profiles_path = Path(__file__).parent / "data" / "profiles.json"
+    if profiles_path.exists():
+        return json.loads(profiles_path.read_text(encoding="utf-8"))
+    return {}
+
+
 def main():
     wb = openpyxl.load_workbook(XLSX)
     ws = wb["全課題一覧"]
@@ -387,6 +397,11 @@ def main():
         if row["challenge"]:
             challenges.append(row)
 
+    # Load domain-specific profiles
+    profiles = load_profiles()
+    if profiles:
+        print(f"Loaded {len(profiles)} challenge profiles")
+
     OUT.mkdir(parents=True, exist_ok=True)
     feat_counts = {}
 
@@ -399,8 +414,11 @@ def main():
         ftype = classify(ch["challenge"], ch["pain"])
         feat_counts[ftype] = feat_counts.get(ftype, 0) + 1
 
-        # Generate mock data
-        mock = gen_mock(ftype, ch, colors)
+        # Get challenge-specific profile
+        profile = profiles.get(f"{ind_no}-{ch_no}")
+
+        # Generate mock data with profile
+        mock = gen_mock(ftype, ch, colors, profile=profile)
 
         # Select page variants deterministically
         dash_fn = DASHBOARD_VARIANTS[
