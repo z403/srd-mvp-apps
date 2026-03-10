@@ -1,105 +1,3088 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>車両整備・車検管理 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>VehicleCare — 車両整備・車検スケジュール管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Noto Sans JP", sans-serif;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .tbl {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .tbl thead {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .tbl th {
+        padding: 10px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+      .tbl th:hover {
+        color: #111827;
+      }
+      .tbl td {
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #374151;
+        border-bottom: 1px solid #f3f4f6;
+        white-space: nowrap;
+      }
+      .tbl tbody tr:hover {
+        background: #f9fafb;
+      }
+      .row-green {
+        border-left: 3px solid #10b981;
+      }
+      .row-yellow {
+        border-left: 3px solid #f59e0b;
+      }
+      .row-orange {
+        border-left: 3px solid #f97316;
+      }
+      .row-red {
+        border-left: 3px solid #ef4444;
+        background: #fef2f2;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-yellow {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-orange {
+        background: #ffedd5;
+        color: #9a3412;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #4b5563;
+      }
+      .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: #e5e7eb;
+        overflow: hidden;
+        position: relative;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+      .alert-card {
+        border-left: 4px solid #ef4444;
+        background: #fff;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+      .checklist-item {
+        transition: all 0.2s;
+      }
+      .checklist-item:hover {
+        background: #f9fafb;
+      }
+      .expand-btn {
+        cursor: pointer;
+        user-select: none;
+      }
+      .expand-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .expand-content.open {
+        max-height: 500px;
+      }
+      .cal-cell {
+        min-height: 70px;
+        border: 1px solid #e5e7eb;
+        padding: 4px;
+        font-size: 11px;
+        position: relative;
+      }
+      .cal-cell.today {
+        background: #ecfdf5;
+      }
+      .cal-event {
+        font-size: 10px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        margin-top: 2px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+      .tab-btn.active {
+        background: #fff;
+        border-color: #e5e7eb;
+        border-bottom-color: #fff;
+        color: #065f46;
+        font-weight: 600;
+      }
+      .tab-btn:not(.active) {
+        color: #6b7280;
+      }
+      .tab-btn:not(.active):hover {
+        color: #374151;
+        background: #f9fafb;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[240px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #0c4a6e"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0"
+              style="background: #10b981"
+            >
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-bold text-[14px] truncate">VehicleCare</p>
+              <p class="text-[10px] opacity-50 truncate">車両整備・車検管理</p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="inspection"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('inspection')"
+          >
+            <i data-lucide="shield-check" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">車検管理</span></a
+          >
+          <a
+            data-page="maintenance"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('maintenance')"
+          >
+            <i data-lucide="wrench" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">定期点検</span></a
+          >
+          <a
+            data-page="history"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('history')"
+          >
+            <i data-lucide="clock" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">整備履歴</span></a
+          >
+          <a
+            data-page="parts"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('parts')"
+          >
+            <i data-lucide="cog" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">部品・消耗品</span></a
+          >
+          <a
+            data-page="cost"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('cost')"
+          >
+            <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">コスト分析</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+          >
+            <i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">車両整備・車検管理</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="map-pin" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">マップ</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="clock" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              車両整備状況の概要
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-gray-400">2026年3月10日</span>
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #d1fae5; color: #065f46"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">トレンドとアラート</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">稼働数</span><i data-lucide="truck" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">13台</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">本日配送</span><i data-lucide="package" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">66件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">3件</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">稼働率</span><i data-lucide="activity" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">98%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +5%</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次車両整備・車検推移</h3><div style="height:300px"><canvas id="dC1"></canvas></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">車両整備・車検種別構成</h3><div style="height:200px"><canvas id="dC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別車両整備・車検比較</h3><div style="height:200px"><canvas id="dC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">アラート</h3><div class="space-y-2"><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">佐藤配車担当 — に車両整備・車検を報告</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">田中ドライバー — の車両整備・車検を完了</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">鈴木運行管理者 — の車両整備・車検を承認</span></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2 card p-4"><div class="relative bg-gradient-to-br from-blue-50 to-green-50 rounded-lg overflow-hidden" style="height:420px"><div class="absolute inset-0 opacity-10" style="background:repeating-linear-gradient(0deg,#065f4622 0,#065f4622 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#065f4622 0,#065f4622 1px,transparent 1px,transparent 40px)"></div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-emerald-500" style="left:8%;top:54%" title="拠点A">A</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-red-500" style="left:22%;top:60%" title="拠点B">B</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-gray-400" style="left:41%;top:21%" title="拠点C">C</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-blue-500" style="left:27%;top:61%" title="拠点D">D</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-blue-500" style="left:30%;top:70%" title="拠点E">E</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-red-500" style="left:29%;top:84%" title="拠点F">F</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-red-500" style="left:48%;top:77%" title="拠点G">G</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-red-500" style="left:85%;top:18%" title="拠点H">H</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">拠点一覧</h3><div class="space-y-1"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点A</p><p class="text-[11px] text-gray-400">4km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">稼働中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点B</p><p class="text-[11px] text-gray-400">49km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">要対応</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点C</p><p class="text-[11px] text-gray-400">17km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点D</p><p class="text-[11px] text-gray-400">33km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">移動中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点E</p><p class="text-[11px] text-gray-400">42km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">移動中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点F</p><p class="text-[11px] text-gray-400">15km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">要対応</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点G</p><p class="text-[11px] text-gray-400">29km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">要対応</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点H</p><p class="text-[11px] text-gray-400">26km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">要対応</span></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤配車担当 倉庫課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1586</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400 mt-1">倉庫課 · 2026/03/24</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥968万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中ドライバー 営業課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1440</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400 mt-1">営業課 · 2026/02/07</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥815万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木運行管理者 管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1885</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">鈴木運行管理者</p><p class="text-[11px] text-gray-400 mt-1">管理課 · 2026/02/24</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥142万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田倉庫管理 配送2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1352</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">山田倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">配送2課 · 2026/01/19</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥859万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋経理 管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4224</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">高橋経理</p><p class="text-[11px] text-gray-400 mt-1">管理課 · 2026/03/20</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥804万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤営業 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5698</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><p class="text-[13px] font-medium text-gray-700">伊藤営業</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/03/01</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥68万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺整備管理 整備課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6654</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><p class="text-[13px] font-medium text-gray-700">渡辺整備管理</p><p class="text-[11px] text-gray-400 mt-1">整備課 · 2026/01/26</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥910万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村安全管理者 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4114</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">中村安全管理者</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/03/17</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥827万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林荷役担当 営業課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3795</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">小林荷役担当</p><p class="text-[11px] text-gray-400 mt-1">営業課 · 2026/01/26</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥855万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤事務 倉庫課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9813</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">加藤事務</p><p class="text-[11px] text-gray-400 mt-1">倉庫課 · 2026/03/08</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥326万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤配車担当 倉庫課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6128</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400 mt-1">倉庫課 · 2026/02/27</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥882万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中ドライバー 整備課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5437</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400 mt-1">整備課 · 2026/01/09</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥214万</p></div></div></div>
-<div id="page-detail" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">稼働数</span><span class="text-[15px] font-bold" style="color:#065f46">13台</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">本日配送</span><span class="text-[15px] font-bold" style="color:#065f46">66件</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">遅延</span><span class="text-[15px] font-bold" style="color:#065f46">3件</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">稼働率</span><span class="text-[15px] font-bold" style="color:#065f46">98%</span></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進行状況</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#065f46"></div><div class="w-0.5 flex-1 mx-auto" style="background:#065f46"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">計画</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/08</p><p class="text-[12px] text-gray-500 mt-1">車両整備・車検の計画策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#065f46"></div><div class="w-0.5 flex-1 mx-auto" style="background:#065f46"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">準備</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/15</p><p class="text-[12px] text-gray-500 mt-1">必要な情報の収集</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">実行</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/01</p><p class="text-[12px] text-gray-500 mt-1">車両整備・車検の実施</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">確認</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/26</p><p class="text-[12px] text-gray-500 mt-1">結果の確認・検証</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">報告</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/09</p><p class="text-[12px] text-gray-500 mt-1">関係者への報告</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">改善</p><p class="text-[11px] text-gray-400 mt-0.5">2026/02/06</p><p class="text-[12px] text-gray-500 mt-1">次回への改善</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">メモ</h3><label class="block text-[12px] font-medium text-gray-600 mb-1.5">メモ</label><textarea name="メモ" rows="3" placeholder="メモを追加..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div class="mt-3"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次車両整備・車検推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">27</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥537</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥306</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥231</td><td class="px-4 py-3 text-[13px]  text-gray-700">43.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">26</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥310</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥133</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥177</td><td class="px-4 py-3 text-[13px]  text-gray-700">57.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">24</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥709</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥354</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥355</td><td class="px-4 py-3 text-[13px]  text-gray-700">50.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">8</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥771</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥416</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥355</td><td class="px-4 py-3 text-[13px]  text-gray-700">46.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">5</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥265</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥156</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥109</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">22</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥768</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥392</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥376</td><td class="px-4 py-3 text-[13px]  text-gray-700">49.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">112</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥3,360</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,757</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,603</td><td class="px-4 py-3 text-[13px]  text-gray-700">47.7%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次車両整備・車検推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== PAGE 1: DASHBOARD ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500">保有車両数</span>
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #ecfdf5"
+                  >
+                    <i
+                      data-lucide="truck"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  18<span class="text-sm font-medium text-gray-400 ml-1"
+                    >台</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  大型8 / 中型6 / 小型4
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500"
+                    >30日以内期限切れ</span
+                  >
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-4 h-4 text-red-500"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold text-red-600">
+                  3<span class="text-sm font-medium text-gray-400 ml-1"
+                    >台</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-red-500 font-medium">
+                  要対応
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500"
+                    >整備予定（今月）</span
+                  >
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #ecfdf5"
+                  >
+                    <i
+                      data-lucide="calendar"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  8<span class="text-sm font-medium text-gray-400 ml-1"
+                    >件</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2" style="color: #10b981">
+                  前月比 +2件
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500">年間整備費</span>
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #ecfdf5"
+                  >
+                    <i
+                      data-lucide="banknote"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  1,240<span class="text-sm font-medium text-gray-400 ml-1"
+                    >万円</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">予算消化率 68%</div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "トレンドとアラート"}, {"id": "feature", "title": "マップ", "desc": "拠点・ルート管理"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "詳細", "desc": "タイムライン表示"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- Urgent Alert Cards -->
+            <div class="mb-6">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-3 flex items-center gap-2"
+              >
+                <i data-lucide="bell-ring" class="w-4 h-4 text-red-500"></i
+                >緊急アラート
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="alert-card" style="border-left-color: #ef4444">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="badge badge-red">期限切れ間近</span>
+                    <span class="text-[11px] text-gray-400">残り12日</span>
+                  </div>
+                  <p class="text-[13px] font-semibold text-gray-800">
+                    多摩 100 あ 1234
+                  </p>
+                  <p class="text-[12px] text-gray-500 mt-1">
+                    いすゞ ギガ — 車検期限: 2026/03/22
+                  </p>
+                  <button
+                    class="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg text-white"
+                    style="background: #065f46"
+                  >
+                    予約手配
+                  </button>
+                </div>
+                <div class="alert-card" style="border-left-color: #f97316">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="badge badge-orange">期限切れ間近</span>
+                    <span class="text-[11px] text-gray-400">残り18日</span>
+                  </div>
+                  <p class="text-[13px] font-semibold text-gray-800">
+                    品川 200 か 5678
+                  </p>
+                  <p class="text-[12px] text-gray-500 mt-1">
+                    日野 プロフィア — 車検期限: 2026/03/28
+                  </p>
+                  <button
+                    class="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg text-white"
+                    style="background: #065f46"
+                  >
+                    予約手配
+                  </button>
+                </div>
+                <div class="alert-card" style="border-left-color: #f97316">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="badge badge-orange">点検予定超過</span>
+                    <span class="text-[11px] text-gray-400">5日超過</span>
+                  </div>
+                  <p class="text-[13px] font-semibold text-gray-800">
+                    足立 300 さ 9012
+                  </p>
+                  <p class="text-[12px] text-gray-500 mt-1">
+                    三菱ふそう スーパーグレート — 3ヶ月点検超過
+                  </p>
+                  <button
+                    class="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg text-white"
+                    style="background: #065f46"
+                  >
+                    点検予約
+                  </button>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [55, 90, 25, 88, 74, 49, 61, 59, 32, 39, 53, 56], "borderColor": "#065f46", "backgroundColor": "#065f4620", "fill": true, "tension": 0.4, "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "doughnut", "data": {"labels": ["燃料費", "高速代", "人件費", "車両費"], "datasets": [{"data": [19, 24, 39, 24], "backgroundColor": ["#065f46", "#10b981", "#065f4660", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [55, 90, 25, 88, 74, 49], "backgroundColor": "#065f46", "borderRadius": 4}, {"label": "前期", "data": [14, 46, 24, 48, 26, 33], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              <div class="lg:col-span-2 card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別整備費推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  車種別台数
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+          <!-- ==================== PAGE 2: INSPECTION ==================== -->
+          <div id="page-inspection" class="page">
+            <!-- View toggle tabs -->
+            <div class="flex items-center gap-2 mb-5">
+              <button
+                class="tab-btn active"
+                onclick="showInspTab('table', this)"
+              >
+                一覧表示
+              </button>
+              <button class="tab-btn" onclick="showInspTab('calendar', this)">
+                カレンダー
+              </button>
+            </div>
 
-// report
+            <!-- Table view -->
+            <div id="insp-table">
+              <div class="card overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="tbl" id="inspTbl">
+                    <thead>
+                      <tr>
+                        <th onclick="sortTbl('inspTbl', 0)">
+                          車番 <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th onclick="sortTbl('inspTbl', 1)">
+                          車種 <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th onclick="sortTbl('inspTbl', 2)">
+                          初年度登録 <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th onclick="sortTbl('inspTbl', 3)">
+                          前回車検日 <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th onclick="sortTbl('inspTbl', 4)">
+                          次回車検期限
+                          <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th onclick="sortTbl('inspTbl', 5)">
+                          残日数 <span class="text-gray-300">&#8597;</span>
+                        </th>
+                        <th>ステータス</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="row-red">
+                        <td class="font-medium">多摩 100 あ 1234</td>
+                        <td>いすゞ ギガ</td>
+                        <td>2018/04</td>
+                        <td>2024/03/22</td>
+                        <td>2026/03/22</td>
+                        <td class="font-bold text-red-600">12</td>
+                        <td><span class="badge badge-red">要予約</span></td>
+                      </tr>
+                      <tr class="row-orange">
+                        <td class="font-medium">品川 200 か 5678</td>
+                        <td>日野 プロフィア</td>
+                        <td>2019/08</td>
+                        <td>2024/04/10</td>
+                        <td>2026/03/28</td>
+                        <td class="font-bold text-orange-600">18</td>
+                        <td><span class="badge badge-orange">要予約</span></td>
+                      </tr>
+                      <tr class="row-orange">
+                        <td class="font-medium">足立 300 さ 9012</td>
+                        <td>三菱ふそう スーパーグレート</td>
+                        <td>2020/01</td>
+                        <td>2024/04/15</td>
+                        <td>2026/04/05</td>
+                        <td class="font-bold text-orange-600">26</td>
+                        <td><span class="badge badge-orange">要予約</span></td>
+                      </tr>
+                      <tr class="row-yellow">
+                        <td class="font-medium">横浜 400 た 3456</td>
+                        <td>UDトラックス クオン</td>
+                        <td>2019/11</td>
+                        <td>2024/06/01</td>
+                        <td>2026/05/20</td>
+                        <td class="font-bold text-yellow-600">71</td>
+                        <td><span class="badge badge-yellow">予約済</span></td>
+                      </tr>
+                      <tr class="row-yellow">
+                        <td class="font-medium">大宮 500 な 7890</td>
+                        <td>いすゞ フォワード</td>
+                        <td>2021/03</td>
+                        <td>2025/01/10</td>
+                        <td>2026/05/28</td>
+                        <td class="font-bold text-yellow-600">79</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-yellow">
+                        <td class="font-medium">川崎 100 は 2345</td>
+                        <td>日野 レンジャー</td>
+                        <td>2020/06</td>
+                        <td>2024/07/20</td>
+                        <td>2026/06/08</td>
+                        <td class="font-bold text-yellow-600">90</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">習志野 200 ま 6789</td>
+                        <td>三菱ふそう ファイター</td>
+                        <td>2022/02</td>
+                        <td>2025/03/15</td>
+                        <td>2026/08/15</td>
+                        <td class="font-bold" style="color: #065f46">158</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">所沢 300 や 0123</td>
+                        <td>いすゞ エルフ</td>
+                        <td>2023/05</td>
+                        <td>2025/05/20</td>
+                        <td>2026/09/20</td>
+                        <td class="font-bold" style="color: #065f46">194</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">練馬 400 ら 4567</td>
+                        <td>日野 デュトロ</td>
+                        <td>2022/09</td>
+                        <td>2025/04/10</td>
+                        <td>2026/10/10</td>
+                        <td class="font-bold" style="color: #065f46">214</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">世田谷 500 わ 8901</td>
+                        <td>三菱ふそう キャンター</td>
+                        <td>2023/01</td>
+                        <td>2025/06/05</td>
+                        <td>2026/11/05</td>
+                        <td class="font-bold" style="color: #065f46">240</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">八王子 100 い 2345</td>
+                        <td>UDトラックス コンドル</td>
+                        <td>2021/07</td>
+                        <td>2025/02/28</td>
+                        <td>2026/12/28</td>
+                        <td class="font-bold" style="color: #065f46">293</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">相模 200 う 6789</td>
+                        <td>いすゞ ギガ</td>
+                        <td>2024/01</td>
+                        <td>2025/07/15</td>
+                        <td>2027/01/15</td>
+                        <td class="font-bold" style="color: #065f46">311</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                      <tr class="row-red">
+                        <td class="font-medium">春日部 300 え 0123</td>
+                        <td>日野 プロフィア</td>
+                        <td>2017/11</td>
+                        <td>2024/01/05</td>
+                        <td>2026/01/05</td>
+                        <td class="font-bold text-red-600">-64</td>
+                        <td><span class="badge badge-red">期限切れ</span></td>
+                      </tr>
+                      <tr class="row-green">
+                        <td class="font-medium">船橋 400 お 4567</td>
+                        <td>三菱ふそう スーパーグレート</td>
+                        <td>2023/08</td>
+                        <td>2025/08/20</td>
+                        <td>2027/02/20</td>
+                        <td class="font-bold" style="color: #065f46">347</td>
+                        <td><span class="badge badge-green">有効</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+            <!-- Calendar view -->
+            <div id="insp-calendar" style="display: none">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-[14px] text-gray-700">
+                    2026年3月 — 車検スケジュール
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      class="px-3 py-1 text-[12px] rounded-lg border hover:bg-gray-50"
+                    >
+                      &larr; 前月
+                    </button>
+                    <button
+                      class="px-3 py-1 text-[12px] rounded-lg border hover:bg-gray-50"
+                    >
+                      翌月 &rarr;
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-7 gap-0">
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    日
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    月
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    火
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    水
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    木
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    金
+                  </div>
+                  <div
+                    class="text-center py-2 text-[11px] font-semibold text-gray-500 bg-gray-50 border"
+                  >
+                    土
+                  </div>
+                  <!-- Week 1: March starts on Sunday -->
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">1</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">2</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">3</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">4</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">5</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">6</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">7</span>
+                  </div>
+                  <!-- Week 2 -->
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">8</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">9</span>
+                  </div>
+                  <div class="cal-cell today">
+                    <span class="text-gray-700 font-medium">10</span>
+                    <div class="cal-event bg-blue-100 text-blue-800">今日</div>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">11</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">12</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">13</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">14</span>
+                  </div>
+                  <!-- Week 3 -->
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">15</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">16</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">17</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">18</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">19</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">20</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">21</span>
+                  </div>
+                  <!-- Week 4 -->
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">22</span>
+                    <div class="cal-event bg-red-100 text-red-800">
+                      多摩100あ1234 車検
+                    </div>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">23</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">24</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">25</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">26</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">27</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">28</span>
+                    <div class="cal-event bg-orange-100 text-orange-800">
+                      品川200か5678 車検
+                    </div>
+                  </div>
+                  <!-- Week 5 -->
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">29</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">30</span>
+                  </div>
+                  <div class="cal-cell">
+                    <span class="text-gray-700 font-medium">31</span>
+                  </div>
+                  <div class="cal-cell bg-gray-50"></div>
+                  <div class="cal-cell bg-gray-50"></div>
+                  <div class="cal-cell bg-gray-50"></div>
+                  <div class="cal-cell bg-gray-50"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [537, 310, 709, 771, 265, 768], "backgroundColor": "#065f46", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+          <!-- ==================== PAGE 3: MAINTENANCE ==================== -->
+          <div id="page-maintenance" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                定期点検スケジュール
+              </h3>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium hover:opacity-90"
+                style="background: #065f46"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>点検予定追加
+              </button>
+            </div>
 
-</script>
-</body></html>
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="tbl" id="maintTbl">
+                  <thead>
+                    <tr>
+                      <th onclick="sortTbl('maintTbl', 0)">
+                        車番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('maintTbl', 1)">
+                        点検種別 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('maintTbl', 2)">
+                        前回実施日 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('maintTbl', 3)">
+                        次回予定 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('maintTbl', 4)">
+                        走行距離 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th>担当整備工場</th>
+                      <th>ステータス</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">多摩 100 あ 1234</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2025/12/15</td>
+                      <td>2026/03/15</td>
+                      <td>234,500 km</td>
+                      <td>東京トラックサービス</td>
+                      <td><span class="badge badge-yellow">予定超過</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンオイル量・汚れ</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 冷却液量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ブレーキ液量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              ウインドウォッシャー液</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> タイヤ空気圧・溝</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              ライト・ウインカー</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ワイパー作動</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> バッテリー電圧</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">品川 200 か 5678</td>
+                      <td><span class="badge badge-green">12ヶ月点検</span></td>
+                      <td>2025/04/10</td>
+                      <td>2026/04/10</td>
+                      <td>189,200 km</td>
+                      <td>日野サービスセンター</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> エンジン関連全般</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ブレーキ系統</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 足回り</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 電装系</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 排気系統</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 車体・フレーム</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">足立 300 さ 9012</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/01/20</td>
+                      <td>2026/04/20</td>
+                      <td>156,800 km</td>
+                      <td>関東整備工業</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンオイル量・汚れ</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 冷却液量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ブレーキ液量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> タイヤ空気圧・溝</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">横浜 400 た 3456</td>
+                      <td><span class="badge badge-orange">臨時点検</span></td>
+                      <td>2026/02/28</td>
+                      <td>2026/03/12</td>
+                      <td>278,400 km</td>
+                      <td>横浜トラック整備</td>
+                      <td><span class="badge badge-yellow">予約済</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            臨時点検内容
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 異音箇所の特定</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンマウント確認</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 排気系点検</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">大宮 500 な 7890</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/02/10</td>
+                      <td>2026/05/10</td>
+                      <td>112,300 km</td>
+                      <td>いすゞ埼玉サービス</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンオイル量・汚れ</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> タイヤ空気圧・溝</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              ライト・ウインカー</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">川崎 100 は 2345</td>
+                      <td><span class="badge badge-green">12ヶ月点検</span></td>
+                      <td>2025/07/20</td>
+                      <td>2026/07/20</td>
+                      <td>201,600 km</td>
+                      <td>川崎車両整備</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> エンジン関連全般</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ブレーキ系統</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              足回り・サスペンション</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 電装系統</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">習志野 200 ま 6789</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/02/15</td>
+                      <td>2026/05/15</td>
+                      <td>87,200 km</td>
+                      <td>千葉トラックセンター</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンオイル量・汚れ</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 冷却液量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> タイヤ空気圧・溝</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">所沢 300 や 0123</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/01/05</td>
+                      <td>2026/04/05</td>
+                      <td>45,600 km</td>
+                      <td>所沢自動車整備</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> エンジンオイル量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> バッテリー電圧</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">練馬 400 ら 4567</td>
+                      <td><span class="badge badge-green">12ヶ月点検</span></td>
+                      <td>2025/10/10</td>
+                      <td>2026/10/10</td>
+                      <td>92,100 km</td>
+                      <td>東京トラックサービス</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> エンジン関連全般</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> ブレーキ系統</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">世田谷 500 わ 8901</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/01/25</td>
+                      <td>2026/04/25</td>
+                      <td>38,900 km</td>
+                      <td>関東整備工業</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              エンジンオイル量・汚れ</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> 冷却液量</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">八王子 100 い 2345</td>
+                      <td><span class="badge badge-orange">臨時点検</span></td>
+                      <td>2026/03/01</td>
+                      <td>2026/03/18</td>
+                      <td>167,400 km</td>
+                      <td>八王子自動車</td>
+                      <td><span class="badge badge-yellow">予約済</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            臨時点検内容
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> クラッチ滑り確認</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" />
+                              トランスミッション点検</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr class="expand-btn" onclick="toggleExpand(this)">
+                      <td class="font-medium">相模 200 う 6789</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>2026/02/05</td>
+                      <td>2026/05/05</td>
+                      <td>32,100 km</td>
+                      <td>相模原車両センター</td>
+                      <td><span class="badge badge-green">予定通り</span></td>
+                      <td>
+                        <i
+                          data-lucide="chevron-down"
+                          class="w-4 h-4 text-gray-400"
+                        ></i>
+                      </td>
+                    </tr>
+                    <tr class="expand-content-row" style="display: none">
+                      <td colspan="8" class="p-0">
+                        <div class="px-6 py-4 bg-gray-50 border-t">
+                          <p
+                            class="text-[12px] font-semibold text-gray-600 mb-2"
+                          >
+                            点検チェック項目
+                          </p>
+                          <div class="grid grid-cols-2 gap-2">
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> エンジンオイル量</label
+                            >
+                            <label
+                              class="flex items-center gap-2 text-[12px] text-gray-600"
+                              ><input type="checkbox" /> タイヤ点検</label
+                            >
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 4: HISTORY ==================== -->
+          <div id="page-history" class="page">
+            <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <h3 class="font-semibold text-[14px] text-gray-700">整備履歴</h3>
+              <div class="flex items-center gap-3">
+                <select
+                  id="histFilterVehicle"
+                  onchange="filterHistory()"
+                  class="px-3 py-2 text-[12px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option value="">全車両</option>
+                  <option value="多摩 100 あ 1234">多摩 100 あ 1234</option>
+                  <option value="品川 200 か 5678">品川 200 か 5678</option>
+                  <option value="足立 300 さ 9012">足立 300 さ 9012</option>
+                  <option value="横浜 400 た 3456">横浜 400 た 3456</option>
+                  <option value="大宮 500 な 7890">大宮 500 な 7890</option>
+                </select>
+                <select
+                  id="histFilterType"
+                  onchange="filterHistory()"
+                  class="px-3 py-2 text-[12px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option value="">全種別</option>
+                  <option value="車検">車検</option>
+                  <option value="12ヶ月点検">12ヶ月点検</option>
+                  <option value="3ヶ月点検">3ヶ月点検</option>
+                  <option value="修理">修理</option>
+                  <option value="部品交換">部品交換</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border hover:bg-gray-50"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+                </button>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="tbl" id="histTbl">
+                  <thead>
+                    <tr>
+                      <th onclick="sortTbl('histTbl', 0)">
+                        日付 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('histTbl', 1)">
+                        車番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('histTbl', 2)">
+                        整備種別 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th>作業内容</th>
+                      <th>交換部品</th>
+                      <th onclick="sortTbl('histTbl', 5)">
+                        費用(円) <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th>整備工場</th>
+                      <th onclick="sortTbl('histTbl', 7)">
+                        走行距離 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-vehicle="多摩 100 あ 1234" data-type="車検">
+                      <td class="font-medium">2024/03/22</td>
+                      <td>多摩 100 あ 1234</td>
+                      <td><span class="badge badge-blue">車検</span></td>
+                      <td>車検整備一式</td>
+                      <td>ブレーキパッド、エアフィルター</td>
+                      <td class="text-right">385,000</td>
+                      <td>東京トラックサービス</td>
+                      <td>210,200 km</td>
+                    </tr>
+                    <tr data-vehicle="品川 200 か 5678" data-type="12ヶ月点検">
+                      <td class="font-medium">2025/04/10</td>
+                      <td>品川 200 か 5678</td>
+                      <td><span class="badge badge-green">12ヶ月点検</span></td>
+                      <td>定期点検、オイル交換</td>
+                      <td>エンジンオイル、オイルフィルター</td>
+                      <td class="text-right">68,000</td>
+                      <td>日野サービスセンター</td>
+                      <td>172,500 km</td>
+                    </tr>
+                    <tr data-vehicle="足立 300 さ 9012" data-type="修理">
+                      <td class="font-medium">2025/11/05</td>
+                      <td>足立 300 さ 9012</td>
+                      <td><span class="badge badge-red">修理</span></td>
+                      <td>クラッチ交換</td>
+                      <td>クラッチディスク、レリーズベアリング</td>
+                      <td class="text-right">245,000</td>
+                      <td>関東整備工業</td>
+                      <td>148,300 km</td>
+                    </tr>
+                    <tr data-vehicle="横浜 400 た 3456" data-type="3ヶ月点検">
+                      <td class="font-medium">2025/12/01</td>
+                      <td>横浜 400 た 3456</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>日常点検、灯火確認</td>
+                      <td>-</td>
+                      <td class="text-right">15,000</td>
+                      <td>横浜トラック整備</td>
+                      <td>270,100 km</td>
+                    </tr>
+                    <tr data-vehicle="大宮 500 な 7890" data-type="部品交換">
+                      <td class="font-medium">2025/10/15</td>
+                      <td>大宮 500 な 7890</td>
+                      <td><span class="badge badge-orange">部品交換</span></td>
+                      <td>タイヤ交換（前輪）</td>
+                      <td>タイヤ 295/80R22.5 x2</td>
+                      <td class="text-right">156,000</td>
+                      <td>いすゞ埼玉サービス</td>
+                      <td>98,600 km</td>
+                    </tr>
+                    <tr data-vehicle="多摩 100 あ 1234" data-type="3ヶ月点検">
+                      <td class="font-medium">2025/12/15</td>
+                      <td>多摩 100 あ 1234</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>定期点検</td>
+                      <td>ウインドウォッシャー液</td>
+                      <td class="text-right">12,000</td>
+                      <td>東京トラックサービス</td>
+                      <td>228,700 km</td>
+                    </tr>
+                    <tr data-vehicle="品川 200 か 5678" data-type="修理">
+                      <td class="font-medium">2025/08/20</td>
+                      <td>品川 200 か 5678</td>
+                      <td><span class="badge badge-red">修理</span></td>
+                      <td>エアコンコンプレッサー交換</td>
+                      <td>コンプレッサー、冷媒ガス</td>
+                      <td class="text-right">198,000</td>
+                      <td>日野サービスセンター</td>
+                      <td>181,400 km</td>
+                    </tr>
+                    <tr data-vehicle="足立 300 さ 9012" data-type="車検">
+                      <td class="font-medium">2024/04/15</td>
+                      <td>足立 300 さ 9012</td>
+                      <td><span class="badge badge-blue">車検</span></td>
+                      <td>車検整備一式</td>
+                      <td>ブレーキホース、Vベルト</td>
+                      <td class="text-right">342,000</td>
+                      <td>関東整備工業</td>
+                      <td>128,500 km</td>
+                    </tr>
+                    <tr data-vehicle="横浜 400 た 3456" data-type="部品交換">
+                      <td class="font-medium">2025/09/10</td>
+                      <td>横浜 400 た 3456</td>
+                      <td><span class="badge badge-orange">部品交換</span></td>
+                      <td>バッテリー交換</td>
+                      <td>大型車用バッテリー x2</td>
+                      <td class="text-right">78,000</td>
+                      <td>横浜トラック整備</td>
+                      <td>262,800 km</td>
+                    </tr>
+                    <tr data-vehicle="大宮 500 な 7890" data-type="3ヶ月点検">
+                      <td class="font-medium">2026/02/10</td>
+                      <td>大宮 500 な 7890</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>定期点検、タイヤローテーション</td>
+                      <td>-</td>
+                      <td class="text-right">18,000</td>
+                      <td>いすゞ埼玉サービス</td>
+                      <td>108,900 km</td>
+                    </tr>
+                    <tr data-vehicle="多摩 100 あ 1234" data-type="部品交換">
+                      <td class="font-medium">2025/06/20</td>
+                      <td>多摩 100 あ 1234</td>
+                      <td><span class="badge badge-orange">部品交換</span></td>
+                      <td>タイヤ交換（全輪）</td>
+                      <td>タイヤ 315/80R22.5 x10</td>
+                      <td class="text-right">520,000</td>
+                      <td>タイヤショップ関東</td>
+                      <td>218,400 km</td>
+                    </tr>
+                    <tr data-vehicle="品川 200 か 5678" data-type="3ヶ月点検">
+                      <td class="font-medium">2026/01/15</td>
+                      <td>品川 200 か 5678</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>定期点検</td>
+                      <td>エンジンオイル</td>
+                      <td class="text-right">22,000</td>
+                      <td>日野サービスセンター</td>
+                      <td>186,200 km</td>
+                    </tr>
+                    <tr data-vehicle="足立 300 さ 9012" data-type="3ヶ月点検">
+                      <td class="font-medium">2026/01/20</td>
+                      <td>足立 300 さ 9012</td>
+                      <td><span class="badge badge-blue">3ヶ月点検</span></td>
+                      <td>定期点検、オイル交換</td>
+                      <td>エンジンオイル、オイルフィルター</td>
+                      <td class="text-right">28,000</td>
+                      <td>関東整備工業</td>
+                      <td>152,600 km</td>
+                    </tr>
+                    <tr data-vehicle="横浜 400 た 3456" data-type="車検">
+                      <td class="font-medium">2024/06/01</td>
+                      <td>横浜 400 た 3456</td>
+                      <td><span class="badge badge-blue">車検</span></td>
+                      <td>車検整備一式</td>
+                      <td>ブレーキライニング、ショックアブソーバー</td>
+                      <td class="text-right">428,000</td>
+                      <td>横浜トラック整備</td>
+                      <td>245,300 km</td>
+                    </tr>
+                    <tr data-vehicle="大宮 500 な 7890" data-type="12ヶ月点検">
+                      <td class="font-medium">2025/01/10</td>
+                      <td>大宮 500 な 7890</td>
+                      <td><span class="badge badge-green">12ヶ月点検</span></td>
+                      <td>定期点検一式</td>
+                      <td>エアフィルター、燃料フィルター</td>
+                      <td class="text-right">85,000</td>
+                      <td>いすゞ埼玉サービス</td>
+                      <td>88,200 km</td>
+                    </tr>
+                    <tr data-vehicle="多摩 100 あ 1234" data-type="修理">
+                      <td class="font-medium">2025/09/12</td>
+                      <td>多摩 100 あ 1234</td>
+                      <td><span class="badge badge-red">修理</span></td>
+                      <td>ターボチャージャー修理</td>
+                      <td>ターボ actuator、ガスケット</td>
+                      <td class="text-right">310,000</td>
+                      <td>東京トラックサービス</td>
+                      <td>224,100 km</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: PARTS ==================== -->
+          <div id="page-parts" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                部品・消耗品 残寿命トラッカー
+              </h3>
+              <div class="flex items-center gap-2">
+                <span
+                  class="flex items-center gap-1.5 text-[11px] text-gray-500"
+                  ><span
+                    class="w-3 h-3 rounded-sm"
+                    style="background: #10b981"
+                  ></span
+                  >良好</span
+                >
+                <span
+                  class="flex items-center gap-1.5 text-[11px] text-gray-500"
+                  ><span
+                    class="w-3 h-3 rounded-sm"
+                    style="background: #f59e0b"
+                  ></span
+                  >注意</span
+                >
+                <span
+                  class="flex items-center gap-1.5 text-[11px] text-gray-500"
+                  ><span
+                    class="w-3 h-3 rounded-sm"
+                    style="background: #ef4444"
+                  ></span
+                  >要交換</span
+                >
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-5" id="partsGrid">
+              <!-- Vehicle 1 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      多摩 100 あ 1234
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      いすゞ ギガ — 234,500 km
+                    </p>
+                  </div>
+                  <span class="badge badge-red">要注意</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2025/12/15 / 次回: 2026/03/15</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 15%; background: #ef4444"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-orange-600 font-medium">4.2mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 35%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-orange-600 font-medium">残量 30%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 30%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 28ヶ月</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 53%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-green-600">良好</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 72%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vehicle 2 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      品川 200 か 5678
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      日野 プロフィア — 189,200 km
+                    </p>
+                  </div>
+                  <span class="badge badge-yellow">注意</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2026/01/15 / 次回: 2026/04/15</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 62%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-green-600 font-medium">6.8mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 68%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-orange-600 font-medium">残量 40%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 40%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 14ヶ月</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 76%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-green-600">良好</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 85%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vehicle 3 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      足立 300 さ 9012
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      三菱ふそう スーパーグレート — 156,800 km
+                    </p>
+                  </div>
+                  <span class="badge badge-green">良好</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2026/01/20 / 次回: 2026/04/20</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 55%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-green-600 font-medium">8.1mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 82%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-green-600 font-medium">残量 65%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 65%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 8ヶ月</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 88%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-green-600">良好</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 90%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vehicle 4 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      横浜 400 た 3456
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      UDトラックス クオン — 278,400 km
+                    </p>
+                  </div>
+                  <span class="badge badge-red">要注意</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2025/12/01 / 次回: 2026/03/01</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 5%; background: #ef4444"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-red-600 font-medium">2.8mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 18%; background: #ef4444"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-red-600 font-medium">残量 15%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 15%; background: #ef4444"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 6ヶ月（交換済）</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 92%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-orange-600">要点検</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 28%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vehicle 5 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      大宮 500 な 7890
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      いすゞ フォワード — 112,300 km
+                    </p>
+                  </div>
+                  <span class="badge badge-green">良好</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2026/02/10 / 次回: 2026/05/10</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 68%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-green-600 font-medium">7.5mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 75%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-green-600 font-medium">残量 72%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 72%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 10ヶ月</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 83%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-green-600">良好</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 88%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vehicle 6 -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-800">
+                      川崎 100 は 2345
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      日野 レンジャー — 201,600 km
+                    </p>
+                  </div>
+                  <span class="badge badge-yellow">注意</span>
+                </div>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">エンジンオイル</span
+                      ><span class="text-gray-400"
+                        >前回: 2025/12/20 / 次回: 2026/03/20</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 22%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">タイヤ残溝</span
+                      ><span class="text-orange-600 font-medium">5.0mm</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 45%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">ブレーキパッド</span
+                      ><span class="text-green-600 font-medium">残量 55%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 55%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">バッテリー</span
+                      ><span class="text-gray-500">使用 20ヶ月</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 58%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[12px] mb-1">
+                      <span class="text-gray-600">冷却液</span
+                      ><span class="text-green-600">良好</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style="width: 78%; background: #10b981"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: COST ANALYSIS ==================== -->
+          <div id="page-cost" class="page">
+            <!-- Charts row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  車両別年間整備費
+                </h3>
+                <div style="height: 320px">
+                  <canvas id="costChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  費目別内訳
+                </h3>
+                <div style="height: 320px">
+                  <canvas id="costChart2"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts row 2 -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                車齢別コスト推移
+              </h3>
+              <div style="height: 280px"><canvas id="costChart3"></canvas></div>
+            </div>
+
+            <!-- Replacement judgment table -->
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-5 pb-3">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  車両更新判定
+                </h3>
+                <p class="text-[11px] text-gray-400 mt-1">
+                  修繕費累積が残存価値を超過した車両は更新検討対象
+                </p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl" id="replaceTbl">
+                  <thead>
+                    <tr>
+                      <th onclick="sortTbl('replaceTbl', 0)">
+                        車番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th>車種</th>
+                      <th onclick="sortTbl('replaceTbl', 2)">
+                        車齢 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('replaceTbl', 3)">
+                        修繕費累積 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th onclick="sortTbl('replaceTbl', 4)">
+                        残存価値 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th>判定</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">春日部 300 え 0123</td>
+                      <td>日野 プロフィア</td>
+                      <td>8年4ヶ月</td>
+                      <td class="text-right font-medium text-red-600">
+                        ¥4,850,000
+                      </td>
+                      <td class="text-right">¥1,200,000</td>
+                      <td><span class="badge badge-red">更新推奨</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">多摩 100 あ 1234</td>
+                      <td>いすゞ ギガ</td>
+                      <td>7年11ヶ月</td>
+                      <td class="text-right font-medium text-red-600">
+                        ¥3,920,000
+                      </td>
+                      <td class="text-right">¥1,800,000</td>
+                      <td><span class="badge badge-red">更新推奨</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">横浜 400 た 3456</td>
+                      <td>UDトラックス クオン</td>
+                      <td>6年4ヶ月</td>
+                      <td class="text-right font-medium text-orange-600">
+                        ¥2,680,000
+                      </td>
+                      <td class="text-right">¥2,500,000</td>
+                      <td><span class="badge badge-orange">要検討</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">品川 200 か 5678</td>
+                      <td>日野 プロフィア</td>
+                      <td>6年7ヶ月</td>
+                      <td class="text-right">¥2,150,000</td>
+                      <td class="text-right">¥2,800,000</td>
+                      <td><span class="badge badge-yellow">経過観察</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">川崎 100 は 2345</td>
+                      <td>日野 レンジャー</td>
+                      <td>5年9ヶ月</td>
+                      <td class="text-right">¥1,560,000</td>
+                      <td class="text-right">¥3,200,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">足立 300 さ 9012</td>
+                      <td>三菱ふそう スーパーグレート</td>
+                      <td>6年2ヶ月</td>
+                      <td class="text-right">¥1,890,000</td>
+                      <td class="text-right">¥3,500,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">八王子 100 い 2345</td>
+                      <td>UDトラックス コンドル</td>
+                      <td>4年8ヶ月</td>
+                      <td class="text-right">¥980,000</td>
+                      <td class="text-right">¥4,100,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">大宮 500 な 7890</td>
+                      <td>いすゞ フォワード</td>
+                      <td>5年0ヶ月</td>
+                      <td class="text-right">¥820,000</td>
+                      <td class="text-right">¥3,800,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">習志野 200 ま 6789</td>
+                      <td>三菱ふそう ファイター</td>
+                      <td>4年1ヶ月</td>
+                      <td class="text-right">¥650,000</td>
+                      <td class="text-right">¥4,500,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">所沢 300 や 0123</td>
+                      <td>いすゞ エルフ</td>
+                      <td>2年10ヶ月</td>
+                      <td class="text-right">¥280,000</td>
+                      <td class="text-right">¥5,200,000</td>
+                      <td><span class="badge badge-green">継続使用</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: SETTINGS ==================== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl">
+              <!-- Vehicle master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="truck"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >車両マスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="tbl text-[12px]">
+                    <thead>
+                      <tr>
+                        <th>車番</th>
+                        <th>車種</th>
+                        <th>初年度登録</th>
+                        <th>最大積載量</th>
+                        <th>燃料</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>多摩 100 あ 1234</td>
+                        <td>いすゞ ギガ</td>
+                        <td>2018/04</td>
+                        <td>13t</td>
+                        <td>軽油</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>品川 200 か 5678</td>
+                        <td>日野 プロフィア</td>
+                        <td>2019/08</td>
+                        <td>13t</td>
+                        <td>軽油</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>足立 300 さ 9012</td>
+                        <td>三菱ふそう スーパーグレート</td>
+                        <td>2020/01</td>
+                        <td>13t</td>
+                        <td>軽油</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>横浜 400 た 3456</td>
+                        <td>UDトラックス クオン</td>
+                        <td>2019/11</td>
+                        <td>10t</td>
+                        <td>軽油</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>大宮 500 な 7890</td>
+                        <td>いすゞ フォワード</td>
+                        <td>2021/03</td>
+                        <td>4t</td>
+                        <td>軽油</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  class="mt-3 inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg border hover:bg-gray-50"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="plus" class="w-3 h-3"></i>車両追加
+                </button>
+              </div>
+
+              <!-- Maintenance shop master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="building-2"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >整備工場マスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="tbl text-[12px]">
+                    <thead>
+                      <tr>
+                        <th>工場名</th>
+                        <th>所在地</th>
+                        <th>電話番号</th>
+                        <th>対応車種</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>東京トラックサービス</td>
+                        <td>東京都多摩市</td>
+                        <td>042-XXX-XXXX</td>
+                        <td>全車種</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>日野サービスセンター</td>
+                        <td>東京都品川区</td>
+                        <td>03-XXXX-XXXX</td>
+                        <td>日野</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>関東整備工業</td>
+                        <td>埼玉県草加市</td>
+                        <td>048-XXX-XXXX</td>
+                        <td>全車種</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>横浜トラック整備</td>
+                        <td>神奈川県横浜市</td>
+                        <td>045-XXX-XXXX</td>
+                        <td>全車種</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>いすゞ埼玉サービス</td>
+                        <td>埼玉県さいたま市</td>
+                        <td>048-XXX-XXXX</td>
+                        <td>いすゞ</td>
+                        <td>
+                          <button
+                            class="text-[11px] text-blue-600 hover:underline"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  class="mt-3 inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg border hover:bg-gray-50"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="plus" class="w-3 h-3"></i>工場追加
+                </button>
+              </div>
+
+              <!-- Inspection schedule template -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="calendar-clock"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >点検スケジュールテンプレート
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        3ヶ月点検
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        法定点検 — 日常点検項目 + エンジン周り
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[12px] text-gray-500">周期: 3ヶ月</span>
+                      <button class="text-[11px] text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        12ヶ月点検
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        法定点検 — 全項目詳細点検
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[12px] text-gray-500"
+                        >周期: 12ヶ月</span
+                      >
+                      <button class="text-[11px] text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">車検</p>
+                      <p class="text-[11px] text-gray-400">
+                        継続検査 — 事業用: 1年 / 自家用: 2年
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[12px] text-gray-500"
+                        >周期: 12ヶ月</span
+                      >
+                      <button class="text-[11px] text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alert notification settings -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >アラート通知設定
+                </h3>
+                <div class="space-y-4">
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        車検期限アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        期限の90日前・60日前・30日前に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        定期点検リマインダー
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        次回点検予定の14日前・7日前に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        消耗品警告
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        残寿命30%以下で通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        メール通知
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        管理者メールに通知を送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        Slack連携
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        Slackチャンネルにアラートを送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium hover:opacity-90"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ========== Navigation ==========
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "車両整備状況の概要",
+        },
+        { id: "inspection", title: "車検管理", desc: "車検期限と予約状況" },
+        { id: "maintenance", title: "定期点検", desc: "点検スケジュール管理" },
+        { id: "history", title: "整備履歴", desc: "過去の整備記録" },
+        { id: "parts", title: "部品・消耗品", desc: "消耗品の残寿命管理" },
+        { id: "cost", title: "コスト分析", desc: "整備コストの可視化" },
+        { id: "settings", title: "設定", desc: "マスタ・通知設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      // ========== Table Sort ==========
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(
+          b.querySelectorAll("tr:not(.expand-content-row)"),
+        );
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.\-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.\-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => {
+          b.appendChild(r);
+          // Move expand row too if present
+          const next = r.nextElementSibling;
+          if (r.classList.contains("expand-btn")) {
+            const expandRow = document.querySelector(".expand-content-row");
+          }
+        });
+      }
+
+      // ========== Expand/Collapse for Maintenance ==========
+      function toggleExpand(row) {
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains("expand-content-row")) {
+          next.style.display = next.style.display === "none" ? "" : "none";
+        }
+      }
+
+      // ========== Inspection Tab Toggle ==========
+      function showInspTab(tab, btn) {
+        document.getElementById("insp-table").style.display =
+          tab === "table" ? "" : "none";
+        document.getElementById("insp-calendar").style.display =
+          tab === "calendar" ? "" : "none";
+        btn.parentElement
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+
+      // ========== History Filter ==========
+      function filterHistory() {
+        const vehicle = document.getElementById("histFilterVehicle").value;
+        const type = document.getElementById("histFilterType").value;
+        document.querySelectorAll("#histTbl tbody tr").forEach((row) => {
+          const vMatch = !vehicle || row.dataset.vehicle === vehicle;
+          const tMatch = !type || row.dataset.type === type;
+          row.style.display = vMatch && tMatch ? "" : "none";
+        });
+      }
+
+      // ========== Chart Defaults ==========
+      Chart.defaults.font.family = "'Inter','Noto Sans JP',sans-serif";
+      Chart.defaults.font.size = 11;
+
+      // ========== Dashboard Charts ==========
+      // Monthly maintenance cost (bar)
+      charts.push(
+        new Chart(document.getElementById("dashChart1"), {
+          type: "bar",
+          data: {
+            labels: [
+              "4月",
+              "5月",
+              "6月",
+              "7月",
+              "8月",
+              "9月",
+              "10月",
+              "11月",
+              "12月",
+              "1月",
+              "2月",
+              "3月",
+            ],
+            datasets: [
+              {
+                label: "整備費(万円)",
+                data: [142, 68, 95, 52, 198, 78, 156, 85, 45, 120, 88, 113],
+                backgroundColor: "#065f46",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { callback: (v) => v + "万" },
+              },
+              x: { grid: { display: false } },
+            },
+          },
+        }),
+      );
+
+      // Vehicle type doughnut
+      charts.push(
+        new Chart(document.getElementById("dashChart2"), {
+          type: "doughnut",
+          data: {
+            labels: ["大型トラック", "中型トラック", "小型トラック", "その他"],
+            datasets: [
+              {
+                data: [8, 6, 3, 1],
+                backgroundColor: ["#065f46", "#10b981", "#6ee7b7", "#d1fae5"],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      // ========== Cost Analysis Charts ==========
+      // Vehicle-wise annual cost (horizontal bar)
+      charts.push(
+        new Chart(document.getElementById("costChart1"), {
+          type: "bar",
+          data: {
+            labels: [
+              "多摩100あ1234",
+              "品川200か5678",
+              "横浜400た3456",
+              "足立300さ9012",
+              "川崎100は2345",
+              "大宮500な7890",
+              "春日部300え0123",
+              "習志野200ま6789",
+              "所沢300や0123",
+              "八王子100い2345",
+            ],
+            datasets: [
+              {
+                label: "年間整備費(万円)",
+                data: [185, 98, 142, 88, 72, 65, 210, 48, 35, 55],
+                backgroundColor: "#065f46",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { callback: (v) => v + "万" },
+              },
+              y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      // Expense breakdown (pie)
+      charts.push(
+        new Chart(document.getElementById("costChart2"), {
+          type: "pie",
+          data: {
+            labels: ["車検", "定期点検", "修理", "部品交換", "タイヤ"],
+            datasets: [
+              {
+                data: [320, 185, 380, 210, 145],
+                backgroundColor: [
+                  "#065f46",
+                  "#10b981",
+                  "#ef4444",
+                  "#f59e0b",
+                  "#6366f1",
+                ],
+                borderWidth: 2,
+                borderColor: "#fff",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      // Age-based cost trend (line)
+      charts.push(
+        new Chart(document.getElementById("costChart3"), {
+          type: "line",
+          data: {
+            labels: [
+              "1年目",
+              "2年目",
+              "3年目",
+              "4年目",
+              "5年目",
+              "6年目",
+              "7年目",
+              "8年目",
+              "9年目",
+              "10年目",
+            ],
+            datasets: [
+              {
+                label: "平均年間整備費(万円)",
+                data: [12, 18, 28, 45, 68, 95, 135, 185, 240, 310],
+                borderColor: "#065f46",
+                backgroundColor: "#065f4620",
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#065f46",
+              },
+              {
+                label: "残存価値(万円)",
+                data: [900, 780, 650, 520, 400, 300, 220, 150, 100, 60],
+                borderColor: "#10b981",
+                backgroundColor: "#10b98120",
+                fill: false,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#10b981",
+                borderDash: [5, 5],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { callback: (v) => v + "万" },
+              },
+              x: { grid: { display: false } },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
