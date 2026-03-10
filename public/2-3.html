@@ -1,102 +1,2615 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>品質管理の紙運用 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>製造業 品質管理統合システム | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              pri: {
+                50: "#fdf2f0",
+                100: "#fce4df",
+                500: "#b45309",
+                700: "#7c2d12",
+                800: "#6c2710",
+                900: "#4a1c0c",
+              },
+              ok: { 50: "#ecfdf5", 500: "#10b981", 700: "#047857" },
+              ng: { 50: "#fef2f2", 500: "#ef4444", 700: "#b91c1c" },
+              warn: { 50: "#fffbeb", 500: "#f59e0b", 700: "#b45309" },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        font-family:
+          "Plus Jakarta Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-group-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.4;
+        padding: 12px 16px 4px;
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-orange {
+        background: #ffedd5;
+        color: #9a3412;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e3a8a;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .badge-purple {
+        background: #ede9fe;
+        color: #5b21b6;
+      }
+      .badge-amber {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-teal {
+        background: #ccfbf1;
+        color: #134e4a;
+      }
+      .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        transform: translateY(-1px);
+      }
+      .tbl {
+        width: 100%;
+        font-size: 13px;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      .tbl th {
+        background: #f8fafc;
+        font-weight: 600;
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .tbl td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+      }
+      .tbl tr:hover td {
+        background: #f8fafc;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #7c2d12;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #6c2710;
+      }
+      .btn-outline {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: #fff;
+      }
+      .btn-outline:hover {
+        background: #f9fafb;
+      }
+      .btn-success {
+        background: #10b981;
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #059669;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .tab-btn.active {
+        color: #7c2d12;
+        border-bottom-color: #7c2d12;
+      }
+      .tab-btn:hover:not(.active) {
+        color: #334155;
+      }
+      .filter-chip {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: #fff;
+        color: #64748b;
+      }
+      .filter-chip.active {
+        background: #7c2d12;
+        color: #fff;
+        border-color: #7c2d12;
+      }
+      .filter-chip:hover:not(.active) {
+        border-color: #94a3b8;
+      }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .modal-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .verdict-ok {
+        background: #ecfdf5;
+        border: 2px solid #10b981;
+        color: #065f46;
+      }
+      .verdict-ng {
+        background: #fef2f2;
+        border: 2px solid #ef4444;
+        color: #991b1b;
+      }
+      .verdict-hold {
+        background: #fffbeb;
+        border: 2px solid #f59e0b;
+        color: #92400e;
+      }
+      .trace-line {
+        position: relative;
+        padding-left: 28px;
+      }
+      .trace-line::before {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+      }
+      .trace-dot {
+        position: absolute;
+        left: 5px;
+        top: 6px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[220px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #7c2d12"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 12l2 2 4-4" />
+                <circle cx="12" cy="12" r="10" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">品質管理統合</p>
+              <p class="text-[10px] opacity-40 truncate">Manufacturing QMS</p>
+            </div>
+          </div>
+        </div>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">品質管理の紙運用</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="check-square" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">チェックリスト</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="folder" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+        <nav class="flex-1 p-2 overflow-y-auto">
+          <div class="nav-group-title">概要</div>
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('dashboard')"
+            ><i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">進捗とカテゴリ分析</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#7c2d12"></div><div class="w-0.5 flex-1 mx-auto" style="background:#7c2d12"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">計画策定</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/09</p><p class="text-[12px] text-gray-500 mt-1">管理計画の策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#7c2d12"></div><div class="w-0.5 flex-1 mx-auto" style="background:#7c2d12"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">日次点検</p><p class="text-[11px] text-gray-400 mt-0.5">2026/02/10</p><p class="text-[12px] text-gray-500 mt-1">日常チェックの実施</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">是正対応</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/06</p><p class="text-[12px] text-gray-500 mt-1">指摘事項の改善</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">教育実施</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/14</p><p class="text-[12px] text-gray-500 mt-1">関連教育・訓練</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別品質管理比較</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">検査完了率</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">72%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +1pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">未実施項目</span><i data-lucide="circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">7件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">要是正</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">0件</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">検査実施数</span><i data-lucide="clipboard-list" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">49件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +4</div></div></div></div>
-<div id="page-feature" class="page"><div class="card p-5 mb-5"><div class="flex items-center justify-between mb-3"><div><span class="text-[13px] text-gray-500">完了率</span><span id="clPct" class="text-lg font-bold ml-2" style="color:#7c2d12">70%</span></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="send" class="w-4 h-4"></i>完了報告</button></div><div class="w-full bg-gray-100 rounded-full h-2.5"><div id="clBar" class="h-2.5 rounded-full transition-all" style="width:70%;background:#7c2d12"></div></div></div><div class="card p-4 mb-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="check-square" class="w-4 h-4" style="color:#7c2d12"></i><h4 class="font-semibold text-[13px] text-gray-700">始業点検</h4></div><div class="space-y-0.5"><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 1-1</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 1-2</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 1-3</span></label></div></div><div class="card p-4 mb-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="check-square" class="w-4 h-4" style="color:#7c2d12"></i><h4 class="font-semibold text-[13px] text-gray-700">品質検査</h4></div><div class="space-y-0.5"><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 2-1</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 2-2</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 2-3</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 2-4</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 2-5</span></label></div></div><div class="card p-4 mb-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="check-square" class="w-4 h-4" style="color:#7c2d12"></i><h4 class="font-semibold text-[13px] text-gray-700">安全確認</h4></div><div class="space-y-0.5"><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-1</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-2</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-3</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-4</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-5</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 3-6</span></label></div></div><div class="card p-4 mb-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="check-square" class="w-4 h-4" style="color:#7c2d12"></i><h4 class="font-semibold text-[13px] text-gray-700">出荷検査</h4></div><div class="space-y-0.5"><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-1</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox"  onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-2</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-3</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-4</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-5</span></label><label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><input type="checkbox" checked onchange="updateCL()" class="w-[18px] h-[18px] rounded accent-current" style="accent-color:#7c2d12"><span class="text-[13px] text-gray-700">確認項目 4-6</span></label></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="accSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div class="space-y-3"><details class="card overflow-hidden" open><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#7c2d12"></i><span class="font-semibold text-[13px] text-gray-700">生産技術課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">3件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400">#1275 · 2026/02/17</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">検査中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400">#1531 · 2026/02/05</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400">#1937 · 2026/02/05</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">停止中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#7c2d12"></i><span class="font-semibold text-[13px] text-gray-700">製造1課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">3件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400">#7081 · 2026/02/22</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">停止中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400">#9266 · 2026/01/14</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400">#5671 · 2026/03/16</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">検査中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#7c2d12"></i><span class="font-semibold text-[13px] text-gray-700">購買課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">4件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400">#6514 · 2026/01/27</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400">#3853 · 2026/03/26</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400">#2317 · 2026/01/13</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400">#1075 · 2026/02/03</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">検査中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#7c2d12"></i><span class="font-semibold text-[13px] text-gray-700">品質管理課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">2件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400">#5243 · 2026/02/25</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400">#6654 · 2026/03/07</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div></div></details></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#7c2d12"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#7c2d12"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><div class="flex gap-2"><button class="text-[12px] px-3 py-1.5 rounded-lg text-white cursor-pointer transition-colors" style=background:#7c2d12>月次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >週次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >日次</button></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次品質管理推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">品質管理種別構成</h3><div style="height:240px"><canvas id="rpC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別品質管理比較</h3><div style="height:240px"><canvas id="rpC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">品質管理管理指標</h3><div style="height:240px"><canvas id="rpC4"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+          <div class="nav-group-title">検査</div>
+          <a
+            data-page="incoming"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('incoming')"
+            ><i data-lucide="package-check" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">受入検査</span></a
+          >
+          <a
+            data-page="inprocess"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('inprocess')"
+            ><i data-lucide="scan-line" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">工程内検査</span></a
+          >
+          <a
+            data-page="final"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('final')"
+            ><i data-lucide="package-search" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">出荷検査</span></a
+          >
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "進捗とカテゴリ分析"}, {"id": "feature", "title": "チェックリスト", "desc": "確認・検査"}, {"id": "data", "title": "データ一覧", "desc": "グループ表示"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "分析・集計"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+          <div class="nav-group-title">品質保証</div>
+          <a
+            data-page="ncr"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('ncr')"
+            ><i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">不良・CAPA</span
+            ><span
+              class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              >5</span
+            ></a
+          >
+          <a
+            data-page="trace"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('trace')"
+            ><i data-lucide="git-branch" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">トレーサビリティ</span></a
+          >
+          <a
+            data-page="calibration"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('calibration')"
+            ><i data-lucide="ruler" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">計測器管理</span></a
+          >
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "bar", "data": {"labels": ["ライン1", "ライン2", "ライン3", "ライン4", "ライン5", "ライン6"], "datasets": [{"label": "実績", "data": [41, 57, 16, 29, 14, 39], "backgroundColor": "#7c2d12", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}, "indexAxis": "y"}));
+          <div class="nav-group-title">分析</div>
+          <a
+            data-page="spc"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('spc')"
+            ><i data-lucide="trending-up" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">SPC</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">レポート</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('settings')"
+            ><i data-lucide="settings" class="w-4 h-4 shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
 
-// feature
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              品
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">品質管理部</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-function updateCL(){const all=document.querySelectorAll('#page-feature input[type=checkbox]');
-const c=[...all].filter(x=>x.checked).length;const pct=Math.round(c/all.length*100);
-document.getElementById('clPct').textContent=pct+'%';
-document.getElementById('clBar').style.width=pct+'%';}
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              品質KPI・検査状況・アラート
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-gray-400" id="currentTime"></span>
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #fce4df; color: #7c2d12"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ========== 1. DASHBOARD ========== -->
+          <div id="page-dashboard" class="page active">
+            <div class="space-y-2 mb-5">
+              <div
+                class="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3"
+              >
+                <i
+                  data-lucide="alert-triangle"
+                  class="w-5 h-5 text-red-500 shrink-0"
+                ></i>
+                <div class="flex-1">
+                  <p class="text-[13px] font-medium text-red-800">
+                    Lot #2403-B17 — 出荷検査NG。是正処置未着手
+                  </p>
+                  <p class="text-[11px] text-red-600 mt-0.5">
+                    製品: フランジボルトM12 / 外径寸法公差外 / 検出: 3/8
+                  </p>
+                </div>
+                <button
+                  class="btn btn-outline text-[11px] py-1 px-3 shrink-0"
+                  onclick="nav('ncr')"
+                >
+                  対応する
+                </button>
+              </div>
+              <div
+                class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3"
+              >
+                <i
+                  data-lucide="ruler"
+                  class="w-5 h-5 text-amber-500 shrink-0"
+                ></i>
+                <div class="flex-1">
+                  <p class="text-[13px] font-medium text-amber-800">
+                    計測器校正期限 — 3台が14日以内
+                  </p>
+                  <p class="text-[11px] text-amber-600 mt-0.5">
+                    マイクロメータ #MC-017, ノギス #CL-042, 三次元測定機
+                    #CMM-003
+                  </p>
+                </div>
+                <button
+                  class="btn btn-outline text-[11px] py-1 px-3 shrink-0"
+                  onclick="nav('calibration')"
+                >
+                  確認
+                </button>
+              </div>
+            </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [22, 51, 64, 32, 36, 35, 33, 64, 53, 68, 76, 45], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1215", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["材料費", "加工費", "設備費", "人件費", "その他"], "datasets": [{"data": [29, 24, 18, 29, 15], "backgroundColor": ["#7c2d12", "#ea580c", "#7c2d1260", "#ea580c60", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("rpC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [22, 51, 64, 32, 36, 35], "backgroundColor": "#7c2d12", "borderRadius": 4}, {"label": "前期", "data": [41, 57, 16, 29, 14, 39], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC4"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "スコア", "data": [41, 57, 16, 29, 14, 39], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">98.4%</div>
+                  <div class="text-[11px] text-gray-400">合格率（今月）</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="x-circle" class="w-5 h-5 text-red-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">
+                    23<span class="text-[13px] font-normal text-gray-400"
+                      >件</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-red-500">不良件数</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #7c2d1210"
+                >
+                  <i
+                    data-lucide="clipboard-check"
+                    class="w-5 h-5"
+                    style="color: #7c2d12"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">1,847</div>
+                  <div class="text-[11px] text-gray-400">検査実施数</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-5 h-5 text-amber-500"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-amber-600">5</div>
+                  <div class="text-[11px] text-amber-500">未完了CAPA</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="timer" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-blue-600">
+                    &lt;3<span class="text-[13px] font-normal text-gray-400"
+                      >秒</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-blue-600">トレース所要時間</div>
+                </div>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  日別不良率推移
+                </h3>
+                <div style="height: 220px"><canvas id="dashC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  不良要因パレート
+                </h3>
+                <div style="height: 220px"><canvas id="dashC2"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  検査ステータス（本日）
+                </h3>
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">受入検査</span>
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-32 h-2.5 bg-gray-100 rounded-full overflow-hidden"
+                      >
+                        <div
+                          class="h-full bg-emerald-500 rounded-full"
+                          style="width: 85%"
+                        ></div>
+                      </div>
+                      <span class="text-[11px] font-medium text-gray-600"
+                        >34/40</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">工程内検査</span>
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-32 h-2.5 bg-gray-100 rounded-full overflow-hidden"
+                      >
+                        <div
+                          class="h-full bg-emerald-500 rounded-full"
+                          style="width: 72%"
+                        ></div>
+                      </div>
+                      <span class="text-[11px] font-medium text-gray-600"
+                        >58/80</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">出荷検査</span>
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-32 h-2.5 bg-gray-100 rounded-full overflow-hidden"
+                      >
+                        <div
+                          class="h-full bg-emerald-500 rounded-full"
+                          style="width: 60%"
+                        ></div>
+                      </div>
+                      <span class="text-[11px] font-medium text-gray-600"
+                        >18/30</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t grid grid-cols-3 gap-2 text-center"
+                >
+                  <div>
+                    <span class="text-[18px] font-bold text-emerald-600"
+                      >107</span
+                    >
+                    <p class="text-[10px] text-gray-400">合格</p>
+                  </div>
+                  <div>
+                    <span class="text-[18px] font-bold text-red-500">3</span>
+                    <p class="text-[10px] text-gray-400">不合格</p>
+                  </div>
+                  <div>
+                    <span class="text-[18px] font-bold text-gray-400">40</span>
+                    <p class="text-[10px] text-gray-400">未実施</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                直近のアクティビティ
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div
+                  class="flex gap-3 items-start p-3 rounded-lg bg-emerald-50"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="check" class="w-4 h-4 text-emerald-700"></i>
+                  </div>
+                  <div>
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">受入検査合格</span>
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      Lot #2403-C04 · SUS304丸棒 · 9:15
+                    </p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-start p-3 rounded-lg bg-red-50">
+                  <div
+                    class="w-8 h-8 rounded-full bg-red-200 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="x" class="w-4 h-4 text-red-700"></i>
+                  </div>
+                  <div>
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">工程内検査NG</span>
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      Lot #2403-A22 · 表面粗さ規格外 · 8:50
+                    </p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-start p-3 rounded-lg bg-blue-50">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center shrink-0"
+                  >
+                    <i
+                      data-lucide="git-branch"
+                      class="w-4 h-4 text-blue-700"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">トレース実行</span>
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      Lot #2403-B17 → 材料〜出荷 · 8:30
+                    </p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-start p-3 rounded-lg bg-amber-50">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="wrench" class="w-4 h-4 text-amber-700"></i>
+                  </div>
+                  <div>
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">CAPA完了</span>
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      NCR-2403-012 · 刃具摩耗対策 · 昨日
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 2. INCOMING INSPECTION ========== -->
+          <div id="page-incoming" class="page">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i
+                  ><input
+                    type="text"
+                    placeholder="Lot番号・品名・仕入先..."
+                    class="pl-10 pr-4 py-2 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100 w-64"
+                    oninput="filterTbl('incomingTbl', this.value)"
+                  />
+                </div>
+                <button class="filter-chip active" onclick="chip(this)">
+                  すべて
+                </button>
+                <button class="filter-chip" onclick="chip(this)">合格</button>
+                <button class="filter-chip" onclick="chip(this)">不合格</button>
+                <button class="filter-chip" onclick="chip(this)">保留</button>
+              </div>
+              <button class="btn btn-primary" onclick="showModal('inspModal')">
+                <i data-lucide="plus" class="w-4 h-4"></i>検査記録作成
+              </button>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 230px)"
+              >
+                <table class="tbl" id="incomingTbl">
+                  <thead>
+                    <tr>
+                      <th>Lot番号</th>
+                      <th>品名</th>
+                      <th>仕入先</th>
+                      <th>数量</th>
+                      <th>検査項目</th>
+                      <th>検査日</th>
+                      <th>検査者</th>
+                      <th>判定</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">2403-C04</td>
+                      <td>SUS304 丸棒 φ20</td>
+                      <td>日本金属工業</td>
+                      <td>500本</td>
+                      <td>外径・硬度・ミルシート</td>
+                      <td>3/10</td>
+                      <td>鈴木</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-C03</td>
+                      <td>SCM435 六角ボルトM10</td>
+                      <td>大阪螺子製造</td>
+                      <td>10,000個</td>
+                      <td>外観・寸法・引張強度</td>
+                      <td>3/10</td>
+                      <td>田中</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-C02</td>
+                      <td>A5052 アルミ板 t3.0</td>
+                      <td>住友軽金属</td>
+                      <td>200枚</td>
+                      <td>板厚・外観・成績表</td>
+                      <td>3/9</td>
+                      <td>鈴木</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-red-50/40">
+                      <td class="font-medium text-red-600">2403-C01</td>
+                      <td>SS400 フラットバー</td>
+                      <td>東京鋼材</td>
+                      <td>300本</td>
+                      <td>寸法・平坦度・錆</td>
+                      <td>3/9</td>
+                      <td>田中</td>
+                      <td><span class="badge badge-red">不合格</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-B22</td>
+                      <td>NBR Oリング P-20</td>
+                      <td>パッキンランド</td>
+                      <td>5,000個</td>
+                      <td>外径・内径・硬度</td>
+                      <td>3/8</td>
+                      <td>鈴木</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td class="font-medium text-amber-600">2403-B21</td>
+                      <td>S45C 丸棒 φ50</td>
+                      <td>大同特殊鋼</td>
+                      <td>100本</td>
+                      <td>外径・硬度・成分分析</td>
+                      <td>3/8</td>
+                      <td>田中</td>
+                      <td><span class="badge badge-amber">保留</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 3. IN-PROCESS INSPECTION ========== -->
+          <div id="page-inprocess" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button class="filter-chip active" onclick="chip(this)">
+                  すべて
+                </button>
+                <button class="filter-chip" onclick="chip(this)">切削</button>
+                <button class="filter-chip" onclick="chip(this)">溶接</button>
+                <button class="filter-chip" onclick="chip(this)">
+                  表面処理
+                </button>
+                <button class="filter-chip" onclick="chip(this)">組立</button>
+              </div>
+              <button class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>検査記録
+              </button>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-gray-400 block">本日検査数</span
+                ><span class="text-lg font-bold" style="color: #7c2d12"
+                  >58</span
+                >
+              </div>
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-emerald-500 block">合格</span
+                ><span class="text-lg font-bold text-emerald-600">55</span>
+              </div>
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-red-500 block">不合格</span
+                ><span class="text-lg font-bold text-red-600">2</span>
+              </div>
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-gray-400 block">合格率</span
+                ><span class="text-lg font-bold text-gray-800">94.8%</span>
+              </div>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 310px)"
+              >
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Lot番号</th>
+                      <th>製品名</th>
+                      <th>工程</th>
+                      <th>検査項目</th>
+                      <th>規格値</th>
+                      <th>実測値</th>
+                      <th>検査日時</th>
+                      <th>判定</th>
+                      <th>備考</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">2403-A25</td>
+                      <td>シャフト A</td>
+                      <td><span class="badge badge-teal">旋盤加工</span></td>
+                      <td>外径 φ25</td>
+                      <td>25.00 ±0.02</td>
+                      <td class="font-medium text-emerald-600">25.01</td>
+                      <td>3/10 09:30</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-A25</td>
+                      <td>シャフト A</td>
+                      <td><span class="badge badge-teal">旋盤加工</span></td>
+                      <td>表面粗さ Ra</td>
+                      <td>≤ 1.6μm</td>
+                      <td class="font-medium text-emerald-600">1.2</td>
+                      <td>3/10 09:35</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                    <tr class="bg-red-50/40">
+                      <td class="font-medium text-red-600">2403-A22</td>
+                      <td>ブラケット B</td>
+                      <td><span class="badge badge-purple">フライス</span></td>
+                      <td>表面粗さ Ra</td>
+                      <td>≤ 3.2μm</td>
+                      <td class="font-medium text-red-600">4.1</td>
+                      <td>3/10 08:50</td>
+                      <td><span class="badge badge-red">NG</span></td>
+                      <td>刃具摩耗の疑い</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-A24</td>
+                      <td>ハウジング C</td>
+                      <td><span class="badge badge-blue">溶接</span></td>
+                      <td>ビード外観</td>
+                      <td>目視基準</td>
+                      <td class="font-medium text-emerald-600">良好</td>
+                      <td>3/10 08:20</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-A24</td>
+                      <td>ハウジング C</td>
+                      <td><span class="badge badge-blue">溶接</span></td>
+                      <td>溶接強度</td>
+                      <td>≥ 350MPa</td>
+                      <td class="font-medium text-emerald-600">382</td>
+                      <td>3/10 08:25</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-A23</td>
+                      <td>カバー D</td>
+                      <td><span class="badge badge-orange">めっき</span></td>
+                      <td>膜厚</td>
+                      <td>8 ±2 μm</td>
+                      <td class="font-medium text-emerald-600">8.5</td>
+                      <td>3/9 16:40</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2403-A23</td>
+                      <td>カバー D</td>
+                      <td><span class="badge badge-orange">めっき</span></td>
+                      <td>塩水噴霧 48h</td>
+                      <td>錆なし</td>
+                      <td class="font-medium text-emerald-600">合格</td>
+                      <td>3/9 16:45</td>
+                      <td><span class="badge badge-green">OK</span></td>
+                      <td>—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 4. FINAL INSPECTION ========== -->
+          <div id="page-final" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button class="filter-chip active" onclick="chip(this)">
+                  すべて
+                </button>
+                <button class="filter-chip" onclick="chip(this)">合格</button>
+                <button class="filter-chip" onclick="chip(this)">不合格</button>
+                <button class="filter-chip" onclick="chip(this)">検査中</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-outline">
+                  <i data-lucide="download" class="w-4 h-4"></i>検査成績表PDF
+                </button>
+                <button class="btn btn-primary">
+                  <i data-lucide="plus" class="w-4 h-4"></i>出荷検査
+                </button>
+              </div>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 230px)"
+              >
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>出荷Lot</th>
+                      <th>製品名</th>
+                      <th>出荷先</th>
+                      <th>数量</th>
+                      <th>検査項目数</th>
+                      <th>合格項目</th>
+                      <th>検査日</th>
+                      <th>判定</th>
+                      <th>成績表</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">SH-2403-018</td>
+                      <td>油圧シリンダ Assy</td>
+                      <td>トヨタ自動車</td>
+                      <td>50台</td>
+                      <td>12</td>
+                      <td>12/12</td>
+                      <td>3/10</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button class="btn btn-outline py-1 px-2 text-[11px]">
+                          <i data-lucide="file-text" class="w-3 h-3"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">SH-2403-017</td>
+                      <td>精密シャフト Assy</td>
+                      <td>デンソー</td>
+                      <td>200本</td>
+                      <td>8</td>
+                      <td>8/8</td>
+                      <td>3/9</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button class="btn btn-outline py-1 px-2 text-[11px]">
+                          <i data-lucide="file-text" class="w-3 h-3"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-red-50/40">
+                      <td class="font-medium text-red-600">SH-2403-016</td>
+                      <td>フランジボルトM12 Assy</td>
+                      <td>ダイキン工業</td>
+                      <td>1,000個</td>
+                      <td>6</td>
+                      <td class="text-red-600 font-medium">5/6</td>
+                      <td>3/8</td>
+                      <td><span class="badge badge-red">不合格</span></td>
+                      <td>
+                        <button class="btn btn-outline py-1 px-2 text-[11px]">
+                          <i data-lucide="file-text" class="w-3 h-3"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">SH-2403-015</td>
+                      <td>ギアボックス Assy</td>
+                      <td>川崎重工</td>
+                      <td>30台</td>
+                      <td>15</td>
+                      <td>15/15</td>
+                      <td>3/7</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button class="btn btn-outline py-1 px-2 text-[11px]">
+                          <i data-lucide="file-text" class="w-3 h-3"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">SH-2403-014</td>
+                      <td>ベアリングハウジング</td>
+                      <td>NSK</td>
+                      <td>100個</td>
+                      <td>10</td>
+                      <td>10/10</td>
+                      <td>3/7</td>
+                      <td><span class="badge badge-green">合格</span></td>
+                      <td>
+                        <button class="btn btn-outline py-1 px-2 text-[11px]">
+                          <i data-lucide="file-text" class="w-3 h-3"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 5. NCR / CAPA ========== -->
+          <div id="page-ncr" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button class="filter-chip active" onclick="chip(this)">
+                  すべて <span class="ml-1 text-[10px] opacity-60">12</span>
+                </button>
+                <button class="filter-chip" onclick="chip(this)">
+                  未着手
+                  <span
+                    class="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1"
+                    >2</span
+                  >
+                </button>
+                <button class="filter-chip" onclick="chip(this)">
+                  是正中 <span class="ml-1 text-[10px] opacity-60">3</span>
+                </button>
+                <button class="filter-chip" onclick="chip(this)">
+                  完了 <span class="ml-1 text-[10px] opacity-60">7</span>
+                </button>
+              </div>
+              <button class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>NCR起票
+              </button>
+            </div>
+            <div class="space-y-3">
+              <div class="card p-4 border-l-4 border-l-red-500">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-red">未着手</span
+                      ><span class="text-[11px] text-gray-400"
+                        >NCR-2403-015</span
+                      >
+                    </div>
+                    <p class="text-[14px] font-medium text-gray-800">
+                      フランジボルトM12 外径寸法公差外
+                    </p>
+                    <p class="text-[12px] text-gray-500 mt-1">
+                      Lot #2403-B17 · 出荷検査で検出 · 外径 12.08mm（規格:
+                      12.00±0.05）
+                    </p>
+                    <div class="flex items-center gap-4 mt-2">
+                      <span class="text-[11px] text-gray-400">発生: 3/8</span
+                      ><span class="text-[11px] text-gray-400">担当: 佐藤</span
+                      ><span class="text-[11px] text-red-500 font-medium"
+                        >要因分析未着手</span
+                      >
+                    </div>
+                  </div>
+                  <button class="btn btn-danger py-1.5 px-3 shrink-0">
+                    <i data-lucide="play" class="w-4 h-4"></i>着手
+                  </button>
+                </div>
+              </div>
+              <div class="card p-4 border-l-4 border-l-red-500">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-red">未着手</span
+                      ><span class="text-[11px] text-gray-400"
+                        >NCR-2403-014</span
+                      >
+                    </div>
+                    <p class="text-[14px] font-medium text-gray-800">
+                      SS400 フラットバー 平坦度不良
+                    </p>
+                    <p class="text-[12px] text-gray-500 mt-1">
+                      Lot #2403-C01 · 受入検査で検出 · 仕入先起因
+                    </p>
+                    <div class="flex items-center gap-4 mt-2">
+                      <span class="text-[11px] text-gray-400">発生: 3/9</span
+                      ><span class="text-[11px] text-gray-400">担当: 未定</span>
+                    </div>
+                  </div>
+                  <button class="btn btn-danger py-1.5 px-3 shrink-0">
+                    <i data-lucide="play" class="w-4 h-4"></i>着手
+                  </button>
+                </div>
+              </div>
+              <div class="card p-4 border-l-4 border-l-amber-400">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-amber">是正中</span
+                      ><span class="text-[11px] text-gray-400"
+                        >NCR-2403-013</span
+                      >
+                    </div>
+                    <p class="text-[14px] font-medium text-gray-800">
+                      ブラケット B 表面粗さ規格外
+                    </p>
+                    <p class="text-[12px] text-gray-500 mt-1">
+                      要因: エンドミル摩耗（累計加工数超過）→
+                      刃具交換基準見直し中
+                    </p>
+                    <div class="flex items-center gap-4 mt-2">
+                      <span class="text-[11px] text-gray-400">発生: 3/10</span
+                      ><span class="text-[11px] text-gray-400">担当: 山田</span
+                      ><span class="text-[11px] text-amber-600"
+                        >是正処置実施中 (60%)</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-amber-400 rounded-full"
+                        style="width: 60%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4 border-l-4 border-l-amber-400 opacity-80">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-amber">是正中</span
+                      ><span class="text-[11px] text-gray-400"
+                        >NCR-2403-011</span
+                      >
+                    </div>
+                    <p class="text-[14px] font-medium text-gray-800">
+                      溶接ビード外観不良（ピンホール）
+                    </p>
+                    <p class="text-[12px] text-gray-500 mt-1">
+                      要因: シールドガス流量不足 → ガス流量計交換＋溶接条件改定
+                    </p>
+                    <div class="flex items-center gap-4 mt-2">
+                      <span class="text-[11px] text-gray-400">発生: 3/5</span
+                      ><span class="text-[11px] text-gray-400">担当: 高橋</span
+                      ><span class="text-[11px] text-amber-600"
+                        >効果確認中 (85%)</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-amber-400 rounded-full"
+                        style="width: 85%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4 border-l-4 border-l-emerald-400 opacity-60">
+                <div class="flex items-center gap-3">
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-5 h-5 text-emerald-500 shrink-0"
+                  ></i>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">完了</span
+                      ><span class="text-[11px] text-gray-400"
+                        >NCR-2403-012</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-700 mt-1">
+                      切削工具摩耗による寸法ばらつき →
+                      工具管理システム導入で解決
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 6. TRACEABILITY ========== -->
+          <div id="page-trace" class="page">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5">
+              <div class="flex items-start gap-3">
+                <i
+                  data-lucide="zap"
+                  class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"
+                ></i>
+                <div>
+                  <p class="text-[13px] font-medium text-blue-800">
+                    紙ベースで数日かかっていたトレースが、3秒以内で完了します
+                  </p>
+                  <p class="text-[12px] text-blue-600 mt-1">
+                    Lot番号・製品名・シリアル番号で検索。材料受入→各工程→出荷まで即座に追跡
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                トレース検索
+              </h3>
+              <div class="flex gap-3">
+                <div class="relative flex-1">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    value="2403-B17"
+                    placeholder="Lot番号・シリアル・製品名..."
+                    class="pl-10 pr-4 py-3 text-[14px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 w-full font-medium"
+                  />
+                </div>
+                <button class="btn btn-primary px-6">
+                  <i data-lucide="git-branch" class="w-4 h-4"></i>トレース実行
+                </button>
+              </div>
+            </div>
+
+            <!-- Trace Result -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-semibold text-[14px] text-gray-800">
+                    Lot #2403-B17 — フランジボルトM12
+                  </h3>
+                  <p class="text-[12px] text-gray-400 mt-0.5">
+                    トレース実行: 2026/03/10 08:30 · 所要時間: 2.1秒
+                  </p>
+                </div>
+                <button class="btn btn-outline">
+                  <i data-lucide="download" class="w-4 h-4"></i>トレース結果PDF
+                </button>
+              </div>
+
+              <div class="space-y-0">
+                <!-- Step 1 -->
+                <div class="trace-line pb-6">
+                  <div class="trace-dot bg-emerald-500"></div>
+                  <div class="p-3 rounded-lg bg-emerald-50">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-emerald-700"
+                        >材料受入</span
+                      ><span class="text-[11px] text-gray-400">2026/02/20</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      S45C 丸棒 φ14 · Lot: MAT-2402-089 · 仕入先: 大同特殊鋼
+                    </p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">
+                      受入検査: 合格（外径・硬度・ミルシート確認済）
+                    </p>
+                  </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="trace-line pb-6">
+                  <div class="trace-dot bg-emerald-500"></div>
+                  <div class="p-3 rounded-lg bg-emerald-50">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-emerald-700"
+                        >切削加工</span
+                      ><span class="text-[11px] text-gray-400">2026/03/01</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      CNC旋盤 #LT-05 · 加工者: 山田 · 工程内検査: 合格
+                    </p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">
+                      外径 12.02mm（規格: 12.00±0.05）· 表面粗さ Ra 1.4μm
+                    </p>
+                  </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="trace-line pb-6">
+                  <div class="trace-dot bg-emerald-500"></div>
+                  <div class="p-3 rounded-lg bg-emerald-50">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-emerald-700"
+                        >転造（ねじ切り）</span
+                      ><span class="text-[11px] text-gray-400">2026/03/03</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      転造機 #RL-02 · 加工者: 高橋 · 工程内検査: 合格
+                    </p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">
+                      ねじゲージ通り・止まり OK
+                    </p>
+                  </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="trace-line pb-6">
+                  <div class="trace-dot bg-emerald-500"></div>
+                  <div class="p-3 rounded-lg bg-emerald-50">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-emerald-700"
+                        >熱処理</span
+                      ><span class="text-[11px] text-gray-400">2026/03/05</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      炉 #HT-01 · 850°C×1h → 油冷 → 焼戻し 450°C · 工程内検査:
+                      合格
+                    </p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">
+                      硬度 HRC 32（規格: 28-35）
+                    </p>
+                  </div>
+                </div>
+                <!-- Step 5 -->
+                <div class="trace-line pb-6">
+                  <div class="trace-dot bg-emerald-500"></div>
+                  <div class="p-3 rounded-lg bg-emerald-50">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-emerald-700"
+                        >めっき処理</span
+                      ><span class="text-[11px] text-gray-400">2026/03/06</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      三価クロメート処理 · 外注: 東京メッキ工業 · 検査: 合格
+                    </p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">
+                      膜厚 9μm（規格: 8±3μm）· 塩水噴霧96h 白錆なし
+                    </p>
+                  </div>
+                </div>
+                <!-- Step 6 - NG -->
+                <div class="trace-line">
+                  <div class="trace-dot bg-red-500"></div>
+                  <div class="p-3 rounded-lg bg-red-50 border border-red-200">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[12px] font-medium text-red-700"
+                        >出荷検査 — NG</span
+                      ><span class="text-[11px] text-gray-400">2026/03/08</span>
+                    </div>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      出荷先: ダイキン工業 · 検査者: 鈴木
+                    </p>
+                    <p class="text-[11px] text-red-600 mt-0.5 font-medium">
+                      外径 12.08mm（規格外）· フランジ部の寸法ばらつき検出 →
+                      NCR-2403-015 起票
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 7. CALIBRATION ========== -->
+          <div id="page-calibration" class="page">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">48</div>
+                  <div class="text-[11px] text-gray-400">校正有効</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-amber-600">3</div>
+                  <div class="text-[11px] text-amber-500">14日以内期限</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-5 h-5 text-red-500"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">1</div>
+                  <div class="text-[11px] text-red-500">期限超過</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="wrench" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">2</div>
+                  <div class="text-[11px] text-gray-400">校正中（外部）</div>
+                </div>
+              </div>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 290px)"
+              >
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>管理番号</th>
+                      <th>計測器名</th>
+                      <th>メーカー</th>
+                      <th>測定範囲</th>
+                      <th>精度</th>
+                      <th>前回校正</th>
+                      <th>次回校正</th>
+                      <th>残日数</th>
+                      <th>ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="bg-red-50/40">
+                      <td class="font-medium text-red-600">MC-012</td>
+                      <td>デジタルマイクロメータ</td>
+                      <td>ミツトヨ</td>
+                      <td>0-25mm</td>
+                      <td>0.001mm</td>
+                      <td>2025/03/05</td>
+                      <td class="text-red-600 font-medium">2026/03/05</td>
+                      <td><span class="text-red-600 font-bold">超過</span></td>
+                      <td><span class="badge badge-red">要校正</span></td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td class="font-medium">MC-017</td>
+                      <td>外側マイクロメータ</td>
+                      <td>ミツトヨ</td>
+                      <td>25-50mm</td>
+                      <td>0.01mm</td>
+                      <td>2025/03/20</td>
+                      <td class="text-amber-600">2026/03/20</td>
+                      <td>
+                        <span class="text-amber-600 font-bold">10日</span>
+                      </td>
+                      <td><span class="badge badge-amber">期限間近</span></td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td class="font-medium">CL-042</td>
+                      <td>デジタルノギス</td>
+                      <td>ミツトヨ</td>
+                      <td>0-300mm</td>
+                      <td>0.01mm</td>
+                      <td>2025/03/22</td>
+                      <td class="text-amber-600">2026/03/22</td>
+                      <td>
+                        <span class="text-amber-600 font-bold">12日</span>
+                      </td>
+                      <td><span class="badge badge-amber">期限間近</span></td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td class="font-medium">CMM-003</td>
+                      <td>三次元測定機</td>
+                      <td>東京精密</td>
+                      <td>500×500×400</td>
+                      <td>0.003mm</td>
+                      <td>2025/03/24</td>
+                      <td class="text-amber-600">2026/03/24</td>
+                      <td>
+                        <span class="text-amber-600 font-bold">14日</span>
+                      </td>
+                      <td><span class="badge badge-amber">期限間近</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">SR-008</td>
+                      <td>表面粗さ計</td>
+                      <td>ミツトヨ</td>
+                      <td>Ra 0.01-100μm</td>
+                      <td>—</td>
+                      <td>2025/06/15</td>
+                      <td>2026/06/15</td>
+                      <td>97日</td>
+                      <td><span class="badge badge-green">有効</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">HT-005</td>
+                      <td>硬度計（ロックウェル）</td>
+                      <td>アカシ</td>
+                      <td>HRA/HRB/HRC</td>
+                      <td>±0.5HRC</td>
+                      <td>2025/09/01</td>
+                      <td>2026/09/01</td>
+                      <td>175日</td>
+                      <td><span class="badge badge-green">有効</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">TG-003</td>
+                      <td>ねじゲージ M12</td>
+                      <td>第一測範</td>
+                      <td>M12×1.75</td>
+                      <td>6g/6H</td>
+                      <td>2025/12/01</td>
+                      <td>2026/12/01</td>
+                      <td>266日</td>
+                      <td><span class="badge badge-green">有効</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">FG-011</td>
+                      <td>力量計（引張）</td>
+                      <td>島津製作所</td>
+                      <td>0-50kN</td>
+                      <td>±0.5%</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td><span class="badge badge-blue">校正中</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 8. SPC ========== -->
+          <div id="page-spc" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    X̄-R管理図 — シャフトA 外径 φ25
+                  </h3>
+                  <span class="badge badge-green">管理状態</span>
+                </div>
+                <div style="height: 240px"><canvas id="spcC1"></canvas></div>
+                <div class="grid grid-cols-4 gap-3 mt-3 text-center">
+                  <div class="p-2 rounded bg-gray-50">
+                    <span class="text-[10px] text-gray-400 block">X̄</span
+                    ><span class="text-[13px] font-bold">25.005</span>
+                  </div>
+                  <div class="p-2 rounded bg-gray-50">
+                    <span class="text-[10px] text-gray-400 block">UCL</span
+                    ><span class="text-[13px] font-bold text-red-500"
+                      >25.025</span
+                    >
+                  </div>
+                  <div class="p-2 rounded bg-gray-50">
+                    <span class="text-[10px] text-gray-400 block">LCL</span
+                    ><span class="text-[13px] font-bold text-red-500"
+                      >24.985</span
+                    >
+                  </div>
+                  <div class="p-2 rounded bg-gray-50">
+                    <span class="text-[10px] text-gray-400 block">σ</span
+                    ><span class="text-[13px] font-bold">0.008</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    工程能力指数
+                  </h3>
+                  <select
+                    class="px-3 py-1.5 text-[12px] border rounded-lg bg-white"
+                  >
+                    <option>シャフトA 外径 φ25</option>
+                    <option>ブラケットB 穴径 φ8</option>
+                    <option>フランジボルト M12</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div class="p-4 rounded-xl bg-emerald-50 text-center">
+                    <p class="text-[11px] text-emerald-600 font-medium mb-1">
+                      Cp（工程能力）
+                    </p>
+                    <p class="text-3xl font-bold text-emerald-700">1.67</p>
+                    <p class="text-[10px] text-emerald-600 mt-1">
+                      基準: ≥ 1.33
+                    </p>
+                  </div>
+                  <div class="p-4 rounded-xl bg-emerald-50 text-center">
+                    <p class="text-[11px] text-emerald-600 font-medium mb-1">
+                      Cpk（偏り含む）
+                    </p>
+                    <p class="text-3xl font-bold text-emerald-700">1.52</p>
+                    <p class="text-[10px] text-emerald-600 mt-1">
+                      基準: ≥ 1.33
+                    </p>
+                  </div>
+                </div>
+                <div style="height: 140px"><canvas id="spcC2"></canvas></div>
+              </div>
+            </div>
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                工程能力一覧
+              </h3>
+              <div class="overflow-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>製品 / 寸法</th>
+                      <th>規格</th>
+                      <th>Cp</th>
+                      <th>Cpk</th>
+                      <th>判定</th>
+                      <th>傾向</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">シャフトA 外径 φ25</td>
+                      <td>25.00 ±0.02</td>
+                      <td class="font-medium text-emerald-600">1.67</td>
+                      <td class="font-medium text-emerald-600">1.52</td>
+                      <td><span class="badge badge-green">十分</span></td>
+                      <td class="text-[11px] text-emerald-600">安定</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">ブラケットB 穴径 φ8</td>
+                      <td>8.00 +0.02/0</td>
+                      <td class="font-medium text-emerald-600">1.45</td>
+                      <td class="font-medium text-emerald-600">1.38</td>
+                      <td><span class="badge badge-green">十分</span></td>
+                      <td class="text-[11px] text-emerald-600">安定</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">フランジボルト M12 外径</td>
+                      <td>12.00 ±0.05</td>
+                      <td class="font-medium text-amber-600">1.15</td>
+                      <td class="font-medium text-red-600">0.92</td>
+                      <td><span class="badge badge-red">不足</span></td>
+                      <td class="text-[11px] text-red-500">偏り傾向</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">カバーD めっき膜厚</td>
+                      <td>8 ±3 μm</td>
+                      <td class="font-medium text-emerald-600">2.10</td>
+                      <td class="font-medium text-emerald-600">1.85</td>
+                      <td><span class="badge badge-green">十分</span></td>
+                      <td class="text-[11px] text-emerald-600">安定</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 9. ANALYTICS ========== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">月間合格率</span
+                  ><i
+                    data-lucide="trending-up"
+                    class="w-4 h-4 text-emerald-500"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  98.4%
+                </div>
+                <div class="text-[11px] mt-1 text-emerald-600">+0.3pt</div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">不良コスト</span
+                  ><i
+                    data-lucide="trending-down"
+                    class="w-4 h-4 text-emerald-500"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  ¥320万
+                </div>
+                <div class="text-[11px] mt-1 text-emerald-600">-12%</div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">顧客クレーム</span
+                  ><i
+                    data-lucide="trending-down"
+                    class="w-4 h-4 text-emerald-500"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  0<span class="text-[13px] font-normal text-gray-400">件</span>
+                </div>
+                <div class="text-[11px] mt-1 text-emerald-600">
+                  3ヶ月連続ゼロ
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">CAPA完了率</span>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">58%</div>
+                <div class="text-[11px] mt-1 text-amber-600">7/12件完了</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次合格率推移
+                </h3>
+                <div style="height: 260px"><canvas id="anaC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  工程別不良分布
+                </h3>
+                <div style="height: 260px"><canvas id="anaC2"></canvas></div>
+              </div>
+            </div>
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                品質コスト分析
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="p-3 rounded-lg bg-emerald-50 text-center">
+                  <p class="text-[11px] text-emerald-600 font-medium mb-1">
+                    予防コスト
+                  </p>
+                  <p class="text-xl font-bold text-emerald-700">¥180万</p>
+                  <p class="text-[10px] text-emerald-600">
+                    教育・SPC・予防保全
+                  </p>
+                </div>
+                <div class="p-3 rounded-lg bg-blue-50 text-center">
+                  <p class="text-[11px] text-blue-600 font-medium mb-1">
+                    評価コスト
+                  </p>
+                  <p class="text-xl font-bold text-blue-700">¥420万</p>
+                  <p class="text-[10px] text-blue-600">検査・計測・試験</p>
+                </div>
+                <div class="p-3 rounded-lg bg-amber-50 text-center">
+                  <p class="text-[11px] text-amber-600 font-medium mb-1">
+                    内部失敗コスト
+                  </p>
+                  <p class="text-xl font-bold text-amber-700">¥280万</p>
+                  <p class="text-[10px] text-amber-600">手直し・廃棄・再検査</p>
+                </div>
+                <div class="p-3 rounded-lg bg-red-50 text-center">
+                  <p class="text-[11px] text-red-600 font-medium mb-1">
+                    外部失敗コスト
+                  </p>
+                  <p class="text-xl font-bold text-red-700">¥40万</p>
+                  <p class="text-[10px] text-red-600">返品・クレーム対応</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 10. SETTINGS ========== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >アラート設定
+                </h3>
+                <div class="divide-y">
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        不合格即時通知
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        検査NGが記録された時点で即時アラート
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        計測器校正リマインド
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        校正期限の30日前・7日前・当日に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        SPC管理限界逸脱
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        管理図でUCL/LCL超えた際に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        CAPA期限リマインド
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        是正処置の期限7日前に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="link"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >外部連携
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="factory"
+                        class="w-5 h-5 text-emerald-600"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          生産管理システム（MES）
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          Lot情報・工程実績の自動取込
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-green">接続済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i data-lucide="ruler" class="w-5 h-5 text-blue-600"></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          測定データ自動取込
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          三次元測定機・表面粗さ計からの自動連携
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-green">接続済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="file-text"
+                        class="w-5 h-5 text-gray-400"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          ISO 9001 文書管理
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          QMS文書の版管理・承認ワークフロー
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-outline py-1 px-3 text-[11px]">
+                      接続
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="sliders-horizontal"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >検査基準
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >デフォルト抜取検査方式</label
+                    ><select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option>JIS Z 9015-1 (AQL方式)</option>
+                      <option>全数検査</option>
+                      <option>独自基準</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >Cpk管理基準</label
+                    ><select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option>≥ 1.33（標準）</option>
+                      <option>≥ 1.67（厳格）</option>
+                      <option>≥ 1.00（緩和）</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button class="btn btn-primary">
+                  <i data-lucide="save" class="w-4 h-4"></i>保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal: Inspection Record -->
+    <div
+      id="inspModal"
+      class="modal-overlay"
+      onclick="if (event.target === this) hideModal('inspModal');"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
+      >
+        <div class="p-5 border-b flex items-center justify-between">
+          <h3 class="font-bold text-[15px] text-gray-800">検査記録作成</h3>
+          <button
+            class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center cursor-pointer"
+            onclick="hideModal('inspModal')"
+          >
+            <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                >検査種別</label
+              ><select
+                class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+              >
+                <option>受入検査</option>
+                <option>工程内検査</option>
+                <option>出荷検査</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                >Lot番号</label
+              ><input
+                type="text"
+                placeholder="2403-XXXX"
+                class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >品名</label
+            ><input
+              type="text"
+              placeholder="製品名・材料名"
+              class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+            />
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >検査項目・測定値</label
+            ><textarea
+              rows="3"
+              placeholder="項目名: 規格値 → 実測値&#10;例: 外径φ25: 25.00±0.02 → 25.01"
+              class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >判定</label
+            >
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                class="verdict-ok rounded-lg py-3 text-center font-bold text-[14px] cursor-pointer transition-all hover:opacity-80"
+              >
+                合格
+              </button>
+              <button
+                class="verdict-ng rounded-lg py-3 text-center font-bold text-[14px] cursor-pointer transition-all hover:opacity-80"
+              >
+                不合格
+              </button>
+              <button
+                class="verdict-hold rounded-lg py-3 text-center font-bold text-[14px] cursor-pointer transition-all hover:opacity-80"
+              >
+                保留
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >写真・エビデンス</label
+            >
+            <div
+              class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition-colors cursor-pointer"
+            >
+              <i
+                data-lucide="camera"
+                class="w-6 h-6 text-gray-300 mx-auto mb-1"
+              ></i>
+              <p class="text-[11px] text-gray-400">
+                クリックまたはドラッグで添付
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-5 border-t flex justify-end gap-2">
+          <button class="btn btn-outline" onclick="hideModal('inspModal')">
+            キャンセル
+          </button>
+          <button class="btn btn-primary" onclick="hideModal('inspModal')">
+            <i data-lucide="check" class="w-4 h-4"></i>記録保存
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const PC = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "品質KPI・検査状況・アラート",
+        },
+        { id: "incoming", title: "受入検査", desc: "材料・部品の受入品質管理" },
+        {
+          id: "inprocess",
+          title: "工程内検査",
+          desc: "加工・組立の工程内品質管理",
+        },
+        { id: "final", title: "出荷検査", desc: "最終検査・検査成績表" },
+        { id: "ncr", title: "不良・CAPA", desc: "不適合管理・是正/予防処置" },
+        {
+          id: "trace",
+          title: "トレーサビリティ",
+          desc: "Lot追跡・材料→出荷の全工程",
+        },
+        { id: "calibration", title: "計測器管理", desc: "校正・有効期限管理" },
+        { id: "spc", title: "SPC", desc: "管理図・工程能力指数" },
+        {
+          id: "analytics",
+          title: "レポート",
+          desc: "品質コスト・合格率・不良分析",
+        },
+        { id: "settings", title: "設定", desc: "通知・連携・検査基準" },
+      ];
+
+      function nav(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const c = PC.find((p) => p.id === id);
+        if (c) {
+          document.getElementById("pageTitle").textContent = c.title;
+          document.getElementById("pageDesc").textContent = c.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () => nav(location.hash.slice(1)));
+
+      function updateClock() {
+        const ct = document.getElementById("currentTime");
+        if (ct)
+          ct.textContent = new Date().toLocaleString("ja-JP", {
+            month: "numeric",
+            day: "numeric",
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+      }
+      setInterval(updateClock, 1000);
+
+      function filterTbl(id, q) {
+        document.querySelectorAll("#" + id + " tbody tr").forEach((r) => {
+          r.style.display = r.textContent
+            .toLowerCase()
+            .includes(q.toLowerCase())
+            ? ""
+            : "none";
+        });
+      }
+      function chip(el) {
+        el.parentElement
+          .querySelectorAll(".filter-chip")
+          .forEach((c) => c.classList.remove("active"));
+        el.classList.add("active");
+      }
+      function showModal(id) {
+        document.getElementById(id).classList.add("show");
+        setTimeout(() => {
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      function hideModal(id) {
+        document.getElementById(id).classList.remove("show");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        nav(location.hash.slice(1) || "dashboard");
+        updateClock();
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        const P = "#7c2d12",
+          S = "#b45309";
+
+        // Dashboard: defect rate trend
+        charts.push(
+          new Chart(document.getElementById("dashC1"), {
+            type: "line",
+            data: {
+              labels: [
+                "3/1",
+                "3/2",
+                "3/3",
+                "3/4",
+                "3/5",
+                "3/6",
+                "3/7",
+                "3/8",
+                "3/9",
+                "3/10",
+              ],
+              datasets: [
+                {
+                  label: "不良率(%)",
+                  data: [1.2, 0.8, 1.5, 0.6, 2.1, 1.0, 0.9, 1.8, 1.1, 1.6],
+                  borderColor: P,
+                  backgroundColor: P + "15",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 3,
+                  pointBackgroundColor: P,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 3,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+
+        // Dashboard: pareto
+        charts.push(
+          new Chart(document.getElementById("dashC2"), {
+            type: "bar",
+            data: {
+              labels: [
+                "寸法不良",
+                "表面粗さ",
+                "外観傷",
+                "材料不良",
+                "溶接不良",
+                "その他",
+              ],
+              datasets: [
+                {
+                  data: [8, 5, 4, 3, 2, 1],
+                  backgroundColor: [
+                    P,
+                    P + "cc",
+                    P + "99",
+                    P + "77",
+                    P + "55",
+                    P + "33",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+
+        // SPC: X-bar chart
+        const spcData = [
+          25.01, 24.99, 25.02, 25.0, 24.98, 25.01, 25.0, 25.02, 24.99, 25.01,
+          25.0, 24.98, 25.01, 25.02, 25.0, 24.99, 25.01, 25.0, 24.98, 25.01,
+        ];
+        const ucl = Array(20).fill(25.025),
+          lcl = Array(20).fill(24.985),
+          cl = Array(20).fill(25.005);
+        charts.push(
+          new Chart(document.getElementById("spcC1"), {
+            type: "line",
+            data: {
+              labels: spcData.map((_, i) => "#" + (i + 1)),
+              datasets: [
+                {
+                  label: "X̄",
+                  data: spcData,
+                  borderColor: P,
+                  tension: 0,
+                  pointRadius: 3,
+                  pointBackgroundColor: P,
+                  borderWidth: 2,
+                },
+                {
+                  label: "UCL",
+                  data: ucl,
+                  borderColor: "#ef4444",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                  borderWidth: 1,
+                },
+                {
+                  label: "LCL",
+                  data: lcl,
+                  borderColor: "#ef4444",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                  borderWidth: 1,
+                },
+                {
+                  label: "CL",
+                  data: cl,
+                  borderColor: "#10b981",
+                  borderDash: [2, 4],
+                  pointRadius: 0,
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 10 },
+                    usePointStyle: true,
+                    padding: 10,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 24.97,
+                  max: 25.04,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 10 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+              },
+            },
+          }),
+        );
+
+        // SPC: histogram
+        const hist = [1, 3, 8, 14, 18, 22, 18, 14, 8, 3, 1];
+        charts.push(
+          new Chart(document.getElementById("spcC2"), {
+            type: "bar",
+            data: {
+              labels: hist.map((_, i) => (24.97 + i * 0.006).toFixed(3)),
+              datasets: [
+                {
+                  data: hist,
+                  backgroundColor: P + "60",
+                  borderColor: P,
+                  borderWidth: 1,
+                  borderRadius: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 9 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 8 } } },
+              },
+            },
+          }),
+        );
+
+        // Analytics: pass rate trend
+        charts.push(
+          new Chart(document.getElementById("anaC1"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "合格率",
+                  data: [97.2, 97.8, 97.5, 98.0, 98.1, 98.4],
+                  borderColor: P,
+                  backgroundColor: P + "15",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: P,
+                },
+                {
+                  label: "目標",
+                  data: [98, 98, 98, 98, 98, 98],
+                  borderColor: "#d1d5db",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 95,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Analytics: defect by process
+        charts.push(
+          new Chart(document.getElementById("anaC2"), {
+            type: "doughnut",
+            data: {
+              labels: ["切削", "溶接", "めっき", "組立", "受入材料"],
+              datasets: [
+                {
+                  data: [35, 20, 15, 18, 12],
+                  backgroundColor: [
+                    P,
+                    "#b45309",
+                    "#d97706",
+                    "#f59e0b",
+                    "#fbbf24",
+                  ],
+                  borderWidth: 0,
+                  borderRadius: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "60%",
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 10,
+                  },
+                },
+              },
+            },
+          }),
+        );
+      });
+    </script>
+  </body>
+</html>
