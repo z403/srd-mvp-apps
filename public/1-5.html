@@ -1,108 +1,2377 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>安全管理・KY活動の形骸化 | 建設業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>安全管理・KY活動の形骸化 | 建設業 | SRD MVP Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .risk-high {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+      }
+      .risk-mid {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+      }
+      .risk-low {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .check-row {
+        transition: background 0.15s;
+      }
+      .check-row:hover {
+        background: #f8fafc;
+      }
+    </style>
+  </head>
+  <body class="bg-[#f5f6f8]">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[220px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #1a2e44"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="w-8 h-8 rounded-lg bg-orange-500/80 flex items-center justify-center shrink-0"
+            >
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[12px] leading-tight truncate">
+                SafetyHub
+              </p>
+              <p class="text-[10px] opacity-40">建設安全管理プラットフォーム</p>
+            </div>
+          </div>
+        </div>
+        <div class="px-3 pt-3 pb-1">
+          <p
+            class="text-[10px] uppercase tracking-wider text-white/30 font-medium px-2"
+          >
+            メニュー
+          </p>
+        </div>
+        <nav class="flex-1 px-2 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('dashboard')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>安全ダッシュボード</span></a
+          >
+          <a
+            data-page="ky"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('ky')"
+          >
+            <i
+              data-lucide="clipboard-check"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>KY活動</span></a
+          >
+          <a
+            data-page="patrol"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('patrol')"
+          >
+            <i
+              data-lucide="scan-search"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>安全パトロール</span></a
+          >
+          <a
+            data-page="nearmiss"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('nearmiss')"
+          >
+            <i
+              data-lucide="alert-triangle"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>ヒヤリハット</span></a
+          >
+          <a
+            data-page="training"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('training')"
+          >
+            <i
+              data-lucide="graduation-cap"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>安全教育・資格</span></a
+          >
+          <a
+            data-page="risk"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('risk')"
+          >
+            <i
+              data-lucide="activity"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>リスクアセスメント</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('analytics')"
+          >
+            <i
+              data-lucide="bar-chart-3"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>分析・レポート</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-green-600/80 flex items-center justify-center text-[11px] font-medium"
+            >
+              佐
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">佐藤健一</p>
+              <p class="text-[10px] opacity-30">安全管理者</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#1e3a5f">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">1</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">安全管理・KY活動の形骸化</p>
-<p class="text-[11px] opacity-50 truncate">建設業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="file-edit" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">入力フォーム</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="panel-left" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="layout-list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">サマリー</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="git-compare" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-5 py-2.5 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[14px] text-gray-800">
+              安全ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[11px] text-gray-400 mt-0.5">
+              新宿区A棟オフィスビル新築工事
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <i data-lucide="bell" class="w-4 h-4 text-gray-400"></i>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"
+              ></span>
+            </button>
+            <span
+              class="text-[10px] px-2 py-1 rounded-full font-medium bg-orange-50 text-orange-700"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">進捗とカテゴリ分析</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#dbeafe;color:#1e3a5f">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">朝礼・KY活動</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/16</p><p class="text-[12px] text-gray-500 mt-1">危険予知と対策確認</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">安全巡視</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/27</p><p class="text-[12px] text-gray-500 mt-1">現場巡回・是正指示</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">是正措置</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/18</p><p class="text-[12px] text-gray-500 mt-1">指摘事項の改善</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">安全教育</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/25</p><p class="text-[12px] text-gray-500 mt-1">新規入場者教育等</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">現場別安全評価</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">安全スコア</span><i data-lucide="shield" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">97pt</div><div class="text-[11px] mt-2 text-emerald-600">↑ +12pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">是正指摘</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">9件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">KY実施率</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">80%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +10pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">無災害日数</span><i data-lucide="star" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">298日</div><div class="text-[11px] mt-2 text-emerald-600">↑ +50</div></div></div></div>
-<div id="page-feature" class="page"><div class="card p-6"><div class="flex items-center justify-center gap-4 mb-8"><div class="flex items-center gap-2 step-ind" data-step="0"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[12px] text-white" style="background:#1e3a5f">1</div><span class="text-[12px] font-semibold hidden sm:inline">基本情報</span><div class="w-8 h-0.5 bg-gray-200"></div></div><div class="flex items-center gap-2 step-ind" data-step="1"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[12px] text-gray-400" style="background:#e5e7eb">2</div><span class="text-[12px] text-gray-400 hidden sm:inline">詳細入力</span><div class="w-8 h-0.5 bg-gray-200"></div></div><div class="flex items-center gap-2 step-ind" data-step="2"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[12px] text-gray-400" style="background:#e5e7eb">3</div><span class="text-[12px] text-gray-400 hidden sm:inline">確認</span><div class="w-8 h-0.5 bg-gray-200"></div></div><div class="flex items-center gap-2 step-ind" data-step="3"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[12px] text-gray-400" style="background:#e5e7eb">4</div><span class="text-[12px] text-gray-400 hidden sm:inline">完了</span></div></div><div id="wizStep0" class="wiz-step space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="カテゴリA">カテゴリA</option><option value="カテゴリB">カテゴリB</option><option value="カテゴリC">カテゴリC</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div class="flex justify-end pt-4"><button onclick="wizNext()" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="arrow-right" class="w-4 h-4"></i>次へ</button></div></div><div id="wizStep1" class="wiz-step space-y-4 hidden"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">詳細説明</label><textarea name="詳細説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">優先度</label><select name="優先度" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="高">高</option><option value="中">中</option><option value="低">低</option></select></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div class="flex justify-between pt-4"><button onclick="wizPrev()" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="arrow-left" class="w-4 h-4"></i>戻る</button><button onclick="wizNext()" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="arrow-right" class="w-4 h-4"></i>次へ</button></div></div><div id="wizStep2" class="wiz-step hidden"><div class="text-center py-8"><i data-lucide="file-check" class="w-12 h-12 mx-auto mb-3" style="color:#1e3a5f"></i><p class="text-[15px] font-semibold text-gray-700">入力内容をご確認ください</p><p class="text-[13px] text-gray-400 mt-1">問題なければ送信してください</p></div><div class="flex justify-between pt-4"><button onclick="wizPrev()" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="arrow-left" class="w-4 h-4"></i>戻る</button><button onclick="wizNext()" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div><div id="wizStep3" class="wiz-step hidden"><div class="text-center py-12"><i data-lucide="check-circle" class="w-16 h-16 mx-auto mb-4 text-emerald-500"></i><p class="text-[18px] font-bold text-gray-700">送信完了</p><p class="text-[13px] text-gray-400 mt-2">正常に処理されました</p></div></div></div></div>
-<div id="page-data" class="page"><div class="grid grid-cols-1 lg:grid-cols-5 gap-0 card overflow-hidden" style="height:calc(100vh - 180px)"><div class="lg:col-span-2 border-r overflow-y-auto"><div class="p-3 border-b"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="splitSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div id="splitList"><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors border-l-2" style="border-left-color:#1e3a5f" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">佐藤安全管理者</p><p class="text-[11px] text-gray-400">#5109 · 2026/03/04</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">是正中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">田中現場監督</p><p class="text-[11px] text-gray-400">#4040 · 2026/03/17</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">鈴木職長</p><p class="text-[11px] text-gray-400">#9033 · 2026/03/10</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">山田安全衛生</p><p class="text-[11px] text-gray-400">#9571 · 2026/03/14</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">実施済</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">高橋所長</p><p class="text-[11px] text-gray-400">#5762 · 2026/03/05</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">是正中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">伊藤安全部長</p><p class="text-[11px] text-gray-400">#8882 · 2026/03/25</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">是正中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">渡辺作業主任</p><p class="text-[11px] text-gray-400">#9976 · 2026/01/20</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">未実施</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">中村統括安全</p><p class="text-[11px] text-gray-400">#4041 · 2026/02/25</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">小林巡視員</p><p class="text-[11px] text-gray-400">#9277 · 2026/01/23</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">実施済</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">加藤安全協議</p><p class="text-[11px] text-gray-400">#2253 · 2026/02/22</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">是正中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">佐藤安全管理者</p><p class="text-[11px] text-gray-400">#6970 · 2026/01/28</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">是正中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#1e3a5f')"><div><p class="text-[13px] font-medium text-gray-700">田中現場監督</p><p class="text-[11px] text-gray-400">#2836 · 2026/01/14</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div></div></div><div class="lg:col-span-3 overflow-y-auto"><div class="p-5"><div class="flex items-center gap-3 mb-6"><div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style="background:#1e3a5f">佐</div><div><p class="text-[15px] font-bold text-gray-800">佐藤安全管理者</p><p class="text-[12px] text-gray-400">#5109 · 高所作業</p></div></div><div class="grid grid-cols-2 gap-4"><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">ステータス</span><span class="text-[13px] font-medium">是正中</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">金額</span><span class="text-[13px] font-medium" style="color:#1e3a5f">19名</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">更新日</span><span class="text-[13px] font-medium">2026/03/04</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">部門</span><span class="text-[13px] font-medium">高所作業</span></div></div><div class="mt-5 pt-5 border-t"><h4 class="text-[13px] font-semibold text-gray-700 mb-3">アクティビティ</h4><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤安全管理者</span> の安全教育を実施</p><p class="text-[11px] text-gray-400">22時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中現場監督</span> のKYを実施</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木職長</span> のKYを実施</p><p class="text-[11px] text-gray-400">19時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田安全衛生</span> に安全指摘</p><p class="text-[11px] text-gray-400">16時間前</p></div></div></div></div></div></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-4xl"><div class="card p-6 mb-5"><div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold" style="background:#1e3a5f">安</div><div><h2 class="text-[18px] font-bold text-gray-800">安全管理・KY活動の形骸化</h2><p class="text-[13px] text-gray-400">建設業 · 安全管理者</p></div></div><div class="p-4 rounded-lg mb-5" style="background:#dbeafe"><p class="text-[13px]" style="color:#1e3a5f">毎朝のKY活動が紙記入に終始、データ蓄積・分析不可</p></div><div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#1e3a5f">97pt</div><div class="text-[11px] text-gray-400 mt-1">安全スコア</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#1e3a5f">9件</div><div class="text-[11px] text-gray-400 mt-1">是正指摘</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#1e3a5f">80%</div><div class="text-[11px] text-gray-400 mt-1">KY実施率</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#1e3a5f">298日</div><div class="text-[11px] text-gray-400 mt-1">無災害日数</div></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">安全管理の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤安全管理者</span> の安全教育を実施</p><p class="text-[11px] text-gray-400">22時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中現場監督</span> のKYを実施</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木職長</span> のKYを実施</p><p class="text-[11px] text-gray-400">19時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田安全衛生</span> に安全指摘</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋所長</span> のKYを実施</p><p class="text-[11px] text-gray-400">24時間前</p></div></div></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#1e3a5f15"><i data-lucide="trending-up" class="w-7 h-7" style="color:#1e3a5f"></i></div><div><div class="text-3xl font-bold" style="color:#1e3a5f">344</div><div class="text-[13px] text-gray-500 mt-1">今期合計</div><div class="text-[11px] text-gray-400 mt-0.5">前期比 +26.9%</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#3b82f615"><i data-lucide="calendar" class="w-7 h-7" style="color:#3b82f6"></i></div><div><div class="text-3xl font-bold" style="color:#3b82f6">271</div><div class="text-[13px] text-gray-500 mt-1">前期合計</div><div class="text-[11px] text-gray-400 mt-0.5"></div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="arrow-up-right" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">+73</div><div class="text-[13px] text-gray-500 mt-1">増減</div><div class="text-[11px] text-gray-400 mt-0.5">26.9%増</div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">期間比較</h3><div style="height:260px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">構成比変化</h3><div style="height:260px"><canvas id="rpC2"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#1e3a5f"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#1e3a5f"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-4">
+          <!-- ==================== PAGE 1: ダッシュボード ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- Safety Score Banner -->
+            <div class="card p-4 mb-4 border-l-4 border-l-green-500">
+              <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-4">
+                  <div class="text-center">
+                    <p class="text-[10px] text-gray-400 mb-0.5">安全スコア</p>
+                    <p
+                      class="text-[32px] font-bold text-green-700 leading-none"
+                    >
+                      92
+                    </p>
+                    <p class="text-[10px] text-green-600 mt-0.5">+3pt 前月比</p>
+                  </div>
+                  <div class="w-px h-12 bg-gray-200"></div>
+                  <div>
+                    <p class="text-[13px] font-semibold text-gray-800">
+                      新宿区A棟オフィスビル新築工事
+                    </p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">
+                      本日 2026/03/10 (月) ｜ 晴 12℃ ｜ 入場者 127名
+                    </p>
+                    <div class="flex gap-2 mt-1.5">
+                      <span class="tag bg-green-50 text-green-700"
+                        ><i data-lucide="shield" class="w-3 h-3"></i>無災害
+                        248日</span
+                      >
+                      <span class="tag bg-blue-50 text-blue-700"
+                        ><i data-lucide="clipboard-check" class="w-3 h-3"></i
+                        >本日KY 6/6班 完了</span
+                      >
+                      <span class="tag bg-purple-50 text-purple-700"
+                        ><i data-lucide="scan-search" class="w-3 h-3"></i
+                        >パトロール 13:30予定</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i
+                    >緊急報告
+                  </button>
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "進捗とカテゴリ分析"}, {"id": "feature", "title": "入力フォーム", "desc": "ステップ形式入力"}, {"id": "data", "title": "データ一覧", "desc": "リスト・詳細表示"}, {"id": "detail", "title": "サマリー", "desc": "概要カード"}, {"id": "report", "title": "レポート", "desc": "期間比較"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">無災害日数</span>
+                  <i data-lucide="shield" class="w-4 h-4 text-green-300"></i>
+                </div>
+                <p class="text-[22px] font-bold text-green-700">
+                  248<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >日</span
+                  >
+                </p>
+                <div
+                  class="h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-green-500 rounded-full"
+                    style="width: 68%"
+                  ></div>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  目標365日まで残117日
+                </p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">KY活動実施率</span>
+                  <i
+                    data-lucide="clipboard-check"
+                    class="w-4 h-4 text-blue-300"
+                  ></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  98.5<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >%</span
+                  >
+                </p>
+                <p class="text-[10px] text-green-600 mt-2">
+                  +8.5pt デジタル化後
+                </p>
+                <p class="text-[10px] text-gray-400">紙運用時: 90.0%</p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400"
+                    >ヒヤリハット報告</span
+                  >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-amber-300"
+                  ></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  23<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >件/月</span
+                  >
+                </p>
+                <p class="text-[10px] text-green-600 mt-2">
+                  +340% デジタル化後
+                </p>
+                <p class="text-[10px] text-gray-400">紙運用時: 5件/月</p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">是正完了率</span>
+                  <i
+                    data-lucide="check-circle"
+                    class="w-4 h-4 text-green-300"
+                  ></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  94.2<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >%</span
+                  >
+                </p>
+                <p class="text-[10px] text-amber-600 mt-2">未完了 3件</p>
+                <p class="text-[10px] text-gray-400">平均是正日数: 1.8日</p>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "bar", "data": {"labels": ["A現場", "B現場", "C現場", "D現場", "E現場", "F現場"], "datasets": [{"label": "実績", "data": [39, 41, 53, 24, 55, 21], "backgroundColor": "#1e3a5f", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}, "indexAxis": "y"}));
+            <!-- Today's Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <div class="card p-4 lg:col-span-2">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  本日のKY活動状況
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        7F躯体班 — コンクリート打設作業
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        高橋班 32名 ｜ 07:45実施 ｜ 危険ポイント3件 ｜
+                        対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        5-6F設備班 — 給排水配管接続
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        中村班 18名 ｜ 07:50実施 ｜ 危険ポイント2件 ｜
+                        対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        外壁班 — ALC取付作業
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        佐藤職長 12名 ｜ 07:50実施 ｜ 危険ポイント3件 ｜
+                        対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        電気班 — ケーブルラック据付
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        伊藤班 15名 ｜ 07:55実施 ｜ 危険ポイント2件 ｜
+                        対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        仮設班 — 8F外部足場組立
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        山田班 8名 ｜ 12:45実施 ｜ 危険ポイント4件 ｜ 対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-green-50/50 border border-green-100"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        管理班 — 現場管理・検査
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        田中所長 6名 ｜ 08:00実施 ｜ 危険ポイント1件 ｜
+                        対策確認済
+                      </p>
+                    </div>
+                    <span class="tag bg-green-50 text-green-700">完了</span>
+                  </div>
+                </div>
+              </div>
 
-// feature
+              <!-- Alerts -->
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  要対応事項
+                </h3>
+                <div class="space-y-2.5">
+                  <div
+                    class="p-2.5 rounded-lg bg-red-50 border border-red-100 cursor-pointer hover:bg-red-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="alert-circle"
+                        class="w-3.5 h-3.5 text-red-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-red-600"
+                        >是正未完了</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-red-700">
+                      6F電気エリア: 通路上の仮置資材 → 期限3/11
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-amber-50 border border-amber-100 cursor-pointer hover:bg-amber-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="clock"
+                        class="w-3.5 h-3.5 text-amber-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-amber-600"
+                        >資格期限</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-amber-700">
+                      クレーン運転士免許 2名が今月末で更新期限
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="users"
+                        class="w-3.5 h-3.5 text-blue-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-blue-600"
+                        >新規入場</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-blue-700">
+                      明日3/11 新規入場者4名 (内装業者) 教育実施要
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-purple-50 border border-purple-100 cursor-pointer hover:bg-purple-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="calendar"
+                        class="w-3.5 h-3.5 text-purple-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-purple-600"
+                        >定期点検</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-purple-700">
+                      タワークレーン月次点検 3/15実施予定
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-let wizCur=0;
-function wizGo(n){document.querySelectorAll('.wiz-step').forEach((s,i)=>s.classList.toggle('hidden',i!==n));
-document.querySelectorAll('.step-ind').forEach((s,i)=>{const c=s.querySelector('div');c.style.background=i<=n?'#1e3a5f':'#e5e7eb';c.className=c.className.replace(/text-\w+/g,i<=n?'text-white':'text-gray-400')+' w-7 h-7 rounded-full flex items-center justify-center text-[12px]'});
-wizCur=n;if(typeof lucide!=='undefined')lucide.createIcons()}
-function wizNext(){if(wizCur<3)wizGo(wizCur+1)}
-function wizPrev(){if(wizCur>0)wizGo(wizCur-1)}
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  月別ヒヤリハット報告件数
+                </h3>
+                <div style="height: 220px"><canvas id="dbC1"></canvas></div>
+              </div>
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  危険要因カテゴリ分布
+                </h3>
+                <div style="height: 220px"><canvas id="dbC2"></canvas></div>
+              </div>
+            </div>
+          </div>
 
+          <!-- ==================== PAGE 2: KY活動 ==================== -->
+          <div id="page-ky" class="page">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <button class="p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                  <i
+                    data-lucide="chevron-left"
+                    class="w-4 h-4 text-gray-400"
+                  ></i>
+                </button>
+                <span class="text-[14px] font-semibold text-gray-700"
+                  >2026年3月10日 (月)</span
+                >
+                <button class="p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                  <i
+                    data-lucide="chevron-right"
+                    class="w-4 h-4 text-gray-400"
+                  ></i>
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="text-[12px] px-3 py-2 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="history" class="w-3.5 h-3.5"></i>過去のKY一覧
+                </button>
+                <button
+                  class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>KY活動を記録
+                </button>
+              </div>
+            </div>
 
-// data
+            <!-- KY Detail Card -->
+            <div class="card p-5 mb-4">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="text-[14px] font-semibold text-gray-800">
+                    7F躯体班 — コンクリート打設作業
+                  </h3>
+                  <p class="text-[11px] text-gray-400 mt-0.5">
+                    2026/03/10 07:45 ｜ 高橋班長 ｜ 参加者32名
+                  </p>
+                </div>
+                <span class="tag bg-green-50 text-green-700">承認済</span>
+              </div>
 
-function selectItem(el,color){document.querySelectorAll('#splitList > div').forEach(d=>{d.classList.remove('border-l-2');d.style.borderLeftColor=''});
-el.classList.add('border-l-2');el.style.borderLeftColor=color;}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <h4
+                    class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    作業内容
+                  </h4>
+                  <p class="text-[12px] text-gray-700 leading-relaxed">
+                    7Fスラブコンクリート打設作業。生コン車13台、ポンプ車2台使用。打設量120m³、所要時間約6時間。
+                  </p>
+                </div>
+                <div>
+                  <h4
+                    class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2"
+                  >
+                    作業範囲
+                  </h4>
+                  <p class="text-[12px] text-gray-700 leading-relaxed">
+                    7F全スラブ（X1-X6通り×Y1-Y4通り）。ポンプ車配置:
+                    北側道路。生コン車動線: 東側搬入路。
+                  </p>
+                </div>
+              </div>
 
+              <h4
+                class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3"
+              >
+                危険予知と対策
+              </h4>
+              <div class="space-y-2">
+                <div class="p-3 rounded-lg border border-red-200 bg-red-50/50">
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5"
+                    >
+                      <span class="text-[11px] font-bold text-red-600">1</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="text-[12px] font-medium text-red-700">
+                          ポンプ車ホースの急な跳ね返りによる打撲
+                        </p>
+                        <span
+                          class="risk-high text-[10px] px-1.5 py-0.5 rounded"
+                          >リスク高</span
+                        >
+                      </div>
+                      <p class="text-[11px] text-gray-600">
+                        <span class="font-medium">対策:</span>
+                        ホース固定金具のダブルチェック、ホース先端操作者は防護具(面体・胸当)着用、合図者を配置
+                      </p>
+                      <p class="text-[10px] text-gray-400 mt-1">
+                        過去発生: 2025/12/15 類似事例あり（他現場ヒヤリハット）
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="p-3 rounded-lg border border-amber-200 bg-amber-50/50"
+                >
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5"
+                    >
+                      <span class="text-[11px] font-bold text-amber-600"
+                        >2</span
+                      >
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="text-[12px] font-medium text-amber-700">
+                          コンクリート飛散による目の損傷
+                        </p>
+                        <span class="risk-mid text-[10px] px-1.5 py-0.5 rounded"
+                          >リスク中</span
+                        >
+                      </div>
+                      <p class="text-[11px] text-gray-600">
+                        <span class="font-medium">対策:</span>
+                        全作業員に保護メガネ着用を徹底、打設エリア外の立入禁止区域設定
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="p-3 rounded-lg border border-green-200 bg-green-50/50"
+                >
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5"
+                    >
+                      <span class="text-[11px] font-bold text-green-600"
+                        >3</span
+                      >
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="text-[12px] font-medium text-green-700">
+                          生コン車の後進時に作業員と接触
+                        </p>
+                        <span class="risk-mid text-[10px] px-1.5 py-0.5 rounded"
+                          >リスク中</span
+                        >
+                      </div>
+                      <p class="text-[11px] text-gray-600">
+                        <span class="font-medium">対策:</span>
+                        誘導員2名配置、後進警報装置の作動確認、車両動線にカラーコーン設置
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["A現場", "B現場", "C現場", "D現場", "E現場", "F現場"], "datasets": [{"label": "今期", "data": [87, 76, 41, 74, 30, 36], "backgroundColor": "#1e3a5f", "borderRadius": 4}, {"label": "前期", "data": [71, 59, 23, 54, 28, 36], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["A現場", "B現場", "C現場", "D現場", "E現場"], "datasets": [{"data": [87, 76, 41, 74, 30], "backgroundColor": ["#1e3a5f", "#3b82f6", "#1e3a5f80", "#3b82f680", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
+              <div
+                class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100"
+              >
+                <div class="flex items-center gap-2 mb-1">
+                  <i data-lucide="lightbulb" class="w-4 h-4 text-blue-500"></i>
+                  <span class="text-[11px] font-semibold text-blue-700"
+                    >AI分析: 過去データからの提案</span
+                  >
+                </div>
+                <p class="text-[11px] text-blue-600">
+                  過去6ヶ月のコン打設KYデータ(12回分)を分析。「スラブ端部での転落」リスクが3回指摘されており、今回の危険予知に追加を推奨。
+                </p>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Other KYs today -->
+            <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+              本日の全KY活動
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div
+                class="card p-3 cursor-pointer hover:border-blue-200 transition-colors border-l-4 border-l-green-500"
+              >
+                <p class="text-[12px] font-medium text-gray-700">
+                  外壁班 — ALC取付作業
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  佐藤職長 12名 ｜ 07:50 ｜ 危険3件
+                </p>
+                <div class="flex gap-1 mt-2">
+                  <span class="risk-high text-[9px] px-1.5 py-0.5 rounded"
+                    >吊荷落下</span
+                  >
+                  <span class="risk-mid text-[9px] px-1.5 py-0.5 rounded"
+                    >指挟み</span
+                  >
+                  <span class="risk-mid text-[9px] px-1.5 py-0.5 rounded"
+                    >強風時中断</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card p-3 cursor-pointer hover:border-blue-200 transition-colors border-l-4 border-l-green-500"
+              >
+                <p class="text-[12px] font-medium text-gray-700">
+                  5-6F設備班 — 給排水配管
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  中村班 18名 ｜ 07:50 ｜ 危険2件
+                </p>
+                <div class="flex gap-1 mt-2">
+                  <span class="risk-mid text-[9px] px-1.5 py-0.5 rounded"
+                    >重量物落下</span
+                  >
+                  <span class="risk-low text-[9px] px-1.5 py-0.5 rounded"
+                    >接着剤臭気</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card p-3 cursor-pointer hover:border-blue-200 transition-colors border-l-4 border-l-green-500"
+              >
+                <p class="text-[12px] font-medium text-gray-700">
+                  電気班 — ケーブルラック据付
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  伊藤班 15名 ｜ 07:55 ｜ 危険2件
+                </p>
+                <div class="flex gap-1 mt-2">
+                  <span class="risk-mid text-[9px] px-1.5 py-0.5 rounded"
+                    >感電</span
+                  >
+                  <span class="risk-low text-[9px] px-1.5 py-0.5 rounded"
+                    >脚立転倒</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card p-3 cursor-pointer hover:border-blue-200 transition-colors border-l-4 border-l-green-500"
+              >
+                <p class="text-[12px] font-medium text-gray-700">
+                  仮設班 — 8F足場組立
+                </p>
+                <p class="text-[11px] text-gray-400 mt-0.5">
+                  山田班 8名 ｜ 12:45 ｜ 危険4件
+                </p>
+                <div class="flex gap-1 mt-2">
+                  <span class="risk-high text-[9px] px-1.5 py-0.5 rounded"
+                    >墜落</span
+                  >
+                  <span class="risk-high text-[9px] px-1.5 py-0.5 rounded"
+                    >足場材落下</span
+                  >
+                  <span class="risk-mid text-[9px] px-1.5 py-0.5 rounded"
+                    >踏外し</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 3: 安全パトロール ==================== -->
+          <div id="page-patrol" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                安全パトロール記録
+              </h3>
+              <button
+                class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>パトロール開始
+              </button>
+            </div>
+
+            <!-- Latest patrol -->
+            <div class="card p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h4 class="text-[13px] font-semibold text-gray-800">
+                    定期安全パトロール #P-087
+                  </h4>
+                  <p class="text-[11px] text-gray-400">
+                    2026/03/10 13:30 ｜ 佐藤健一, 田中一郎 ｜ 所要45分
+                  </p>
+                </div>
+                <span class="tag bg-amber-50 text-amber-600">指摘2件</span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="border-b bg-gray-50">
+                      <th
+                        class="text-left px-3 py-2 text-[11px] font-semibold text-gray-500 w-8"
+                      >
+                        No
+                      </th>
+                      <th
+                        class="text-left px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        点検項目
+                      </th>
+                      <th
+                        class="text-left px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        場所
+                      </th>
+                      <th
+                        class="text-center px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        判定
+                      </th>
+                      <th
+                        class="text-left px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        備考
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50">
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">1</td>
+                      <td class="px-3 py-2.5 text-gray-700">
+                        墜落防止措置(安全帯・手すり)
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">7F-8F</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">全員着用確認</td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">2</td>
+                      <td class="px-3 py-2.5 text-gray-700">開口部養生</td>
+                      <td class="px-3 py-2.5 text-gray-500">6F-7F</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        養生蓋・手すり設置確認
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">3</td>
+                      <td class="px-3 py-2.5 text-gray-700">足場の状態</td>
+                      <td class="px-3 py-2.5 text-gray-500">外周足場</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        筋交い・壁つなぎ正常
+                      </td>
+                    </tr>
+                    <tr class="check-row bg-amber-50/30">
+                      <td class="px-3 py-2.5 text-gray-400">4</td>
+                      <td class="px-3 py-2.5 font-medium text-amber-700">
+                        整理整頓・通路確保
+                      </td>
+                      <td class="px-3 py-2.5 text-amber-600">6F電気</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="alert-triangle"
+                          class="w-4 h-4 text-amber-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-amber-600">
+                        ケーブル仮置きが通路にはみ出し
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">5</td>
+                      <td class="px-3 py-2.5 text-gray-700">
+                        重機周辺安全措置
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">地上</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">誘導員配置確認</td>
+                    </tr>
+                    <tr class="check-row bg-amber-50/30">
+                      <td class="px-3 py-2.5 text-gray-400">6</td>
+                      <td class="px-3 py-2.5 font-medium text-amber-700">
+                        標識・表示
+                      </td>
+                      <td class="px-3 py-2.5 text-amber-600">クレーン周辺</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="alert-triangle"
+                          class="w-4 h-4 text-amber-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-amber-600">
+                        立入禁止表示の退色 → 更新指示
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">7</td>
+                      <td class="px-3 py-2.5 text-gray-700">消火器・AED設置</td>
+                      <td class="px-3 py-2.5 text-gray-500">各階</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        全箇所有効期限内
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">8</td>
+                      <td class="px-3 py-2.5 text-gray-700">保護具着用状況</td>
+                      <td class="px-3 py-2.5 text-gray-500">全エリア</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        ヘルメット・安全靴 全員着用
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">9</td>
+                      <td class="px-3 py-2.5 text-gray-700">
+                        電気機器漏電チェック
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">仮設電気</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        アース接続確認済
+                      </td>
+                    </tr>
+                    <tr class="check-row">
+                      <td class="px-3 py-2.5 text-gray-400">10</td>
+                      <td class="px-3 py-2.5 text-gray-700">粉塵・騒音対策</td>
+                      <td class="px-3 py-2.5 text-gray-500">7F</td>
+                      <td class="px-3 py-2.5 text-center">
+                        <i
+                          data-lucide="check-circle-2"
+                          class="w-4 h-4 text-green-500 inline"
+                        ></i>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">
+                        散水実施・防音シート設置
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Past patrols -->
+            <h4 class="font-semibold text-[13px] text-gray-700 mb-3">
+              過去のパトロール
+            </h4>
+            <div class="card overflow-hidden">
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="bg-gray-50 border-b">
+                    <th
+                      class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      日付
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      種別
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      実施者
+                    </th>
+                    <th
+                      class="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      指摘
+                    </th>
+                    <th
+                      class="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      是正
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5 text-gray-700 font-medium">
+                      2026/03/10
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">定期</td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤, 田中</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-amber-50 text-amber-600">2件</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-blue-50 text-blue-700">対応中</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5 text-gray-700">2026/03/07</td>
+                    <td class="px-3 py-2.5 text-gray-500">定期</td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤, 高橋</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-green-50 text-green-700">0件</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">—</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5 text-gray-700">2026/03/05</td>
+                    <td class="px-3 py-2.5 text-gray-500">抜打ち</td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-amber-50 text-amber-600">1件</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-green-50 text-green-700">完了</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5 text-gray-700">2026/03/03</td>
+                    <td class="px-3 py-2.5 text-gray-500">定期</td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤, 田中</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-amber-50 text-amber-600">3件</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-green-50 text-green-700">完了</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5 text-gray-700">2026/02/28</td>
+                    <td class="px-3 py-2.5 text-gray-500">定期</td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤, 中村</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-amber-50 text-amber-600">1件</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="tag bg-green-50 text-green-700">完了</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 4: ヒヤリハット ==================== -->
+          <div id="page-nearmiss" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                ヒヤリハット報告
+              </h3>
+              <button
+                class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>新規報告
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div class="card p-3.5 text-center">
+                <p class="text-[22px] font-bold text-gray-800">23</p>
+                <p class="text-[11px] text-gray-400">今月報告数</p>
+              </div>
+              <div class="card p-3.5 text-center">
+                <p class="text-[22px] font-bold text-amber-600">8</p>
+                <p class="text-[11px] text-gray-400">対策検討中</p>
+              </div>
+              <div class="card p-3.5 text-center">
+                <p class="text-[22px] font-bold text-green-700">15</p>
+                <p class="text-[11px] text-gray-400">対策完了</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div
+                class="card p-4 border-l-4 border-l-red-400 cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[12px] font-semibold text-gray-800"
+                        >#HH-045 足場上での資材落下</span
+                      >
+                      <span class="risk-high text-[10px] px-1.5 py-0.5 rounded"
+                        >危険度高</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      2026/03/09 ｜ 8F外部足場 ｜ 報告者: 山田班長
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1.5">
+                      足場板の上に仮置きしていた番線カッターが風で落下。下方に作業員なし(偶然)。
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="tag bg-blue-50 text-blue-700"
+                        >墜落・飛来落下</span
+                      >
+                      <span class="tag bg-orange-50 text-orange-700"
+                        >対策検討中</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="card p-4 border-l-4 border-l-amber-400 cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[12px] font-semibold text-gray-800"
+                        >#HH-044 コンクリート打設中の足元滑り</span
+                      >
+                      <span class="risk-mid text-[10px] px-1.5 py-0.5 rounded"
+                        >危険度中</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      2026/03/08 ｜ 6Fスラブ ｜ 報告者: 高橋班長
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1.5">
+                      打設中にコンクリートが足元に溜まり、作業員が滑りかける。転倒未遂。
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="tag bg-blue-50 text-blue-700">転倒</span>
+                      <span class="tag bg-green-50 text-green-700"
+                        >対策完了</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="card p-4 border-l-4 border-l-amber-400 cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[12px] font-semibold text-gray-800"
+                        >#HH-043 クレーン旋回範囲への立入り</span
+                      >
+                      <span class="risk-high text-[10px] px-1.5 py-0.5 rounded"
+                        >危険度高</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      2026/03/07 ｜ 地上クレーン周辺 ｜ 報告者: 佐藤
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1.5">
+                      新規入場の作業員がクレーン旋回範囲に気付かず立入り。誘導員が即座に制止。
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="tag bg-blue-50 text-blue-700">重機</span>
+                      <span class="tag bg-green-50 text-green-700"
+                        >対策完了</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="card p-4 border-l-4 border-l-green-400 cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[12px] font-semibold text-gray-800"
+                        >#HH-042 配管接着剤による目の刺激</span
+                      >
+                      <span class="risk-low text-[10px] px-1.5 py-0.5 rounded"
+                        >危険度低</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      2026/03/06 ｜ 5F給排水 ｜ 報告者: 設備作業員
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1.5">
+                      密閉空間で接着剤を使用中に目がしみる。換気不足が原因。
+                    </p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="tag bg-blue-50 text-blue-700">有害物質</span>
+                      <span class="tag bg-green-50 text-green-700"
+                        >対策完了</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: 安全教育・資格 ==================== -->
+          <div id="page-training" class="page">
+            <div class="flex items-center gap-3 mb-4 border-b pb-3">
+              <button
+                class="text-[13px] font-semibold text-blue-900 border-b-2 border-blue-900 pb-2 cursor-pointer"
+                onclick="switchTrainTab(0)"
+              >
+                新規入場者教育
+              </button>
+              <button
+                class="text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors"
+                onclick="switchTrainTab(1)"
+              >
+                資格管理
+              </button>
+              <button
+                class="text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors"
+                onclick="switchTrainTab(2)"
+              >
+                特別教育履歴
+              </button>
+            </div>
+
+            <!-- Tab 0: New worker -->
+            <div id="trainTab0" class="train-tab">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex gap-3 text-[11px] text-gray-400">
+                  <span
+                    >今月入場:
+                    <span class="font-semibold text-gray-700">18名</span></span
+                  >
+                  <span
+                    >教育完了:
+                    <span class="font-semibold text-green-700">14名</span></span
+                  >
+                  <span
+                    >未実施:
+                    <span class="font-semibold text-red-600">4名</span></span
+                  >
+                </div>
+                <button
+                  class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>教育記録追加
+                </button>
+              </div>
+              <div class="card overflow-hidden">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        氏名
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        所属業者
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        職種
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        入場日
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        教育
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        血液型
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        緊急連絡先
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        木村 隆
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">(株)大和建設</td>
+                      <td class="px-3 py-2.5 text-gray-500">鉄筋工</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/08</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">完了</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">A型</td>
+                      <td class="px-3 py-2.5 text-gray-400">登録済</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        松本 大輔
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">(株)大和建設</td>
+                      <td class="px-3 py-2.5 text-gray-500">型枠工</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/08</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">完了</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">O型</td>
+                      <td class="px-3 py-2.5 text-gray-400">登録済</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        井上 翔太
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">三栄電気(株)</td>
+                      <td class="px-3 py-2.5 text-gray-500">電工</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/06</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">完了</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">B型</td>
+                      <td class="px-3 py-2.5 text-gray-400">登録済</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors bg-red-50/30">
+                      <td class="px-4 py-2.5 font-medium text-red-700">
+                        藤田 翼
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">内装工業(株)</td>
+                      <td class="px-3 py-2.5 text-gray-500">内装工</td>
+                      <td class="px-3 py-2.5 text-red-600 font-medium">
+                        2026/03/11
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-red-50 text-red-600">未実施</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">—</td>
+                      <td class="px-3 py-2.5 text-gray-400">—</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors bg-red-50/30">
+                      <td class="px-4 py-2.5 font-medium text-red-700">
+                        岡田 進
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">内装工業(株)</td>
+                      <td class="px-3 py-2.5 text-gray-500">内装工</td>
+                      <td class="px-3 py-2.5 text-red-600 font-medium">
+                        2026/03/11
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-red-50 text-red-600">未実施</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-400">—</td>
+                      <td class="px-3 py-2.5 text-gray-400">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tab 1: Certifications -->
+            <div id="trainTab1" class="train-tab" style="display: none">
+              <div class="card overflow-hidden">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        氏名
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        資格名
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        取得日
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        有効期限
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        高橋 勇介
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">
+                        1級建築施工管理技士
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2020/06</td>
+                      <td class="px-3 py-2.5 text-gray-500">—</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">有効</span>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        佐藤 健一
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">安全衛生責任者</td>
+                      <td class="px-3 py-2.5 text-gray-500">2022/04</td>
+                      <td class="px-3 py-2.5 text-gray-500">—</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">有効</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors bg-amber-50/30"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-amber-700">
+                        伊藤 雅人
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">
+                        クレーン運転士免許
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2024/04</td>
+                      <td class="px-3 py-2.5 text-amber-600 font-medium">
+                        2026/03/31
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-amber-50 text-amber-600"
+                          >更新要</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors bg-amber-50/30"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-amber-700">
+                        渡辺 剛
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">
+                        クレーン運転士免許
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2024/04</td>
+                      <td class="px-3 py-2.5 text-amber-600 font-medium">
+                        2026/03/31
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-amber-50 text-amber-600"
+                          >更新要</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        山田 太郎
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">
+                        足場の組立て等作業主任者
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2023/08</td>
+                      <td class="px-3 py-2.5 text-gray-500">—</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">有効</span>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        中村 秀夫
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-600">
+                        1級管工事施工管理技士
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2021/11</td>
+                      <td class="px-3 py-2.5 text-gray-500">—</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">有効</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tab 2: Special training -->
+            <div id="trainTab2" class="train-tab" style="display: none">
+              <div class="card overflow-hidden">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        教育名
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        実施日
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        講師
+                      </th>
+                      <th
+                        class="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        受講者
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        内容
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        高所作業特別教育
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/02/15</td>
+                      <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                      <td class="px-3 py-2.5 text-center">24名</td>
+                      <td class="px-3 py-2.5 text-gray-500">
+                        フルハーネス型安全帯使用
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        酸欠危険作業教育
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/01/20</td>
+                      <td class="px-3 py-2.5 text-gray-500">外部講師</td>
+                      <td class="px-3 py-2.5 text-center">18名</td>
+                      <td class="px-3 py-2.5 text-gray-500">
+                        地下ピット作業対応
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        熱中症予防教育
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/01/10</td>
+                      <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                      <td class="px-3 py-2.5 text-center">127名</td>
+                      <td class="px-3 py-2.5 text-gray-500">
+                        WBGT指数に基づく管理
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        玉掛け技能講習
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">2025/12/08</td>
+                      <td class="px-3 py-2.5 text-gray-500">協会講師</td>
+                      <td class="px-3 py-2.5 text-center">12名</td>
+                      <td class="px-3 py-2.5 text-gray-500">
+                        ワイヤロープ点検・合図
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: リスクアセスメント ==================== -->
+          <div id="page-risk" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                リスクアセスメント
+              </h3>
+              <button
+                class="text-[12px] px-3 py-2 rounded-lg bg-orange-500 text-white font-medium hover:bg-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>新規評価
+              </button>
+            </div>
+
+            <!-- Risk Matrix Legend -->
+            <div class="card p-4 mb-4">
+              <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                リスクマトリクス（頻度 × 重大性）
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="text-[11px] border-collapse">
+                  <thead>
+                    <tr>
+                      <th
+                        class="border px-3 py-2 bg-gray-50 text-gray-500 w-20"
+                      ></th>
+                      <th class="border px-3 py-2 bg-gray-50 text-gray-500">
+                        軽微
+                      </th>
+                      <th class="border px-3 py-2 bg-gray-50 text-gray-500">
+                        中程度
+                      </th>
+                      <th class="border px-3 py-2 bg-gray-50 text-gray-500">
+                        重大
+                      </th>
+                      <th class="border px-3 py-2 bg-gray-50 text-gray-500">
+                        致命的
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        class="border px-3 py-2 bg-gray-50 text-gray-500 font-medium"
+                      >
+                        高い
+                      </td>
+                      <td class="border px-3 py-2 bg-amber-100 text-center">
+                        中
+                      </td>
+                      <td class="border px-3 py-2 bg-red-100 text-center">
+                        高
+                      </td>
+                      <td
+                        class="border px-3 py-2 bg-red-200 text-center font-bold text-red-700"
+                      >
+                        極高
+                      </td>
+                      <td
+                        class="border px-3 py-2 bg-red-300 text-center font-bold text-red-800"
+                      >
+                        極高
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="border px-3 py-2 bg-gray-50 text-gray-500 font-medium"
+                      >
+                        中程度
+                      </td>
+                      <td class="border px-3 py-2 bg-green-100 text-center">
+                        低
+                      </td>
+                      <td class="border px-3 py-2 bg-amber-100 text-center">
+                        中
+                      </td>
+                      <td class="border px-3 py-2 bg-red-100 text-center">
+                        高
+                      </td>
+                      <td
+                        class="border px-3 py-2 bg-red-200 text-center font-bold text-red-700"
+                      >
+                        極高
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="border px-3 py-2 bg-gray-50 text-gray-500 font-medium"
+                      >
+                        低い
+                      </td>
+                      <td class="border px-3 py-2 bg-green-50 text-center">
+                        極低
+                      </td>
+                      <td class="border px-3 py-2 bg-green-100 text-center">
+                        低
+                      </td>
+                      <td class="border px-3 py-2 bg-amber-100 text-center">
+                        中
+                      </td>
+                      <td class="border px-3 py-2 bg-red-100 text-center">
+                        高
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Risk items -->
+            <div class="card overflow-hidden">
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="bg-gray-50 border-b">
+                    <th
+                      class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      作業・工程
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      危険源
+                    </th>
+                    <th
+                      class="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      リスク
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      低減措置
+                    </th>
+                    <th
+                      class="text-center px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      残留リスク
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      担当
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      足場組立・解体
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">高所からの墜落</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-high text-[10px] px-2 py-0.5 rounded"
+                        >極高</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">
+                      安全帯二丁掛け、作業手順遵守、親綱設置
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-low text-[10px] px-2 py-0.5 rounded"
+                        >低</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">山田</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      クレーン作業
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">吊荷落下・接触</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-high text-[10px] px-2 py-0.5 rounded"
+                        >極高</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">
+                      立入禁止区域設定、合図者配置、定格荷重管理
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-mid text-[10px] px-2 py-0.5 rounded"
+                        >中</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      コンクリート打設
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">ポンプホース暴発</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-high text-[10px] px-2 py-0.5 rounded"
+                        >高</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">
+                      ホース固定確認、防護具着用、合図連携
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-low text-[10px] px-2 py-0.5 rounded"
+                        >低</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">高橋</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      電気工事
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">感電</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-high text-[10px] px-2 py-0.5 rounded"
+                        >高</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">
+                      検電確認、絶縁工具使用、作業停電手順
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-low text-[10px] px-2 py-0.5 rounded"
+                        >低</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">伊藤</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      ALC取付
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">ALC板の飛来落下</td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-mid text-[10px] px-2 py-0.5 rounded"
+                        >中</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600">
+                      玉掛け確認、風速管理(10m/s以上中止)
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                      <span class="risk-low text-[10px] px-2 py-0.5 rounded"
+                        >低</span
+                      >
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: 分析・レポート ==================== -->
+          <div id="page-analytics" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                安全分析ダッシュボード
+              </h3>
+              <div class="flex gap-2">
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white cursor-pointer"
+                >
+                  <option>直近6ヶ月</option>
+                  <option>直近3ヶ月</option>
+                  <option>今月</option>
+                </select>
+                <button
+                  class="text-[12px] px-3 py-2 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>レポート出力
+                </button>
+              </div>
+            </div>
+
+            <!-- Comparison cards -->
+            <div
+              class="card p-4 mb-4 bg-gradient-to-r from-green-50 to-blue-50 border-green-200"
+            >
+              <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                デジタル化前後の比較（導入6ヶ月）
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-white p-3 rounded-lg">
+                  <p class="text-[10px] text-gray-400">KY活動実施率</p>
+                  <div class="flex items-end gap-2 mt-1">
+                    <span class="text-[11px] text-gray-400 line-through"
+                      >90%</span
+                    ><span class="text-[18px] font-bold text-green-700"
+                      >98.5%</span
+                    >
+                  </div>
+                  <p class="text-[10px] text-green-600">+8.5pt</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <p class="text-[10px] text-gray-400">ヒヤリハット報告数</p>
+                  <div class="flex items-end gap-2 mt-1">
+                    <span class="text-[11px] text-gray-400 line-through"
+                      >5件/月</span
+                    ><span class="text-[18px] font-bold text-green-700"
+                      >23件/月</span
+                    >
+                  </div>
+                  <p class="text-[10px] text-green-600">+360%</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <p class="text-[10px] text-gray-400">是正完了日数</p>
+                  <div class="flex items-end gap-2 mt-1">
+                    <span class="text-[11px] text-gray-400 line-through"
+                      >5.2日</span
+                    ><span class="text-[18px] font-bold text-green-700"
+                      >1.8日</span
+                    >
+                  </div>
+                  <p class="text-[10px] text-green-600">-65%</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <p class="text-[10px] text-gray-400">書類作成時間</p>
+                  <div class="flex items-end gap-2 mt-1">
+                    <span class="text-[11px] text-gray-400 line-through"
+                      >45分/日</span
+                    ><span class="text-[18px] font-bold text-green-700"
+                      >12分/日</span
+                    >
+                  </div>
+                  <p class="text-[10px] text-green-600">-73%</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  月別KY活動 危険ポイント分類
+                </h3>
+                <div style="height: 240px"><canvas id="anC1"></canvas></div>
+              </div>
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  ヒヤリハット 工種別分布
+                </h3>
+                <div style="height: 240px"><canvas id="anC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card p-4">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                安全指標推移
+              </h3>
+              <div style="height: 260px"><canvas id="anC3"></canvas></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "安全ダッシュボード",
+          desc: "新宿区A棟オフィスビル新築工事",
+        },
+        { id: "ky", title: "KY活動", desc: "危険予知活動の記録・管理" },
+        { id: "patrol", title: "安全パトロール", desc: "点検記録・是正管理" },
+        { id: "nearmiss", title: "ヒヤリハット", desc: "報告・分析・再発防止" },
+        { id: "training", title: "安全教育・資格", desc: "教育記録・資格管理" },
+        {
+          id: "risk",
+          title: "リスクアセスメント",
+          desc: "リスク評価・低減措置",
+        },
+        {
+          id: "analytics",
+          title: "分析・レポート",
+          desc: "安全データの可視化・分析",
+        },
+      ];
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      // Tab switchers
+      function switchTrainTab(idx) {
+        document
+          .querySelectorAll(".train-tab")
+          .forEach((t, i) => (t.style.display = i === idx ? "block" : "none"));
+        const btns = document.querySelectorAll(
+          "#page-training > div:first-child > button",
+        );
+        btns.forEach((b, i) => {
+          b.className =
+            i === idx
+              ? "text-[13px] font-semibold text-blue-900 border-b-2 border-blue-900 pb-2 cursor-pointer"
+              : "text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors";
+        });
+      }
+
+      // Dashboard charts
+      charts.push(
+        new Chart(document.getElementById("dbC1"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "ヒヤリハット",
+                data: [5, 8, 11, 15, 19, 23],
+                backgroundColor: "#f59e0b",
+                borderRadius: 4,
+              },
+              {
+                label: "是正指摘",
+                data: [3, 5, 4, 6, 4, 5],
+                backgroundColor: "#1a2e44",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 } },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      charts.push(
+        new Chart(document.getElementById("dbC2"), {
+          type: "doughnut",
+          data: {
+            labels: [
+              "墜落・転落",
+              "飛来・落下",
+              "転倒",
+              "重機接触",
+              "感電",
+              "その他",
+            ],
+            datasets: [
+              {
+                data: [28, 22, 18, 15, 8, 9],
+                backgroundColor: [
+                  "#dc2626",
+                  "#f59e0b",
+                  "#3b82f6",
+                  "#8b5cf6",
+                  "#06b6d4",
+                  "#e5e7eb",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 8,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      // Analytics charts
+      charts.push(
+        new Chart(document.getElementById("anC1"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "墜落・転落",
+                data: [8, 10, 9, 12, 11, 14],
+                backgroundColor: "#dc2626",
+                borderRadius: 2,
+              },
+              {
+                label: "飛来・落下",
+                data: [5, 7, 6, 8, 9, 10],
+                backgroundColor: "#f59e0b",
+                borderRadius: 2,
+              },
+              {
+                label: "転倒",
+                data: [4, 5, 6, 5, 7, 8],
+                backgroundColor: "#3b82f6",
+                borderRadius: 2,
+              },
+              {
+                label: "その他",
+                data: [6, 8, 7, 10, 9, 12],
+                backgroundColor: "#e5e7eb",
+                borderRadius: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 8,
+                },
+              },
+            },
+            scales: {
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+              },
+              y: {
+                stacked: true,
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 } },
+              },
+            },
+          },
+        }),
+      );
+
+      charts.push(
+        new Chart(document.getElementById("anC2"), {
+          type: "bar",
+          data: {
+            labels: ["躯体", "仮設", "外壁", "電気", "設備", "その他"],
+            datasets: [
+              {
+                label: "件数",
+                data: [32, 24, 18, 12, 8, 6],
+                backgroundColor: [
+                  "#1a2e44",
+                  "#f59e0b",
+                  "#3b82f6",
+                  "#8b5cf6",
+                  "#06b6d4",
+                  "#e5e7eb",
+                ],
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 } },
+              },
+              y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      charts.push(
+        new Chart(document.getElementById("anC3"), {
+          type: "line",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "KY実施率(%)",
+                data: [90, 92, 94, 96, 97, 98.5],
+                borderColor: "#16a34a",
+                backgroundColor: "#16a34a10",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: "#16a34a",
+                yAxisID: "y",
+              },
+              {
+                label: "安全スコア",
+                data: [78, 81, 84, 87, 90, 92],
+                borderColor: "#1a2e44",
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: "#1a2e44",
+                yAxisID: "y",
+              },
+              {
+                label: "ヒヤリハット件数",
+                data: [5, 8, 11, 15, 19, 23],
+                borderColor: "#f59e0b",
+                borderDash: [4, 4],
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: "#f59e0b",
+                yAxisID: "y1",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 10,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                min: 70,
+                max: 100,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 }, callback: (v) => v + "%" },
+                title: {
+                  display: true,
+                  text: "実施率・スコア",
+                  font: { size: 10 },
+                },
+              },
+              y1: {
+                position: "right",
+                beginAtZero: true,
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+                title: { display: true, text: "件数", font: { size: 10 } },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
