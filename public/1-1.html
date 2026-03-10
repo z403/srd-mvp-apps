@@ -1,106 +1,2531 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>施工管理の属人化 | 建設業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>施工管理の属人化 | 建設業 | SRD MVP Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .gantt-bar {
+        height: 22px;
+        border-radius: 4px;
+        position: relative;
+        transition: width 0.3s;
+      }
+      .gantt-bar .label {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .photo-card {
+        aspect-ratio: 4/3;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .photo-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .check-item {
+        transition: background 0.15s;
+      }
+      .check-item:hover {
+        background: #f8fafc;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+    </style>
+  </head>
+  <body class="bg-[#f5f6f8]">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[220px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #162d4a"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0"
+            >
+              <i data-lucide="hard-hat" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[12px] leading-tight truncate">
+                ConstructHub
+              </p>
+              <p class="text-[10px] opacity-40">施工管理プラットフォーム</p>
+            </div>
+          </div>
+        </div>
+        <div class="px-3 pt-3 pb-1">
+          <p
+            class="text-[10px] uppercase tracking-wider text-white/30 font-medium px-2"
+          >
+            プロジェクト
+          </p>
+        </div>
+        <nav class="flex-1 px-2 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="overview"
+            class="nav-item active flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('overview')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>現場概要</span></a
+          >
+          <a
+            data-page="schedule"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('schedule')"
+          >
+            <i
+              data-lucide="gantt-chart"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>工程管理</span></a
+          >
+          <a
+            data-page="photos"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('photos')"
+          >
+            <i
+              data-lucide="camera"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>現場写真</span></a
+          >
+          <a
+            data-page="drawings"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('drawings')"
+          >
+            <i
+              data-lucide="file-text"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>図面・書類</span></a
+          >
+          <a
+            data-page="daily"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('daily')"
+          >
+            <i
+              data-lucide="clipboard-list"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>日報</span></a
+          >
+          <a
+            data-page="inspection"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('inspection')"
+          >
+            <i
+              data-lucide="shield-check"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>検査・安全</span></a
+          >
+          <a
+            data-page="cost"
+            class="nav-item flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] cursor-pointer"
+            onclick="navigate('cost')"
+          >
+            <i
+              data-lucide="calculator"
+              class="w-[16px] h-[16px] shrink-0 opacity-70"
+            ></i
+            ><span>原価管理</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-orange-500/80 flex items-center justify-center text-[11px] font-medium"
+            >
+              田
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">田中一郎</p>
+              <p class="text-[10px] opacity-30">現場所長</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#1e3a5f">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">1</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">施工管理の属人化</p>
-<p class="text-[11px] opacity-50 truncate">建設業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="columns" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ボード</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="folder" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="clock" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <header
+          class="bg-white border-b px-5 py-2.5 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[14px] text-gray-800">
+              現場概要
+            </h1>
+            <p id="pageDesc" class="text-[11px] text-gray-400 mt-0.5">
+              新宿区A棟オフィスビル新築工事
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              title="通知"
+            >
+              <i data-lucide="bell" class="w-4 h-4 text-gray-400"></i>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"
+              ></span>
+            </button>
+            <span
+              class="text-[10px] px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">パフォーマンス概要</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#dbeafe;color:#1e3a5f">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6"><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#1e3a5f" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="68.4" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#1e3a5f">68%</div><div class="text-[11px] text-gray-400">品質</div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#3b82f6" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="44.9" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#3b82f6">79%</div><div class="text-[11px] text-gray-400">効率</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#1e3a5f" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="109.0" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#1e3a5f">49%</div><div class="text-[11px] text-gray-400">遵守</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#3b82f6" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="62.0" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#3b82f6">71%</div><div class="text-[11px] text-gray-400">満足度</div></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">管理指標レーダー</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">現場の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤現場監督</span> に安全指摘</p><p class="text-[11px] text-gray-400">25時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中主任技師</span> の進捗を報告</p><p class="text-[11px] text-gray-400">4時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木安全管理者</span> を完了報告</p><p class="text-[11px] text-gray-400">36時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田品質管理者</span> の写真を登録</p><p class="text-[11px] text-gray-400">23時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#1e3a5f">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋工事部長</span> の工程を更新</p><p class="text-[11px] text-gray-400">4時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="kSearch" type="text" placeholder="タスクを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="plus" class="w-4 h-4"></i>新規タスク</button></div><div class="flex gap-4 overflow-x-auto pb-4"><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#94a3b8"></div><span class="text-[13px] font-semibold text-gray-700">未着手</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">2</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">基礎配筋検査</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/28</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">佐</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">内装ボード貼り</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/7</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">山</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#1e3a5f"></div><span class="text-[13px] font-semibold text-gray-700">進行中</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">2</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">空調配管接続</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/4</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">田</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">2Fコン打設</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/18</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">鈴</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div><span class="text-[13px] font-semibold text-gray-700">レビュー</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">10</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">外壁ALC取付</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/18</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">中</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">受電設備据付</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/10</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">伊</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">防水工事</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/21</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">伊</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">消防設備設置</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/7</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">佐</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#10b981"></div><span class="text-[13px] font-semibold text-gray-700">完了</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">2</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">2Fコン打設</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/8</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">消防設備設置</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/14</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#1e3a5f">加</div></div></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="accSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div class="space-y-3"><details class="card overflow-hidden" open><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#1e3a5f"></i><span class="font-semibold text-[13px] text-gray-700">設備工区</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">4件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤現場監督</p><p class="text-[11px] text-gray-400">#8047 · 2026/01/04</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中主任技師</p><p class="text-[11px] text-gray-400">#5379 · 2026/01/14</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">中断</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">渡辺鉄筋工</p><p class="text-[11px] text-gray-400">#3470 · 2026/03/19</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">中村型枠工</p><p class="text-[11px] text-gray-400">#3725 · 2026/01/23</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#1e3a5f"></i><span class="font-semibold text-[13px] text-gray-700">基礎工区</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">4件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">鈴木安全管理者</p><p class="text-[11px] text-gray-400">#7628 · 2026/01/28</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">中断</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">高橋工事部長</p><p class="text-[11px] text-gray-400">#7076 · 2026/01/09</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">加藤電気担当</p><p class="text-[11px] text-gray-400">#9752 · 2026/01/22</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">中断</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤現場監督</p><p class="text-[11px] text-gray-400">#3298 · 2026/01/24</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査待ち</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#1e3a5f"></i><span class="font-semibold text-[13px] text-gray-700">外構工区</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">1件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">山田品質管理者</p><p class="text-[11px] text-gray-400">#4550 · 2026/02/26</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">施工中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#1e3a5f"></i><span class="font-semibold text-[13px] text-gray-700">第1工区</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">2件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">伊藤重機オペ</p><p class="text-[11px] text-gray-400">#3512 · 2026/01/09</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">中断</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">小林設備担当</p><p class="text-[11px] text-gray-400">#1097 · 2026/01/19</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">施工中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#1e3a5f"></i><span class="font-semibold text-[13px] text-gray-700">第2工区</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">1件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中主任技師</p><p class="text-[11px] text-gray-400">#8315 · 2026/01/10</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">施工中</span></div></div></details></div></div>
-<div id="page-detail" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">工程進捗率</span><span class="text-[15px] font-bold" style="color:#1e3a5f">72%</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">遅延工程</span><span class="text-[15px] font-bold" style="color:#1e3a5f">5件</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">完了工程</span><span class="text-[15px] font-bold" style="color:#1e3a5f">23件</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">作業員稼働</span><span class="text-[15px] font-bold" style="color:#1e3a5f">53名</span></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進行状況</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">着工準備</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/15</p><p class="text-[12px] text-gray-500 mt-1">図面確認・資材手配</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">基礎工事</p><p class="text-[11px] text-gray-400 mt-0.5">2026/02/14</p><p class="text-[12px] text-gray-500 mt-1">掘削・基礎打設</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">躯体工事</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/17</p><p class="text-[12px] text-gray-500 mt-1">鉄骨・RC工事</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">設備工事</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/08</p><p class="text-[12px] text-gray-500 mt-1">電気・給排水</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">内装工事</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/09</p><p class="text-[12px] text-gray-500 mt-1">仕上げ工事</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">竣工検査</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/06</p><p class="text-[12px] text-gray-500 mt-1">最終検査・引渡</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">メモ</h3><label class="block text-[12px] font-medium text-gray-600 mb-1.5">メモ</label><textarea name="メモ" rows="3" placeholder="メモを追加..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div class="mt-3"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次出来高推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">出来高(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">予算消化(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">差異(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">消化率 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">安全件数 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">28</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥924</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥619</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥305</td><td class="px-4 py-3 text-[13px]  text-gray-700">33.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">25</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥163</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥67</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥96</td><td class="px-4 py-3 text-[13px]  text-gray-700">58.9%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">27</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥990</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥475</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥515</td><td class="px-4 py-3 text-[13px]  text-gray-700">52.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">24</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥753</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥324</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥429</td><td class="px-4 py-3 text-[13px]  text-gray-700">57.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">27</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥188</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥111</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥77</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">30</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥560</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥280</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥280</td><td class="px-4 py-3 text-[13px]  text-gray-700">50.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">161</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥3,578</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,876</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,702</td><td class="px-4 py-3 text-[13px]  text-gray-700">47.6%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次出来高推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#1e3a5f"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#1e3a5f"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-4">
+          <!-- ==================== PAGE 1: 現場概要 ==================== -->
+          <div id="page-overview" class="page active">
+            <!-- Project Banner -->
+            <div class="card p-4 mb-4">
+              <div class="flex items-start justify-between flex-wrap gap-3">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="building-2" class="w-6 h-6 text-white"></i>
+                  </div>
+                  <div>
+                    <h2 class="font-bold text-[15px] text-gray-800">
+                      新宿区A棟オフィスビル新築工事
+                    </h2>
+                    <p class="text-[12px] text-gray-400 mt-0.5">
+                      東京都新宿区西新宿3-XX-XX ｜ RC造 地上12階地下1階 ｜ 延床
+                      8,420m²
+                    </p>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      <span class="tag bg-blue-50 text-blue-700"
+                        ><i data-lucide="calendar" class="w-3 h-3"></i>2025/10
+                        〜 2026/09</span
+                      >
+                      <span class="tag bg-green-50 text-green-700"
+                        ><i data-lucide="clock" class="w-3 h-3"></i>工期残
+                        194日</span
+                      >
+                      <span class="tag bg-purple-50 text-purple-700"
+                        ><i data-lucide="user" class="w-3 h-3"></i>発注者:
+                        西新宿開発(株)</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[10px] text-gray-400">全体進捗</p>
+                  <p class="text-[28px] font-bold text-blue-900 leading-none">
+                    58<span class="text-[16px]">%</span>
+                  </p>
+                  <div
+                    class="w-32 h-2 bg-gray-100 rounded-full mt-1.5 overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-blue-700 rounded-full"
+                      style="width: 58%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "パフォーマンス概要"}, {"id": "feature", "title": "ボード", "desc": "タスク管理"}, {"id": "data", "title": "データ一覧", "desc": "グループ表示"}, {"id": "detail", "title": "詳細", "desc": "タイムライン表示"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- KPI Row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">本日入場者数</span>
+                  <i data-lucide="users" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  127<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >名</span
+                  >
+                </p>
+                <p class="text-[11px] text-green-600 mt-1">+12名 前日比</p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">無災害記録</span>
+                  <i data-lucide="shield" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <p class="text-[22px] font-bold text-green-700">
+                  248<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >日</span
+                  >
+                </p>
+                <p class="text-[11px] text-green-600 mt-1">目標: 365日</p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">品質検査合格率</span>
+                  <i
+                    data-lucide="check-circle"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  96.2<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >%</span
+                  >
+                </p>
+                <p class="text-[11px] text-green-600 mt-1">+0.8pt 前月比</p>
+              </div>
+              <div class="card p-3.5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-gray-400">予算消化率</span>
+                  <i data-lucide="wallet" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <p class="text-[22px] font-bold text-gray-800">
+                  52.4<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >%</span
+                  >
+                </p>
+                <p class="text-[11px] text-amber-600 mt-1">工程比 -5.6pt</p>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "radar", "data": {"labels": ["品質", "工程", "安全", "原価", "環境", "技術"], "datasets": [{"label": "現在", "data": [33, 22, 40, 60, 30, 25], "borderColor": "#1e3a5f", "backgroundColor": "#1e3a5f20", "pointBackgroundColor": "#1e3a5f"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <!-- 2-column: Today + Alerts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+              <!-- Today's Status -->
+              <div class="card p-4 lg:col-span-2">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    本日の作業予定
+                  </h3>
+                  <span class="text-[11px] text-gray-400"
+                    >2026/03/10 (月) 晴 12℃</span
+                  >
+                </div>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg bg-blue-50/50 border border-blue-100"
+                  >
+                    <div
+                      class="w-1 h-10 rounded-full bg-blue-600 shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        7F躯体 - コンクリート打設
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        高橋主任 ｜ 生コン120m³ ｜ ポンプ車2台
+                      </p>
+                    </div>
+                    <span class="tag bg-red-50 text-red-600 shrink-0"
+                      >重要</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-1 h-10 rounded-full bg-green-500 shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        5F-6F 設備配管 - 給排水接続
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        中村主任 ｜ 配管工8名 ｜ 完了予定 15:00
+                      </p>
+                    </div>
+                    <span class="tag bg-blue-50 text-blue-600 shrink-0"
+                      >通常</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-1 h-10 rounded-full bg-green-500 shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        外壁ALC取付 - 3F〜4F南面
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        佐藤職長 ｜ ALC工4名 ｜ クレーン使用
+                      </p>
+                    </div>
+                    <span class="tag bg-blue-50 text-blue-600 shrink-0"
+                      >通常</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-1 h-10 rounded-full bg-amber-400 shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        電気幹線 - 6Fケーブルラック据付
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        伊藤班 ｜ 電工6名 ｜ 前日遅延分含む
+                      </p>
+                    </div>
+                    <span class="tag bg-amber-50 text-amber-600 shrink-0"
+                      >注意</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-1 h-10 rounded-full bg-gray-300 shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        仮設足場 - 8F外部足場組立
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        山田班 ｜ 鳶工5名 ｜ 午後開始
+                      </p>
+                    </div>
+                    <span class="tag bg-gray-50 text-gray-500 shrink-0"
+                      >予定</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Alerts -->
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  要対応アラート
+                </h3>
+                <div class="space-y-2.5">
+                  <div
+                    class="p-2.5 rounded-lg bg-red-50 border border-red-100 cursor-pointer hover:bg-red-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="alert-triangle"
+                        class="w-3.5 h-3.5 text-red-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-red-600"
+                        >工程遅延</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-red-700">
+                      6F電気配線が2日遅延中。7Fコン打設に影響の可能性
+                    </p>
+                    <p class="text-[10px] text-red-400 mt-1">
+                      3/8 検出 ｜ 対応者: 伊藤
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-amber-50 border border-amber-100 cursor-pointer hover:bg-amber-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="file-warning"
+                        class="w-3.5 h-3.5 text-amber-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-amber-600"
+                        >書類未提出</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-amber-700">
+                      5F配管の施工計画書が未承認。着工まで残3日
+                    </p>
+                    <p class="text-[10px] text-amber-400 mt-1">
+                      3/7 検出 ｜ 対応者: 中村
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="truck"
+                        class="w-3.5 h-3.5 text-blue-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-blue-600"
+                        >資材納入</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-blue-700">
+                      8F鉄骨の納入が3/12に変更。足場計画の調整要
+                    </p>
+                    <p class="text-[10px] text-blue-400 mt-1">
+                      3/9 連絡 ｜ 対応者: 高橋
+                    </p>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-gray-50 border border-gray-200 cursor-pointer hover:bg-gray-100/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <i
+                        data-lucide="cloud-rain"
+                        class="w-3.5 h-3.5 text-gray-500"
+                      ></i>
+                      <span class="text-[11px] font-semibold text-gray-600"
+                        >天候注意</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-gray-600">
+                      3/13(木) 降水確率80%。屋外作業計画の見直し推奨
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-1">気象庁予報</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// feature
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  月別出来高推移
+                </h3>
+                <div style="height: 220px"><canvas id="ovC1"></canvas></div>
+              </div>
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  工種別進捗
+                </h3>
+                <div style="height: 220px"><canvas id="ovC2"></canvas></div>
+              </div>
+            </div>
 
-document.querySelectorAll('[draggable]').forEach(c=>{c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text',c.innerHTML);c.classList.add('opacity-40')});c.addEventListener('dragend',()=>c.classList.remove('opacity-40'))});
-document.querySelectorAll('.kanban-cards').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const d=document.createElement('div');d.className='bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move';d.draggable=true;d.innerHTML=e.dataTransfer.getData('text');col.appendChild(d)})});
+            <!-- Activity -->
+            <div class="card p-4">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                最新の更新
+              </h3>
+              <div class="divide-y">
+                <div class="flex items-start gap-3 py-2.5">
+                  <div
+                    class="w-7 h-7 rounded-full bg-blue-900 flex items-center justify-center text-[10px] text-white font-medium shrink-0 mt-0.5"
+                  >
+                    高
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">高橋勇介</span>が<span
+                        class="font-medium"
+                        >7F躯体 配筋検査写真</span
+                      >を12枚アップロード
+                    </p>
+                    <p class="text-[10px] text-gray-400">30分前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 py-2.5">
+                  <div
+                    class="w-7 h-7 rounded-full bg-green-700 flex items-center justify-center text-[10px] text-white font-medium shrink-0 mt-0.5"
+                  >
+                    佐
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">佐藤健一</span>が<span
+                        class="font-medium"
+                        >安全パトロール報告</span
+                      >を提出 — 指摘事項2件
+                    </p>
+                    <p class="text-[10px] text-gray-400">1時間前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 py-2.5">
+                  <div
+                    class="w-7 h-7 rounded-full bg-purple-700 flex items-center justify-center text-[10px] text-white font-medium shrink-0 mt-0.5"
+                  >
+                    中
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">中村秀夫</span>が<span
+                        class="font-medium"
+                        >5F給排水配管図</span
+                      >を Rev.3 に更新
+                    </p>
+                    <p class="text-[10px] text-gray-400">2時間前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 py-2.5">
+                  <div
+                    class="w-7 h-7 rounded-full bg-orange-600 flex items-center justify-center text-[10px] text-white font-medium shrink-0 mt-0.5"
+                  >
+                    田
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] text-gray-700">
+                      <span class="font-medium">田中一郎</span>が<span
+                        class="font-medium"
+                        >3/10 日報</span
+                      >を作成・提出済み
+                    </p>
+                    <p class="text-[10px] text-gray-400">3時間前</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
+          <!-- ==================== PAGE 2: 工程管理 ==================== -->
+          <div id="page-schedule" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <h3 class="font-semibold text-[14px] text-gray-700">
+                  マスター工程表
+                </h3>
+                <div class="flex gap-1.5">
+                  <span class="tag bg-blue-600 text-white">完了</span>
+                  <span class="tag bg-blue-300 text-blue-900">進行中</span>
+                  <span class="tag bg-gray-200 text-gray-500">未着手</span>
+                  <span class="tag bg-red-100 text-red-600">遅延</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>PDF出力
+                </button>
+              </div>
+            </div>
 
-// report
+            <!-- Gantt Header -->
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left px-3 py-2.5 w-[200px] text-[11px] font-semibold text-gray-500 sticky left-0 bg-gray-50 z-10"
+                      >
+                        工種
+                      </th>
+                      <th
+                        class="text-left px-2 py-2.5 w-[70px] text-[11px] font-semibold text-gray-500"
+                      >
+                        担当
+                      </th>
+                      <th
+                        class="text-center px-2 py-2.5 w-[50px] text-[11px] font-semibold text-gray-500"
+                      >
+                        進捗
+                      </th>
+                      <th
+                        class="px-2 py-2.5 text-[11px] font-semibold text-gray-500 text-left"
+                        style="min-width: 420px"
+                      >
+                        <div
+                          class="flex justify-between text-[9px] text-gray-400"
+                        >
+                          <span>10月</span><span>11月</span><span>12月</span
+                          ><span>1月</span><span>2月</span><span>3月</span
+                          ><span>4月</span><span>5月</span><span>6月</span
+                          ><span>7月</span><span>8月</span><span>9月</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50">
+                    <!-- Gantt rows -->
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white font-medium text-gray-700"
+                      >
+                        仮設工事
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">山田</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        100%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-blue-600"
+                            style="position: absolute; left: 0%; width: 8%"
+                          >
+                            <span class="label">&#10003;</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white font-medium text-gray-700"
+                      >
+                        土工事・山留め
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">高橋</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        100%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-blue-600"
+                            style="position: absolute; left: 4%; width: 13%"
+                          >
+                            <span class="label">&#10003;</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white font-medium text-gray-700"
+                      >
+                        基礎工事
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">高橋</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        100%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-blue-600"
+                            style="position: absolute; left: 13%; width: 13%"
+                          >
+                            <span class="label">&#10003;</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white font-medium text-gray-700"
+                      >
+                        躯体工事 (地下)
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">高橋</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        100%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-blue-600"
+                            style="position: absolute; left: 21%; width: 10%"
+                          >
+                            <span class="label">&#10003;</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white font-medium text-gray-700"
+                      >
+                        躯体工事 (1〜6F)
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">高橋</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        100%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-blue-600"
+                            style="position: absolute; left: 28%; width: 17%"
+                          >
+                            <span class="label">&#10003;</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50/50 transition-colors bg-blue-50/30"
+                    >
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-blue-50/30 font-medium text-blue-900 flex items-center gap-1"
+                      >
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i
+                        >躯体工事 (7〜12F)
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">高橋</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        65%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 40%; width: 21%"
+                          ></div>
+                          <div
+                            class="gantt-bar bg-blue-400"
+                            style="position: absolute; left: 40%; width: 14%"
+                          >
+                            <span class="label">65%</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50/50 transition-colors bg-blue-50/30"
+                    >
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-blue-50/30 font-medium text-blue-900 flex items-center gap-1"
+                      >
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i
+                        >外壁工事
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">佐藤</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        30%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 42%; width: 25%"
+                          ></div>
+                          <div
+                            class="gantt-bar bg-blue-400"
+                            style="position: absolute; left: 42%; width: 8%"
+                          >
+                            <span class="label">30%</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50/50 transition-colors bg-blue-50/30"
+                    >
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-blue-50/30 font-medium text-blue-900 flex items-center gap-1"
+                      >
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i>設備
+                        (給排水)
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">中村</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-blue-700"
+                      >
+                        45%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 35%; width: 38%"
+                          ></div>
+                          <div
+                            class="gantt-bar bg-blue-400"
+                            style="position: absolute; left: 35%; width: 17%"
+                          >
+                            <span class="label">45%</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50/50 transition-colors bg-red-50/30"
+                    >
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-red-50/30 font-medium text-red-700 flex items-center gap-1"
+                      >
+                        <i data-lucide="alert-circle" class="w-3 h-3"></i>設備
+                        (電気)
+                      </td>
+                      <td class="px-2 py-2 text-gray-500">伊藤</td>
+                      <td
+                        class="px-2 py-2 text-center font-semibold text-red-600"
+                      >
+                        40%
+                      </td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 35%; width: 42%"
+                          ></div>
+                          <div
+                            class="gantt-bar bg-red-400"
+                            style="position: absolute; left: 35%; width: 17%"
+                          >
+                            <span class="label">40% 遅延</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white text-gray-400"
+                      >
+                        内装工事
+                      </td>
+                      <td class="px-2 py-2 text-gray-400">—</td>
+                      <td class="px-2 py-2 text-center text-gray-400">0%</td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 58%; width: 25%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white text-gray-400"
+                      >
+                        外構工事
+                      </td>
+                      <td class="px-2 py-2 text-gray-400">—</td>
+                      <td class="px-2 py-2 text-center text-gray-400">0%</td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 75%; width: 17%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                      <td
+                        class="px-3 py-2 sticky left-0 bg-white text-gray-400"
+                      >
+                        竣工検査・引渡
+                      </td>
+                      <td class="px-2 py-2 text-gray-400">田中</td>
+                      <td class="px-2 py-2 text-center text-gray-400">0%</td>
+                      <td class="px-2 py-2">
+                        <div class="relative h-5">
+                          <div
+                            class="gantt-bar bg-gray-200"
+                            style="position: absolute; left: 92%; width: 8%"
+                          ></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- Today marker note -->
+              <div
+                class="px-4 py-2 bg-gray-50 border-t flex items-center gap-2"
+              >
+                <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span class="text-[11px] text-gray-500"
+                  >本日: 2026/03/10 ｜ 工期 5ヶ月目 / 全12ヶ月 ｜
+                  <span class="text-red-600 font-medium"
+                    >電気設備に2日の遅延あり</span
+                  ></span
+                >
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ==================== PAGE 3: 現場写真 ==================== -->
+          <div id="page-photos" class="page">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="写真を検索..."
+                    class="pl-9 pr-3 py-2 text-[12px] border rounded-lg w-52 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white cursor-pointer"
+                >
+                  <option>全工種</option>
+                  <option>躯体</option>
+                  <option>設備</option>
+                  <option>外壁</option>
+                  <option>仮設</option>
+                </select>
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white cursor-pointer"
+                >
+                  <option>全ステータス</option>
+                  <option>施工前</option>
+                  <option>施工中</option>
+                  <option>施工後</option>
+                </select>
+              </div>
+              <button
+                class="text-[12px] px-3 py-2 rounded-lg bg-blue-900 text-white font-medium hover:bg-blue-800 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>写真アップロード
+              </button>
+            </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [924, 163, 990, 753, 188, 560], "backgroundColor": "#1e3a5f", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Photo Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-gray-700 to-gray-500 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">7F配筋検査</p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/10 09:30</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工中</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-blue-800 to-blue-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    7Fスラブ型枠
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/09 14:20</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工中</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-green-800 to-green-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    5F給排水配管
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/09 11:00</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工後</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-amber-800 to-amber-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    外壁ALC 3F南面
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/08 16:45</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工中</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-purple-800 to-purple-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    6Fケーブルラック
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/08 10:15</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工前</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-red-800 to-red-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    安全パトロール指摘
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/07 15:30</p>
+                  <span class="tag bg-white/20 text-white mt-2">是正前</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-teal-800 to-teal-600 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">
+                    6F躯体コン打設
+                  </p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/05 08:00</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工後</span>
+                </div>
+              </div>
+              <div class="photo-card">
+                <div
+                  class="bg-gradient-to-br from-slate-700 to-slate-500 w-full h-full flex flex-col items-center justify-center text-white/70 p-3"
+                >
+                  <i data-lucide="camera" class="w-8 h-8 mb-2 opacity-40"></i>
+                  <p class="text-[11px] font-medium text-center">仮設足場7F</p>
+                  <p class="text-[9px] opacity-60 mt-1">2026/03/04 13:00</p>
+                  <span class="tag bg-white/20 text-white mt-2">施工後</span>
+                </div>
+              </div>
+            </div>
+            <!-- Stats -->
+            <div class="mt-4 flex items-center gap-4 text-[11px] text-gray-400">
+              <span>全 2,847枚</span>
+              <span>今月 +324枚</span>
+              <span>ストレージ: 12.8 GB / 50 GB</span>
+            </div>
+          </div>
 
-</script>
-</body></html>
+          <!-- ==================== PAGE 4: 図面・書類 ==================== -->
+          <div id="page-drawings" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="図面・書類を検索..."
+                    class="pl-9 pr-3 py-2 text-[12px] border rounded-lg w-56 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white cursor-pointer"
+                >
+                  <option>全種別</option>
+                  <option>建築図</option>
+                  <option>構造図</option>
+                  <option>設備図</option>
+                  <option>電気図</option>
+                  <option>施工計画書</option>
+                </select>
+              </div>
+              <button
+                class="text-[12px] px-3 py-2 rounded-lg bg-blue-900 text-white font-medium hover:bg-blue-800 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>アップロード
+              </button>
+            </div>
+            <div class="card overflow-hidden">
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="bg-gray-50 border-b">
+                    <th
+                      class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500 w-8"
+                    ></th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      図面名称
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      種別
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      Rev
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      更新日
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      更新者
+                    </th>
+                    <th
+                      class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      ステータス
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i data-lucide="file" class="w-4 h-4 text-blue-500"></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      A-101 1F平面図
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">建築図</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-blue-50 text-blue-700">Rev.5</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/02/28</td>
+                    <td class="px-3 py-2.5 text-gray-500">設計事務所</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-green-50 text-green-700">承認済</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i data-lucide="file" class="w-4 h-4 text-blue-500"></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      S-201 7F構造伏図
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">構造図</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-blue-50 text-blue-700">Rev.3</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/03/05</td>
+                    <td class="px-3 py-2.5 text-gray-500">構造設計</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-green-50 text-green-700">承認済</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i data-lucide="file" class="w-4 h-4 text-orange-500"></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      M-301 5F給排水配管図
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">設備図</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-amber-50 text-amber-700">Rev.3</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/03/10</td>
+                    <td class="px-3 py-2.5 text-gray-500">中村秀夫</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-amber-50 text-amber-600"
+                        >レビュー中</span
+                      >
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i data-lucide="file" class="w-4 h-4 text-purple-500"></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      E-401 6F電気幹線図
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">電気図</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-blue-50 text-blue-700">Rev.2</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/02/20</td>
+                    <td class="px-3 py-2.5 text-gray-500">電気設計</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-green-50 text-green-700">承認済</span>
+                    </td>
+                  </tr>
+                  <tr
+                    class="hover:bg-gray-50 transition-colors cursor-pointer bg-red-50/30"
+                  >
+                    <td class="px-4 py-2.5">
+                      <i
+                        data-lucide="file-text"
+                        class="w-4 h-4 text-red-500"
+                      ></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-red-700">
+                      SP-001 5F配管施工計画書
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">施工計画書</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-red-50 text-red-600">Rev.1</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/03/03</td>
+                    <td class="px-3 py-2.5 text-gray-500">中村秀夫</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-red-50 text-red-600">未承認</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i data-lucide="file" class="w-4 h-4 text-blue-500"></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      A-701 外壁割付図
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">建築図</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-blue-50 text-blue-700">Rev.4</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/02/15</td>
+                    <td class="px-3 py-2.5 text-gray-500">設計事務所</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-green-50 text-green-700">承認済</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <td class="px-4 py-2.5">
+                      <i
+                        data-lucide="file-text"
+                        class="w-4 h-4 text-gray-400"
+                      ></i>
+                    </td>
+                    <td class="px-3 py-2.5 font-medium text-gray-700">
+                      SP-002 7Fコン打設計画書
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">施工計画書</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-blue-50 text-blue-700">Rev.2</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500">2026/03/08</td>
+                    <td class="px-3 py-2.5 text-gray-500">高橋勇介</td>
+                    <td class="px-3 py-2.5">
+                      <span class="tag bg-green-50 text-green-700">承認済</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-3 text-[11px] text-gray-400">
+              全 156件 ｜ 最新図面: 48件 ｜ レビュー中: 3件 ｜ 未承認: 1件
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: 日報 ==================== -->
+          <div id="page-daily" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button class="p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                  <i
+                    data-lucide="chevron-left"
+                    class="w-4 h-4 text-gray-400"
+                  ></i>
+                </button>
+                <span class="text-[14px] font-semibold text-gray-700"
+                  >2026年3月10日 (月)</span
+                >
+                <button class="p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                  <i
+                    data-lucide="chevron-right"
+                    class="w-4 h-4 text-gray-400"
+                  ></i>
+                </button>
+              </div>
+              <span class="tag bg-green-50 text-green-700"
+                ><i data-lucide="check" class="w-3 h-3"></i>提出済み</span
+              >
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <!-- Left: Main report -->
+              <div class="lg:col-span-2 space-y-4">
+                <!-- Weather & workers -->
+                <div class="card p-4">
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <p class="text-[10px] text-gray-400 mb-1">天候 (午前)</p>
+                      <p
+                        class="text-[13px] font-medium text-gray-700 flex items-center gap-1"
+                      >
+                        <i data-lucide="sun" class="w-4 h-4 text-amber-400"></i
+                        >晴
+                      </p>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <p class="text-[10px] text-gray-400 mb-1">天候 (午後)</p>
+                      <p
+                        class="text-[13px] font-medium text-gray-700 flex items-center gap-1"
+                      >
+                        <i data-lucide="cloud" class="w-4 h-4 text-gray-400"></i
+                        >曇
+                      </p>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <p class="text-[10px] text-gray-400 mb-1">気温</p>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        8℃ / 14℃
+                      </p>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <p class="text-[10px] text-gray-400 mb-1">風速</p>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        3 m/s 南西
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Workers -->
+                <div class="card p-4">
+                  <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                    入場者数
+                  </h4>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-[12px]">
+                      <thead>
+                        <tr class="border-b">
+                          <th
+                            class="text-left py-2 text-[11px] text-gray-400 font-medium"
+                          >
+                            業者名
+                          </th>
+                          <th
+                            class="text-left py-2 text-[11px] text-gray-400 font-medium"
+                          >
+                            工種
+                          </th>
+                          <th
+                            class="text-center py-2 text-[11px] text-gray-400 font-medium"
+                          >
+                            人数
+                          </th>
+                          <th
+                            class="text-left py-2 text-[11px] text-gray-400 font-medium"
+                          >
+                            作業内容
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-50">
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            (株)大和建設
+                          </td>
+                          <td class="py-2 text-gray-500">躯体</td>
+                          <td class="py-2 text-center font-medium">32</td>
+                          <td class="py-2 text-gray-500">7F配筋・型枠組立</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            (株)東設備工業
+                          </td>
+                          <td class="py-2 text-gray-500">給排水</td>
+                          <td class="py-2 text-center font-medium">18</td>
+                          <td class="py-2 text-gray-500">5-6F配管接続</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            三栄電気(株)
+                          </td>
+                          <td class="py-2 text-gray-500">電気</td>
+                          <td class="py-2 text-center font-medium">15</td>
+                          <td class="py-2 text-gray-500">
+                            6Fケーブルラック据付
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            佐藤ALC工業
+                          </td>
+                          <td class="py-2 text-gray-500">外壁</td>
+                          <td class="py-2 text-center font-medium">12</td>
+                          <td class="py-2 text-gray-500">3-4F南面ALC取付</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            (株)山田仮設
+                          </td>
+                          <td class="py-2 text-gray-500">仮設</td>
+                          <td class="py-2 text-center font-medium">8</td>
+                          <td class="py-2 text-gray-500">8F外部足場組立</td>
+                        </tr>
+                        <tr>
+                          <td class="py-2 text-gray-700 font-medium">
+                            元請 (自社)
+                          </td>
+                          <td class="py-2 text-gray-500">管理</td>
+                          <td class="py-2 text-center font-medium">6</td>
+                          <td class="py-2 text-gray-500">現場管理・品質検査</td>
+                        </tr>
+                        <tr class="bg-gray-50 font-semibold">
+                          <td class="py-2 text-gray-700" colspan="2">合計</td>
+                          <td class="py-2 text-center">127名</td>
+                          <td class="py-2"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="card p-4">
+                  <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                    本日の進捗
+                  </h4>
+                  <div class="space-y-2">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-[12px] font-medium text-gray-700"
+                          >7F躯体 配筋検査</span
+                        >
+                        <span class="tag bg-green-50 text-green-700">完了</span>
+                      </div>
+                      <p class="text-[11px] text-gray-500">
+                        配筋写真12枚撮影・監理者確認済み。明日コン打設可能
+                      </p>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-[12px] font-medium text-gray-700"
+                          >5F給排水 立管接続</span
+                        >
+                        <span class="tag bg-blue-50 text-blue-700">80%</span>
+                      </div>
+                      <p class="text-[11px] text-gray-500">
+                        西側完了、東側は明日午前に完了予定
+                      </p>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-lg">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-[12px] font-medium text-amber-700"
+                          >6F電気 ケーブルラック</span
+                        >
+                        <span class="tag bg-amber-50 text-amber-600"
+                          >遅延中</span
+                        >
+                      </div>
+                      <p class="text-[11px] text-amber-600">
+                        ラック金具の一部が未納。明日入荷予定。工程+1日の影響
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Sidebar info -->
+              <div class="space-y-4">
+                <div class="card p-4">
+                  <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                    特記事項
+                  </h4>
+                  <div
+                    class="text-[12px] text-gray-600 space-y-2 leading-relaxed"
+                  >
+                    <p>
+                      1. 明日3/11(火) 7Fコンクリート打設。生コン車13台
+                      08:00〜搬入開始。ポンプ車2台配置。
+                    </p>
+                    <p>
+                      2.
+                      6F電気工事の遅延について三栄電気と協議。金具明日入荷確認済み。
+                    </p>
+                    <p>
+                      3.
+                      8F足場先行組立を前倒し実施中。鉄骨納入(3/12)に合わせる。
+                    </p>
+                  </div>
+                </div>
+                <div class="card p-4">
+                  <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                    使用重機
+                  </h4>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-[12px]">
+                      <span class="text-gray-600">タワークレーン 45t</span>
+                      <span class="tag bg-green-50 text-green-700">稼働</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[12px]">
+                      <span class="text-gray-600">コンクリートポンプ車</span>
+                      <span class="tag bg-gray-100 text-gray-500">待機</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[12px]">
+                      <span class="text-gray-600">ラフタークレーン 25t</span>
+                      <span class="tag bg-green-50 text-green-700">稼働</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[12px]">
+                      <span class="text-gray-600">高所作業車 20m</span>
+                      <span class="tag bg-green-50 text-green-700">稼働</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card p-4">
+                  <h4 class="text-[12px] font-semibold text-gray-700 mb-3">
+                    提出履歴
+                  </h4>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2 text-[11px]">
+                      <span class="text-gray-400 w-16">3/10</span
+                      ><span class="tag bg-green-50 text-green-700"
+                        >提出済</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px]">
+                      <span class="text-gray-400 w-16">3/9</span
+                      ><span class="tag bg-green-50 text-green-700"
+                        >提出済</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px]">
+                      <span class="text-gray-400 w-16">3/8</span
+                      ><span class="tag bg-green-50 text-green-700"
+                        >提出済</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px]">
+                      <span class="text-gray-400 w-16">3/7</span
+                      ><span class="tag bg-green-50 text-green-700"
+                        >提出済</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px]">
+                      <span class="text-gray-400 w-16">3/6</span
+                      ><span class="tag bg-green-50 text-green-700"
+                        >提出済</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: 検査・安全 ==================== -->
+          <div id="page-inspection" class="page">
+            <div class="flex items-center gap-3 mb-4 border-b pb-3">
+              <button
+                class="text-[13px] font-semibold text-blue-900 border-b-2 border-blue-900 pb-2 cursor-pointer"
+                onclick="switchInspTab(0)"
+              >
+                品質検査
+              </button>
+              <button
+                class="text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors"
+                onclick="switchInspTab(1)"
+              >
+                安全パトロール
+              </button>
+              <button
+                class="text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors"
+                onclick="switchInspTab(2)"
+              >
+                KY活動記録
+              </button>
+            </div>
+
+            <!-- Tab 0: Quality -->
+            <div id="inspTab0" class="insp-tab">
+              <div class="card overflow-hidden">
+                <table class="w-full text-[12px]">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        検査名
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        工区・階
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        検査日
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        検査員
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        結果
+                      </th>
+                      <th
+                        class="text-left px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                      >
+                        写真
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <tr
+                      class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        配筋検査
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">7F</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/10</td>
+                      <td class="px-3 py-2.5 text-gray-500">高橋</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">合格</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">12枚</td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        コンクリート強度試験
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">6F</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/08</td>
+                      <td class="px-3 py-2.5 text-gray-500">山田</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">合格</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">6枚</td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        溶接外観検査
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">7F鉄骨</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/07</td>
+                      <td class="px-3 py-2.5 text-gray-500">第三者検査員</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">合格</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">8枚</td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        防水検査
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">屋上</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/06</td>
+                      <td class="px-3 py-2.5 text-gray-500">佐藤</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-amber-50 text-amber-600"
+                          >条件付</span
+                        >
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">15枚</td>
+                    </tr>
+                    <tr
+                      class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 font-medium text-gray-700">
+                        配管耐圧試験
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">4F給排水</td>
+                      <td class="px-3 py-2.5 text-gray-500">2026/03/05</td>
+                      <td class="px-3 py-2.5 text-gray-500">中村</td>
+                      <td class="px-3 py-2.5">
+                        <span class="tag bg-green-50 text-green-700">合格</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-gray-500">4枚</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="card p-3.5 text-center">
+                  <p class="text-[24px] font-bold text-green-700">96.2%</p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    合格率 (直近30日)
+                  </p>
+                </div>
+                <div class="card p-3.5 text-center">
+                  <p class="text-[24px] font-bold text-gray-800">48</p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    検査実施件数 (今月)
+                  </p>
+                </div>
+                <div class="card p-3.5 text-center">
+                  <p class="text-[24px] font-bold text-amber-600">2</p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    是正指摘 (未完了)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 1: Safety -->
+            <div id="inspTab1" class="insp-tab" style="display: none">
+              <div class="card p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-[13px] font-semibold text-gray-700">
+                    本日の安全パトロール結果
+                  </h4>
+                  <span class="text-[11px] text-gray-400"
+                    >2026/03/10 13:30 実施</span
+                  >
+                </div>
+                <div class="space-y-2">
+                  <div
+                    class="check-item flex items-center gap-3 p-2.5 rounded-lg border"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div>
+                      <p class="text-[12px] text-gray-700">
+                        墜落防止措置 (安全帯・手すり)
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        全作業員着用確認済み
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="check-item flex items-center gap-3 p-2.5 rounded-lg border"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div>
+                      <p class="text-[12px] text-gray-700">
+                        足場点検 (7F〜8F外部)
+                      </p>
+                      <p class="text-[11px] text-gray-400">異常なし</p>
+                    </div>
+                  </div>
+                  <div
+                    class="check-item flex items-center gap-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50/50"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-5 h-5 text-amber-500 shrink-0"
+                    ></i>
+                    <div>
+                      <p class="text-[12px] text-amber-700">
+                        整理整頓 (6F電気作業エリア)
+                      </p>
+                      <p class="text-[11px] text-amber-600">
+                        ケーブル仮置き場が通路にはみ出し → 是正指示済
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="check-item flex items-center gap-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50/50"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-5 h-5 text-amber-500 shrink-0"
+                    ></i>
+                    <div>
+                      <p class="text-[12px] text-amber-700">
+                        重機周辺 (タワークレーン旋回範囲)
+                      </p>
+                      <p class="text-[11px] text-amber-600">
+                        立入禁止区域の表示が一部退色 → 本日中に更新予定
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    class="check-item flex items-center gap-3 p-2.5 rounded-lg border"
+                  >
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-5 h-5 text-green-500 shrink-0"
+                    ></i>
+                    <div>
+                      <p class="text-[12px] text-gray-700">消火器・AED配置</p>
+                      <p class="text-[11px] text-gray-400">
+                        各階設置確認、有効期限内
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <h4 class="text-[13px] font-semibold text-gray-700 mb-3">
+                  無災害記録
+                </h4>
+                <div class="flex items-center gap-6">
+                  <div class="text-center">
+                    <p class="text-[36px] font-bold text-green-700">248</p>
+                    <p class="text-[11px] text-gray-400">連続無災害日数</p>
+                  </div>
+                  <div class="flex-1">
+                    <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        class="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full"
+                        style="width: 68%"
+                      ></div>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-1">
+                      目標 365日まで残り117日
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: KY -->
+            <div id="inspTab2" class="insp-tab" style="display: none">
+              <div class="card p-4">
+                <h4 class="text-[13px] font-semibold text-gray-700 mb-3">
+                  本日のKY活動記録
+                </h4>
+                <div class="space-y-3">
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >7F躯体班 — コン打設準備作業</span
+                      >
+                      <span class="text-[10px] text-gray-400">07:45 実施</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mb-1">
+                      <span class="font-medium">危険予知:</span>
+                      ポンプ車ホースの跳ね返りによる打撲・コンクリート飛散
+                    </p>
+                    <p class="text-[11px] text-gray-500">
+                      <span class="font-medium">対策:</span>
+                      ホース固定金具の確認、保護メガネ着用、合図者配置
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                      参加者: 高橋、大和建設8名
+                    </p>
+                  </div>
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >外壁班 — ALC取付作業</span
+                      >
+                      <span class="text-[10px] text-gray-400">07:50 実施</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mb-1">
+                      <span class="font-medium">危険予知:</span>
+                      クレーン吊荷落下、ALC板の端部接触による指挟み
+                    </p>
+                    <p class="text-[11px] text-gray-500">
+                      <span class="font-medium">対策:</span>
+                      吊荷下立入禁止、手元誘導者配置、革手袋着用
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                      参加者: 佐藤職長、ALC工4名
+                    </p>
+                  </div>
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >仮設班 — 8F足場組立作業</span
+                      >
+                      <span class="text-[10px] text-gray-400">12:45 実施</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mb-1">
+                      <span class="font-medium">危険予知:</span>
+                      足場材落下、組立中の踏み外し・墜落
+                    </p>
+                    <p class="text-[11px] text-gray-500">
+                      <span class="font-medium">対策:</span>
+                      資材の番線結束確認、安全帯二丁掛け、上下作業禁止
+                    </p>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                      参加者: 山田班長、鳶工5名
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: 原価管理 ==================== -->
+          <div id="page-cost" class="page">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div class="card p-3.5">
+                <p class="text-[10px] text-gray-400 mb-1">請負金額</p>
+                <p class="text-[20px] font-bold text-gray-800">
+                  32.0<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >億円</span
+                  >
+                </p>
+              </div>
+              <div class="card p-3.5">
+                <p class="text-[10px] text-gray-400 mb-1">実行予算</p>
+                <p class="text-[20px] font-bold text-gray-800">
+                  28.8<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >億円</span
+                  >
+                </p>
+              </div>
+              <div class="card p-3.5">
+                <p class="text-[10px] text-gray-400 mb-1">累計出来高</p>
+                <p class="text-[20px] font-bold text-blue-700">
+                  16.8<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >億円</span
+                  >
+                </p>
+                <p class="text-[10px] text-green-600 mt-0.5">予算比 52.4%</p>
+              </div>
+              <div class="card p-3.5">
+                <p class="text-[10px] text-gray-400 mb-1">粗利見込</p>
+                <p class="text-[20px] font-bold text-green-700">
+                  3.2<span class="text-[12px] text-gray-400 font-normal ml-0.5"
+                    >億円</span
+                  >
+                </p>
+                <p class="text-[10px] text-gray-400 mt-0.5">粗利率 10.0%</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  月別出来高 vs 予算消化
+                </h3>
+                <div style="height: 240px"><canvas id="costC1"></canvas></div>
+              </div>
+              <div class="card p-4">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  工種別コスト構成
+                </h3>
+                <div style="height: 240px"><canvas id="costC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="px-4 py-3 border-b bg-gray-50">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  工種別 予算vs実績
+                </h3>
+              </div>
+              <table class="w-full text-[12px]">
+                <thead>
+                  <tr class="border-b bg-gray-50/50">
+                    <th
+                      class="text-left px-4 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      工種
+                    </th>
+                    <th
+                      class="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      実行予算
+                    </th>
+                    <th
+                      class="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      実績
+                    </th>
+                    <th
+                      class="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      差異
+                    </th>
+                    <th
+                      class="text-right px-3 py-2.5 text-[11px] font-semibold text-gray-500"
+                    >
+                      消化率
+                    </th>
+                    <th
+                      class="px-3 py-2.5 text-[11px] font-semibold text-gray-500 w-24"
+                    ></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      仮設工事
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">¥180M</td>
+                    <td
+                      class="px-3 py-2.5 text-right text-gray-700 font-medium"
+                    >
+                      ¥172M
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-green-600">+¥8M</td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">95.6%</td>
+                    <td class="px-3 py-2.5">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-green-500 rounded-full"
+                          style="width: 96%"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      躯体工事
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">¥980M</td>
+                    <td
+                      class="px-3 py-2.5 text-right text-gray-700 font-medium"
+                    >
+                      ¥612M
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-green-600">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">62.4%</td>
+                    <td class="px-3 py-2.5">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-blue-500 rounded-full"
+                          style="width: 62%"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      外壁工事
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">¥420M</td>
+                    <td
+                      class="px-3 py-2.5 text-right text-gray-700 font-medium"
+                    >
+                      ¥126M
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-green-600">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">30.0%</td>
+                    <td class="px-3 py-2.5">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-blue-500 rounded-full"
+                          style="width: 30%"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-700">
+                      設備工事 (給排水)
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">¥350M</td>
+                    <td
+                      class="px-3 py-2.5 text-right text-gray-700 font-medium"
+                    >
+                      ¥161M
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-green-600">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">46.0%</td>
+                    <td class="px-3 py-2.5">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-blue-500 rounded-full"
+                          style="width: 46%"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors bg-amber-50/30">
+                    <td class="px-4 py-2.5 font-medium text-amber-700">
+                      設備工事 (電気)
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-600">¥380M</td>
+                    <td
+                      class="px-3 py-2.5 text-right text-amber-700 font-medium"
+                    >
+                      ¥168M
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-amber-600">-¥12M</td>
+                    <td class="px-3 py-2.5 text-right text-amber-600">44.2%</td>
+                    <td class="px-3 py-2.5">
+                      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          class="h-full bg-amber-500 rounded-full"
+                          style="width: 44%"
+                        ></div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-400">
+                      内装工事
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">¥320M</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">0%</td>
+                    <td class="px-3 py-2.5">
+                      <div
+                        class="h-2 bg-gray-100 rounded-full overflow-hidden"
+                      ></div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 font-medium text-gray-400">
+                      外構・その他
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">¥250M</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">—</td>
+                    <td class="px-3 py-2.5 text-right text-gray-400">0%</td>
+                    <td class="px-3 py-2.5">
+                      <div
+                        class="h-2 bg-gray-100 rounded-full overflow-hidden"
+                      ></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "overview",
+          title: "現場概要",
+          desc: "新宿区A棟オフィスビル新築工事",
+        },
+        { id: "schedule", title: "工程管理", desc: "マスター工程表" },
+        { id: "photos", title: "現場写真", desc: "写真台帳・施工記録" },
+        {
+          id: "drawings",
+          title: "図面・書類",
+          desc: "図面管理・バージョン管理",
+        },
+        { id: "daily", title: "日報", desc: "作業日報" },
+        {
+          id: "inspection",
+          title: "検査・安全",
+          desc: "品質検査・安全パトロール",
+        },
+        { id: "cost", title: "原価管理", desc: "予算vs実績" },
+      ];
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) {
+          el.classList.add("active");
+        }
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      // Inspection tabs
+      function switchInspTab(idx) {
+        document
+          .querySelectorAll(".insp-tab")
+          .forEach((t, i) => (t.style.display = i === idx ? "block" : "none"));
+        const btns = document.querySelectorAll(
+          "#page-inspection > div:first-child > button",
+        );
+        btns.forEach((b, i) => {
+          if (i === idx) {
+            b.className =
+              "text-[13px] font-semibold text-blue-900 border-b-2 border-blue-900 pb-2 cursor-pointer";
+          } else {
+            b.className =
+              "text-[13px] text-gray-400 pb-2 cursor-pointer hover:text-gray-600 transition-colors";
+          }
+        });
+      }
+
+      // Overview charts
+      charts.push(
+        new Chart(document.getElementById("ovC1"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月", "4月", "5月"],
+            datasets: [
+              {
+                label: "計画出来高",
+                data: [180, 320, 280, 350, 380, 420, 450, 480],
+                backgroundColor: "#dbeafe",
+                borderRadius: 4,
+              },
+              {
+                label: "実績出来高",
+                data: [175, 330, 290, 340, 360, 385, null, null],
+                backgroundColor: "#1e3a5f",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 }, callback: (v) => v + "M" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      charts.push(
+        new Chart(document.getElementById("ovC2"), {
+          type: "bar",
+          data: {
+            labels: [
+              "仮設",
+              "土工事",
+              "基礎",
+              "躯体(地下)",
+              "躯体(1-6F)",
+              "躯体(7-12F)",
+              "外壁",
+              "設備(水)",
+              "設備(電)",
+              "内装",
+              "外構",
+            ],
+            datasets: [
+              {
+                label: "進捗率",
+                data: [100, 100, 100, 100, 100, 65, 30, 45, 40, 0, 0],
+                backgroundColor: (v) => {
+                  const d = v.raw;
+                  return d === 100
+                    ? "#1e3a5f"
+                    : d > 0
+                      ? v.dataIndex === 8
+                        ? "#ef4444"
+                        : "#60a5fa"
+                      : "#e5e7eb";
+                },
+                borderRadius: 3,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 }, callback: (v) => v + "%" },
+              },
+              y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      // Cost charts
+      charts.push(
+        new Chart(document.getElementById("costC1"), {
+          type: "line",
+          data: {
+            labels: [
+              "10月",
+              "11月",
+              "12月",
+              "1月",
+              "2月",
+              "3月",
+              "4月",
+              "5月",
+              "6月",
+              "7月",
+              "8月",
+              "9月",
+            ],
+            datasets: [
+              {
+                label: "累計出来高(実績)",
+                data: [
+                  1.75,
+                  5.05,
+                  7.95,
+                  11.35,
+                  14.95,
+                  18.8,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                ],
+                borderColor: "#1e3a5f",
+                backgroundColor: "#1e3a5f10",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: "#1e3a5f",
+              },
+              {
+                label: "累計出来高(計画)",
+                data: [
+                  1.8, 5.0, 7.8, 11.3, 14.8, 19.2, 23.7, 28.2, 30.5, 31.2, 31.8,
+                  32.0,
+                ],
+                borderColor: "#94a3b8",
+                borderDash: [4, 4],
+                tension: 0.3,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 }, callback: (v) => v + "億" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            },
+          },
+        }),
+      );
+
+      charts.push(
+        new Chart(document.getElementById("costC2"), {
+          type: "doughnut",
+          data: {
+            labels: ["躯体", "外壁", "設備(水)", "設備(電)", "仮設", "その他"],
+            datasets: [
+              {
+                data: [612, 126, 161, 168, 172, 41],
+                backgroundColor: [
+                  "#1e3a5f",
+                  "#3b82f6",
+                  "#60a5fa",
+                  "#93c5fd",
+                  "#bfdbfe",
+                  "#e5e7eb",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 10,
+                },
+              },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
