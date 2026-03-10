@@ -1,113 +1,3231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>原価計算の精度不足 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>CostEngine — 製造業 原価・経理統合管理 | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#7c2d12",
+              accent: "#ea580c",
+              ok: "#059669",
+              warn: "#d97706",
+              ng: "#dc2626",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        font-family:
+          "Plus Jakarta Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .stat-card {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+      }
+      .stat-val {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: #9ca3af;
+      }
+      .stat-sub {
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        margin-top: 2px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-ok {
+        background: #ecfdf5;
+        color: #059669;
+      }
+      .badge-warn {
+        background: #fffbeb;
+        color: #d97706;
+      }
+      .badge-ng {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .badge-info {
+        background: #fff7ed;
+        color: #7c2d12;
+      }
+      .tab-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: 1px solid transparent;
+      }
+      .tab-btn.active {
+        background: #7c2d12;
+        color: #fff;
+        border-color: #7c2d12;
+      }
+      .tab-btn:not(.active) {
+        border-color: #e5e7eb;
+        color: #6b7280;
+      }
+      .tab-btn:not(.active):hover {
+        background: #f9fafb;
+      }
+      .tbl {
+        width: 100%;
+        font-size: 12px;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      .tbl th {
+        text-align: left;
+        padding: 8px 12px;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+      }
+      .tbl td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        white-space: nowrap;
+      }
+      .tbl tr:hover td {
+        background: #fafafa;
+      }
+      .tbl .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .nav-group-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        opacity: 0.45;
+        padding: 10px 14px 4px;
+        font-weight: 600;
+      }
+      .alert-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+      .progress-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.4s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[220px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #7c2d12"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0"
+            >
+              CE
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">CostEngine</p>
+              <p class="text-[11px] opacity-50 truncate">原価・経理統合管理</p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <div class="nav-group-title">原価管理</div>
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="product-cost"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('product-cost')"
+            ><i
+              data-lucide="package-search"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">製品別原価</span></a
+          >
+          <a
+            data-page="variance"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('variance')"
+            ><i data-lucide="git-compare" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">差異分析</span></a
+          >
+          <a
+            data-page="bep"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('bep')"
+            ><i data-lucide="target" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">損益分岐点</span></a
+          >
+          <div class="nav-group-title">経理業務</div>
+          <a
+            data-page="monthly"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('monthly')"
+            ><i
+              data-lucide="calendar-check"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">月次決算</span></a
+          >
+          <a
+            data-page="budget"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('budget')"
+            ><i data-lucide="scale" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">予実管理</span></a
+          >
+          <a
+            data-page="apar"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('apar')"
+            ><i data-lucide="receipt" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">債権債務</span></a
+          >
+          <div class="nav-group-title">経営管理</div>
+          <a
+            data-page="cash"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('cash')"
+            ><i data-lucide="banknote" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">資金繰り</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">レポート</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="nav('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              経
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">経理部長</p>
+              <p class="text-[10px] opacity-40">keiri@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">原価計算の精度不足</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="calculator" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">シミュレーター</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="layout-list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">サマリー</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              原価・利益のリアルタイム概要
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #fff7ed; color: #7c2d12"
+              >2026年3月度</span
+            >
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #fff7ed; color: #7c2d12"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">パフォーマンス概要</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6"><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="91.9" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">57%</div><div class="text-[11px] text-gray-400">利益率</div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="42.7" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">80%</div><div class="text-[11px] text-gray-400">効率</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="47.0" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">78%</div><div class="text-[11px] text-gray-400">遵守</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="104.7" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">51%</div><div class="text-[11px] text-gray-400">満足度</div></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">原価計算管理指標</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">原価計算の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の出来高を登録</p><p class="text-[11px] text-gray-400">7時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の出来高を登録</p><p class="text-[11px] text-gray-400">1時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に予算超過アラート</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の請求を確認</p><p class="text-[11px] text-gray-400">12時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> の請求を確認</p><p class="text-[11px] text-gray-400">17時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-5">入力パラメータ</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">売上高（万円）</label><input type="number" name="売上高（万円）" placeholder="10000" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">原価率（%）</label><input type="number" name="原価率（%）" placeholder="60" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">販管費（万円）</label><input type="number" name="販管費（万円）" placeholder="2000" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">人件費（万円）</label><input type="number" name="人件費（万円）" placeholder="1500" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div class="pt-2"><button onclick="calcProfit()" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="calculator" class="w-4 h-4"></i>計算する</button></div></div></div><div class="space-y-4"><div class="card p-5" id="calcResult"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">計算結果</h3><div class="space-y-3"><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">粗利</span><span id="rGross" class="font-bold" style="color:#7c2d12">—</span></div><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">粗利率</span><span id="rGrossRate" class="font-bold" style="color:#7c2d12">—</span></div><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">営業利益</span><span id="rOp" class="font-bold" style="color:#7c2d12">—</span></div><div class="flex justify-between py-2"><span class="text-[13px] text-gray-500">営業利益率</span><span id="rOpRate" class="font-bold" style="color:#7c2d12">—</span></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">利益構成</h3><div style="height:200px"><canvas id="calcChart"></canvas></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1802</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/02/27</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥2,140万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9931</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/03/07</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥1,946万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木品質管理 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1476</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/01/24</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥347万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田生産管理 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9625</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/02/18</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥2,195万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋設備保全 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9889</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/02/16</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥2,109万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤購買担当 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7268</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/03/03</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥341万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺設計者 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4995</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/02/17</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥1,131万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村品質検査員 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6728</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/02/24</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥4,667万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林ライン長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#8259</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/02/01</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥4,477万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤倉庫管理 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4115</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/02/08</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥1,520万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 製造2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2556</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">製造2課 · 2026/02/15</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥3,079万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7936</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/01/23</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥1,213万</p></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-4xl"><div class="card p-6 mb-5"><div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold" style="background:#7c2d12">原</div><div><h2 class="text-[18px] font-bold text-gray-800">原価計算の精度不足</h2><p class="text-[13px] text-gray-400">製造業 · 経理</p></div></div><div class="p-4 rounded-lg mb-5" style="background:#ffedd5"><p class="text-[13px]" style="color:#7c2d12">儲かっているはずなのに利益が出ない</p></div><div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">2786万円</div><div class="text-[11px] text-gray-400 mt-1">原価消化率</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">52%</div><div class="text-[11px] text-gray-400 mt-1">原価率</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">2444万円</div><div class="text-[11px] text-gray-400 mt-1">粗利</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">23%</div><div class="text-[11px] text-gray-400 mt-1">営業利益率</div></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">原価計算の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の出来高を登録</p><p class="text-[11px] text-gray-400">7時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の出来高を登録</p><p class="text-[11px] text-gray-400">1時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に予算超過アラート</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の請求を確認</p><p class="text-[11px] text-gray-400">12時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> の請求を確認</p><p class="text-[11px] text-gray-400">17時間前</p></div></div></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><div class="flex gap-2"><button class="text-[12px] px-3 py-1.5 rounded-lg text-white cursor-pointer transition-colors" style=background:#7c2d12>月次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >週次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >日次</button></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次原価計算推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">原価計算種別構成</h3><div style="height:240px"><canvas id="rpC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別原価計算比較</h3><div style="height:240px"><canvas id="rpC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">原価計算管理指標</h3><div style="height:240px"><canvas id="rpC4"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== PAGE: DASHBOARD ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- Alerts -->
+            <div class="mb-5 space-y-2">
+              <div
+                class="alert-bar"
+                style="background: #fef2f2; color: #dc2626"
+              >
+                <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i
+                ><span
+                  ><strong>利益率アラート:</strong> 製品C「精密ギア
+                  SG-200」の実際原価が標準原価を
+                  <strong>23.4%</strong> 超過。間接費配賦の見直しを推奨</span
+                >
+              </div>
+              <div
+                class="alert-bar"
+                style="background: #fffbeb; color: #d97706"
+              >
+                <i data-lucide="info" class="w-4 h-4 shrink-0"></i
+                ><span
+                  >3月度 月次決算締め: 残り <strong>5営業日</strong>（締切
+                  3/15）— 仕掛品棚卸未完了</span
+                >
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "パフォーマンス概要"}, {"id": "feature", "title": "シミュレーター", "desc": "原価・利益計算"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "サマリー", "desc": "概要カード"}, {"id": "report", "title": "レポート", "desc": "分析・集計"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">月次売上高</div>
+                <div class="stat-val text-gray-800">
+                  ¥2.84<span class="text-[14px] font-medium">億</span>
+                </div>
+                <div class="stat-sub text-ok">
+                  <i data-lucide="trending-up" class="w-3 h-3"></i>+4.2% 前月比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">売上原価</div>
+                <div class="stat-val text-gray-800">
+                  ¥1.96<span class="text-[14px] font-medium">億</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-up" class="w-3 h-3"></i>+6.8% 前月比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">粗利率</div>
+                <div class="stat-val" style="color: #7c2d12">
+                  31.0<span class="text-[14px] font-medium">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-1.8pt
+                  前月比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">営業利益</div>
+                <div class="stat-val text-gray-800">
+                  ¥1,420<span class="text-[14px] font-medium">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-12.3%
+                  前月比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">原価差異（累計）</div>
+                <div class="stat-val text-ng">
+                  -¥890<span class="text-[14px] font-medium">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="alert-circle" class="w-3 h-3"></i
+                  >不利差異拡大中
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "現在", "data": [29, 34, 26, 49, 23, 24], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <!-- Charts row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+              <div class="card p-5 lg:col-span-2">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  売上・原価・利益 推移
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  直近12ヶ月 — 売上は伸びているが原価増で利益圧迫
+                </p>
+                <div style="height: 260px"><canvas id="dC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  原価構成比
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">当月実績ベース</p>
+                <div style="height: 200px"><canvas id="dC2"></canvas></div>
+                <div class="mt-3 space-y-1.5">
+                  <div class="flex justify-between text-[11px]">
+                    <span class="text-gray-500">材料費</span
+                    ><span class="font-medium">42.1% (¥8,250万)</span>
+                  </div>
+                  <div class="flex justify-between text-[11px]">
+                    <span class="text-gray-500">労務費</span
+                    ><span class="font-medium">28.3% (¥5,547万)</span>
+                  </div>
+                  <div class="flex justify-between text-[11px]">
+                    <span class="text-gray-500">製造間接費</span
+                    ><span class="font-medium">29.6% (¥5,803万)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// feature
+            <!-- Charts row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  製品別利益率ランキング
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  赤字製品が利益を食い潰していないか？
+                </p>
+                <div style="height: 240px"><canvas id="dC3"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  利益侵食アラート
+                </h3>
+                <div class="space-y-3">
+                  <div class="p-3 rounded-lg bg-red-50 border border-red-100">
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >精密ギア SG-200</span
+                      ><span class="badge badge-ng">赤字 -4.2%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      間接費配賦過少 →
+                      実際原価が標準比+23.4%。段取り時間が見積の2.1倍
+                    </p>
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-bar-fill bg-ng"
+                        style="width: 123%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-amber-50 border border-amber-100"
+                  >
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >フランジ FL-150</span
+                      ><span class="badge badge-warn">低利益 2.1%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      材料歩留り悪化（92%→85%）。スクラップ率が上昇
+                    </p>
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-bar-fill bg-warn"
+                        style="width: 102%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-emerald-50 border border-emerald-100"
+                  >
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >シャフト SH-300</span
+                      ><span class="badge badge-ok">高利益 38.7%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      標準原価内で安定推移。量産効果あり
+                    </p>
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-bar-fill bg-ok"
+                        style="width: 61%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-emerald-50 border border-emerald-100"
+                  >
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] font-medium text-gray-700"
+                        >ベアリングケース BC-100</span
+                      ><span class="badge badge-ok">高利益 32.5%</span>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      自動化ラインで労務費抑制成功
+                    </p>
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-bar-fill bg-ok"
+                        style="width: 67%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function calcProfit(){
-const rev=parseFloat(document.querySelector('[name="売上高（万円）"]').value)||0;
-const cr=parseFloat(document.querySelector('[name="原価率（%）"]').value)||0;
-const sg=parseFloat(document.querySelector('[name="販管費（万円）"]').value)||0;
-const hr=parseFloat(document.querySelector('[name="人件費（万円）"]').value)||0;
-const cost=rev*cr/100;const gross=rev-cost;const op=gross-sg-hr;
-document.getElementById('rGross').textContent=gross.toLocaleString()+'万円';
-document.getElementById('rGrossRate').textContent=(gross/rev*100).toFixed(1)+'%';
-document.getElementById('rOp').textContent=op.toLocaleString()+'万円';
-document.getElementById('rOpRate').textContent=(op/rev*100).toFixed(1)+'%';
-const el=document.getElementById('calcChart');const old=charts.findIndex(c=>c.canvas===el);if(old>=0)charts[old].destroy();
-charts.push(new Chart(el,{type:'doughnut',data:{labels:['原価','販管費','人件費','営業利益'],datasets:[{data:[cost,sg,hr,Math.max(0,op)],backgroundColor:['#7c2d12','#ea580c','#7c2d1280','#10b981'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11}}}}}}));
-}
+          <!-- ==================== PAGE: PRODUCT COST ==================== -->
+          <div id="page-product-cost" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'pc')">
+                  製品別原価表
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'pc')">
+                  原価計算シート
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'pc')">
+                  配賦基準
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white"
+                >
+                  <option>2026年3月</option>
+                  <option>2026年2月</option>
+                  <option>2026年1月</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg text-white font-medium cursor-pointer hover:opacity-90"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="calculator" class="w-3.5 h-3.5"></i>原価再計算
+                </button>
+              </div>
+            </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+            <!-- Product Cost Table -->
+            <div class="card overflow-hidden mb-5">
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>製品コード</th>
+                      <th>製品名</th>
+                      <th class="num">標準原価</th>
+                      <th class="num">実際原価</th>
+                      <th class="num">差異</th>
+                      <th class="num">差異率</th>
+                      <th class="num">売価</th>
+                      <th class="num">粗利率</th>
+                      <th>判定</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium text-primary">SH-300</td>
+                      <td>シャフト</td>
+                      <td class="num">¥12,400</td>
+                      <td class="num">¥12,180</td>
+                      <td class="num text-ok">+¥220</td>
+                      <td class="num text-ok">+1.8%</td>
+                      <td class="num">¥19,800</td>
+                      <td class="num font-bold text-ok">38.7%</td>
+                      <td><span class="badge badge-ok">優良</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">BC-100</td>
+                      <td>ベアリングケース</td>
+                      <td class="num">¥8,600</td>
+                      <td class="num">¥8,750</td>
+                      <td class="num text-ng">-¥150</td>
+                      <td class="num text-ng">-1.7%</td>
+                      <td class="num">¥12,960</td>
+                      <td class="num font-bold text-ok">32.5%</td>
+                      <td><span class="badge badge-ok">良好</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">VL-500</td>
+                      <td>バルブ</td>
+                      <td class="num">¥15,200</td>
+                      <td class="num">¥15,900</td>
+                      <td class="num text-ng">-¥700</td>
+                      <td class="num text-ng">-4.6%</td>
+                      <td class="num">¥22,000</td>
+                      <td class="num font-bold">27.7%</td>
+                      <td><span class="badge badge-info">要注意</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">FL-150</td>
+                      <td>フランジ</td>
+                      <td class="num">¥6,800</td>
+                      <td class="num">¥7,640</td>
+                      <td class="num text-ng">-¥840</td>
+                      <td class="num text-ng">-12.4%</td>
+                      <td class="num">¥7,800</td>
+                      <td class="num font-bold text-warn">2.1%</td>
+                      <td><span class="badge badge-warn">警告</span></td>
+                    </tr>
+                    <tr class="bg-red-50/50">
+                      <td class="font-medium text-primary">SG-200</td>
+                      <td>精密ギア</td>
+                      <td class="num">¥22,500</td>
+                      <td class="num">¥27,770</td>
+                      <td class="num text-ng font-bold">-¥5,270</td>
+                      <td class="num text-ng font-bold">-23.4%</td>
+                      <td class="num">¥26,600</td>
+                      <td class="num font-bold text-ng">-4.2%</td>
+                      <td><span class="badge badge-ng">赤字</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">HG-400</td>
+                      <td>ハウジング</td>
+                      <td class="num">¥18,900</td>
+                      <td class="num">¥19,200</td>
+                      <td class="num text-ng">-¥300</td>
+                      <td class="num text-ng">-1.6%</td>
+                      <td class="num">¥28,500</td>
+                      <td class="num font-bold text-ok">32.6%</td>
+                      <td><span class="badge badge-ok">良好</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">PN-250</td>
+                      <td>ピニオン</td>
+                      <td class="num">¥9,100</td>
+                      <td class="num">¥9,350</td>
+                      <td class="num text-ng">-¥250</td>
+                      <td class="num text-ng">-2.7%</td>
+                      <td class="num">¥13,500</td>
+                      <td class="num font-bold">30.7%</td>
+                      <td><span class="badge badge-info">標準</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-primary">CP-600</td>
+                      <td>カップリング</td>
+                      <td class="num">¥11,300</td>
+                      <td class="num">¥11,050</td>
+                      <td class="num text-ok">+¥250</td>
+                      <td class="num text-ok">+2.2%</td>
+                      <td class="num">¥17,200</td>
+                      <td class="num font-bold text-ok">35.8%</td>
+                      <td><span class="badge badge-ok">優良</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [78, 52, 78, 64, 73, 42, 37, 49, 58, 90, 39, 70], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1215", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["材料費", "加工費", "設備費", "人件費", "その他"], "datasets": [{"data": [29, 27, 14, 27, 22], "backgroundColor": ["#7c2d12", "#ea580c", "#7c2d1260", "#ea580c60", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("rpC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [78, 52, 78, 64, 73, 42], "backgroundColor": "#7c2d12", "borderRadius": 4}, {"label": "前期", "data": [29, 34, 26, 49, 23, 24], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC4"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "スコア", "data": [29, 34, 26, 49, 23, 24], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <!-- Cost breakdown detail -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  精密ギア SG-200 — 原価構造分析
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  なぜ赤字なのか？ 原価要素別に標準vs実際を比較
+                </p>
+                <div style="height: 240px"><canvas id="pcC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  SG-200 原価超過の内訳
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] text-gray-600">直接材料費</span
+                      ><span class="text-[12px] font-bold text-ng"
+                        >+¥1,200 (+12.0%)</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-400">
+                      特殊合金の市場価格上昇。標準単価が6ヶ月未更新
+                    </p>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-ng"
+                        style="width: 45%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] text-gray-600">直接労務費</span
+                      ><span class="text-[12px] font-bold text-ng"
+                        >+¥1,870 (+24.9%)</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-400">
+                      段取り替え時間が見積の2.1倍。熟練工の退職で作業効率低下
+                    </p>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-ng"
+                        style="width: 72%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-[12px] text-gray-600">製造間接費</span
+                      ><span class="text-[12px] font-bold text-ng"
+                        >+¥2,200 (+31.4%)</span
+                      >
+                    </div>
+                    <p class="text-[11px] text-gray-400">
+                      配賦基準が直接作業時間のみ →
+                      機械占有時間を反映できていない
+                    </p>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-ng"
+                        style="width: 95%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 p-3 rounded-lg" style="background: #fff7ed">
+                  <p class="text-[12px] font-medium" style="color: #7c2d12">
+                    改善提案
+                  </p>
+                  <p class="text-[11px] text-gray-600 mt-1">
+                    1. 間接費配賦を「機械時間+直接作業時間」の複数基準に変更<br />2.
+                    標準原価の四半期改定ルールを策定<br />3.
+                    SG-200の段取り改善プロジェクト立ち上げ
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-</script>
-</body></html>
+          <!-- ==================== PAGE: VARIANCE ==================== -->
+          <div id="page-variance" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'va')">
+                  差異サマリー
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'va')">
+                  材料費差異
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'va')">
+                  労務費差異
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'va')">
+                  間接費差異
+                </button>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border cursor-pointer hover:bg-gray-50"
+                style="color: #7c2d12; border-color: #7c2d12"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>差異報告書
+              </button>
+            </div>
+
+            <!-- Variance KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">材料費差異</div>
+                <div class="stat-val text-ng">
+                  -¥340<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <span>価格差異-210万 / 数量差異-130万</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">労務費差異</div>
+                <div class="stat-val text-ng">
+                  -¥280<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <span>賃率差異-80万 / 能率差異-200万</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">製造間接費差異</div>
+                <div class="stat-val text-ng">
+                  -¥270<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <span>予算差異-90万 / 操業度差異-180万</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">合計原価差異</div>
+                <div class="stat-val text-ng">
+                  -¥890<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="alert-circle" class="w-3 h-3"></i>予算比
+                  +4.5%超過
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  原価差異推移（月次）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  不利差異が3ヶ月連続で拡大
+                </p>
+                <div style="height: 260px"><canvas id="vaC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  差異要因ウォーターフォール
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  標準原価 → 実際原価の差異内訳
+                </p>
+                <div style="height: 260px"><canvas id="vaC2"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Variance detail table -->
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-4 pb-2">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  製品別差異明細
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>製品</th>
+                      <th class="num">材料価格差異</th>
+                      <th class="num">材料数量差異</th>
+                      <th class="num">賃率差異</th>
+                      <th class="num">能率差異</th>
+                      <th class="num">間接費差異</th>
+                      <th class="num">合計</th>
+                      <th>トレンド</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="bg-red-50/50">
+                      <td class="font-medium">精密ギア SG-200</td>
+                      <td class="num text-ng">-¥120万</td>
+                      <td class="num text-ng">-¥80万</td>
+                      <td class="num text-ng">-¥45万</td>
+                      <td class="num text-ng">-¥142万</td>
+                      <td class="num text-ng">-¥160万</td>
+                      <td class="num text-ng font-bold">-¥547万</td>
+                      <td><span class="badge badge-ng">悪化</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">フランジ FL-150</td>
+                      <td class="num text-ng">-¥50万</td>
+                      <td class="num text-ng">-¥35万</td>
+                      <td class="num">-¥10万</td>
+                      <td class="num text-ng">-¥28万</td>
+                      <td class="num text-ng">-¥42万</td>
+                      <td class="num text-ng font-bold">-¥165万</td>
+                      <td><span class="badge badge-warn">横ばい</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">バルブ VL-500</td>
+                      <td class="num text-ng">-¥30万</td>
+                      <td class="num text-ng">-¥15万</td>
+                      <td class="num text-ng">-¥18万</td>
+                      <td class="num text-ng">-¥22万</td>
+                      <td class="num text-ng">-¥48万</td>
+                      <td class="num text-ng">-¥133万</td>
+                      <td><span class="badge badge-warn">横ばい</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">ピニオン PN-250</td>
+                      <td class="num text-ng">-¥10万</td>
+                      <td class="num">¥0</td>
+                      <td class="num text-ng">-¥7万</td>
+                      <td class="num text-ng">-¥8万</td>
+                      <td class="num text-ng">-¥20万</td>
+                      <td class="num text-ng">-¥45万</td>
+                      <td><span class="badge badge-info">軽微</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">シャフト SH-300</td>
+                      <td class="num text-ok">+¥12万</td>
+                      <td class="num text-ok">+¥8万</td>
+                      <td class="num text-ok">+¥5万</td>
+                      <td class="num text-ok">+¥15万</td>
+                      <td class="num text-ng">-¥12万</td>
+                      <td class="num text-ok font-bold">+¥28万</td>
+                      <td><span class="badge badge-ok">改善</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">カップリング CP-600</td>
+                      <td class="num text-ok">+¥10万</td>
+                      <td class="num text-ok">+¥5万</td>
+                      <td class="num text-ok">+¥3万</td>
+                      <td class="num text-ok">+¥8万</td>
+                      <td class="num text-ng">-¥8万</td>
+                      <td class="num text-ok">+¥18万</td>
+                      <td><span class="badge badge-ok">良好</span></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr class="bg-gray-50 font-bold">
+                      <td>合計</td>
+                      <td class="num text-ng">-¥188万</td>
+                      <td class="num text-ng">-¥117万</td>
+                      <td class="num text-ng">-¥72万</td>
+                      <td class="num text-ng">-¥177万</td>
+                      <td class="num text-ng">-¥290万</td>
+                      <td class="num text-ng">-¥844万</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: BEP (Break-Even) ==================== -->
+          <div id="page-bep" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'bp')">
+                  損益分岐点分析
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'bp')">
+                  限界利益分析
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'bp')">
+                  製品ミックス
+                </button>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg text-white font-medium cursor-pointer hover:opacity-90"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i
+                >再シミュレーション
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">損益分岐点売上</div>
+                <div class="stat-val" style="color: #7c2d12">
+                  ¥2.24<span class="text-[14px]">億</span>
+                </div>
+                <div class="stat-sub text-gray-400">
+                  固定費 ¥8,960万 / 限界利益率 40.0%
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">安全余裕率</div>
+                <div class="stat-val text-warn">
+                  21.1<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-warn">
+                  <i data-lucide="alert-circle" class="w-3 h-3"></i
+                  >目標30%に未達
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">限界利益率</div>
+                <div class="stat-val text-gray-800">
+                  40.0<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-2.5pt
+                  前年比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">経営レバレッジ</div>
+                <div class="stat-val text-gray-800">
+                  4.7<span class="text-[14px]">倍</span>
+                </div>
+                <div class="stat-sub text-gray-400">
+                  売上1%変動→利益4.7%変動
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  CVP分析（損益分岐点チャート）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  売上線と総費用線の交点が損益分岐点
+                </p>
+                <div style="height: 280px"><canvas id="bpC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  製品別限界利益率
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  限界利益率が高い製品を優先的に販売すべき
+                </p>
+                <div style="height: 280px"><canvas id="bpC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                利益改善シミュレーション
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >売上増減率 (%)</label
+                  ><input
+                    id="simRev"
+                    type="range"
+                    min="-20"
+                    max="20"
+                    value="0"
+                    class="w-full accent-primary"
+                    oninput="runBepSim()"
+                  />
+                  <div class="flex justify-between text-[10px] text-gray-400">
+                    <span>-20%</span
+                    ><span id="simRevVal" class="font-bold text-gray-700"
+                      >0%</span
+                    ><span>+20%</span>
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >変動費削減率 (%)</label
+                  ><input
+                    id="simVar"
+                    type="range"
+                    min="0"
+                    max="15"
+                    value="0"
+                    class="w-full accent-primary"
+                    oninput="runBepSim()"
+                  />
+                  <div class="flex justify-between text-[10px] text-gray-400">
+                    <span>0%</span
+                    ><span id="simVarVal" class="font-bold text-gray-700"
+                      >0%</span
+                    ><span>15%</span>
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >固定費削減率 (%)</label
+                  ><input
+                    id="simFix"
+                    type="range"
+                    min="0"
+                    max="15"
+                    value="0"
+                    class="w-full accent-primary"
+                    oninput="runBepSim()"
+                  />
+                  <div class="flex justify-between text-[10px] text-gray-400">
+                    <span>0%</span
+                    ><span id="simFixVal" class="font-bold text-gray-700"
+                      >0%</span
+                    ><span>15%</span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="grid grid-cols-2 lg:grid-cols-4 gap-3"
+                id="simResults"
+              >
+                <div class="text-center p-3 rounded-lg bg-gray-50">
+                  <div
+                    class="text-[18px] font-bold text-gray-800"
+                    id="simSales"
+                  >
+                    ¥2.84億
+                  </div>
+                  <div class="text-[11px] text-gray-400">売上高</div>
+                </div>
+                <div class="text-center p-3 rounded-lg bg-gray-50">
+                  <div
+                    class="text-[18px] font-bold"
+                    id="simProfit"
+                    style="color: #7c2d12"
+                  >
+                    ¥1,420万
+                  </div>
+                  <div class="text-[11px] text-gray-400">営業利益</div>
+                </div>
+                <div class="text-center p-3 rounded-lg bg-gray-50">
+                  <div class="text-[18px] font-bold text-gray-800" id="simBep">
+                    ¥2.24億
+                  </div>
+                  <div class="text-[11px] text-gray-400">損益分岐点</div>
+                </div>
+                <div class="text-center p-3 rounded-lg bg-gray-50">
+                  <div
+                    class="text-[18px] font-bold text-gray-800"
+                    id="simMargin"
+                  >
+                    21.1%
+                  </div>
+                  <div class="text-[11px] text-gray-400">安全余裕率</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: MONTHLY ==================== -->
+          <div id="page-monthly" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'mo')">
+                  損益計算書
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'mo')">
+                  製造原価報告書
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'mo')">
+                  貸借対照表
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white"
+                >
+                  <option>2026年3月</option>
+                  <option>2026年2月</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border cursor-pointer hover:bg-gray-50"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>Excel出力
+                </button>
+              </div>
+            </div>
+
+            <!-- P/L -->
+            <div class="card overflow-hidden mb-5">
+              <div class="px-5 pt-4 pb-2">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  月次損益計算書（2026年3月度）
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>勘定科目</th>
+                      <th class="num">当月実績</th>
+                      <th class="num">当月予算</th>
+                      <th class="num">差異</th>
+                      <th class="num">前月実績</th>
+                      <th class="num">累計実績</th>
+                      <th class="num">通期予算</th>
+                      <th class="num">進捗率</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="font-bold bg-blue-50/30">
+                      <td>売上高</td>
+                      <td class="num">284,000</td>
+                      <td class="num">280,000</td>
+                      <td class="num text-ok">+4,000</td>
+                      <td class="num">272,000</td>
+                      <td class="num">3,180,000</td>
+                      <td class="num">3,360,000</td>
+                      <td class="num">94.6%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6">— 製品A群</td>
+                      <td class="num">168,000</td>
+                      <td class="num">165,000</td>
+                      <td class="num text-ok">+3,000</td>
+                      <td class="num">160,000</td>
+                      <td class="num">1,890,000</td>
+                      <td class="num">1,980,000</td>
+                      <td class="num">95.5%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6">— 製品B群</td>
+                      <td class="num">116,000</td>
+                      <td class="num">115,000</td>
+                      <td class="num text-ok">+1,000</td>
+                      <td class="num">112,000</td>
+                      <td class="num">1,290,000</td>
+                      <td class="num">1,380,000</td>
+                      <td class="num">93.5%</td>
+                    </tr>
+                    <tr class="font-bold">
+                      <td>売上原価</td>
+                      <td class="num">196,000</td>
+                      <td class="num">184,800</td>
+                      <td class="num text-ng">-11,200</td>
+                      <td class="num">183,500</td>
+                      <td class="num">2,205,000</td>
+                      <td class="num">2,217,600</td>
+                      <td class="num">99.4%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6">— 材料費</td>
+                      <td class="num">82,500</td>
+                      <td class="num">78,400</td>
+                      <td class="num text-ng">-4,100</td>
+                      <td class="num">77,200</td>
+                      <td class="num">928,000</td>
+                      <td class="num">940,800</td>
+                      <td class="num">98.6%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6">— 労務費</td>
+                      <td class="num">55,470</td>
+                      <td class="num">50,400</td>
+                      <td class="num text-ng">-5,070</td>
+                      <td class="num">51,800</td>
+                      <td class="num">612,000</td>
+                      <td class="num">604,800</td>
+                      <td class="num text-ng">101.2%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6">— 製造間接費</td>
+                      <td class="num">58,030</td>
+                      <td class="num">56,000</td>
+                      <td class="num text-ng">-2,030</td>
+                      <td class="num">54,500</td>
+                      <td class="num">665,000</td>
+                      <td class="num">672,000</td>
+                      <td class="num">98.9%</td>
+                    </tr>
+                    <tr class="font-bold text-primary bg-orange-50/50">
+                      <td>売上総利益</td>
+                      <td class="num">88,000</td>
+                      <td class="num">95,200</td>
+                      <td class="num text-ng">-7,200</td>
+                      <td class="num">88,500</td>
+                      <td class="num">975,000</td>
+                      <td class="num">1,142,400</td>
+                      <td class="num">85.3%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6 text-gray-500">（粗利率）</td>
+                      <td class="num">31.0%</td>
+                      <td class="num">34.0%</td>
+                      <td class="num text-ng">-3.0pt</td>
+                      <td class="num">32.5%</td>
+                      <td class="num">30.7%</td>
+                      <td class="num">34.0%</td>
+                      <td class="num"></td>
+                    </tr>
+                    <tr class="font-bold">
+                      <td>販管費</td>
+                      <td class="num">73,800</td>
+                      <td class="num">72,000</td>
+                      <td class="num text-ng">-1,800</td>
+                      <td class="num">71,500</td>
+                      <td class="num">832,000</td>
+                      <td class="num">864,000</td>
+                      <td class="num">96.3%</td>
+                    </tr>
+                    <tr class="font-bold text-primary bg-orange-50/50">
+                      <td>営業利益</td>
+                      <td class="num">14,200</td>
+                      <td class="num">23,200</td>
+                      <td class="num text-ng font-bold">-9,000</td>
+                      <td class="num">17,000</td>
+                      <td class="num">143,000</td>
+                      <td class="num">278,400</td>
+                      <td class="num text-ng">51.4%</td>
+                    </tr>
+                    <tr>
+                      <td class="pl-6 text-gray-500">（営業利益率）</td>
+                      <td class="num">5.0%</td>
+                      <td class="num">8.3%</td>
+                      <td class="num text-ng">-3.3pt</td>
+                      <td class="num">6.3%</td>
+                      <td class="num">4.5%</td>
+                      <td class="num">8.3%</td>
+                      <td class="num"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Monthly close checklist -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                月次締めチェックリスト
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-4 h-4 text-ok shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      売上計上・売掛金照合
+                    </p>
+                    <p class="text-[11px] text-gray-400">3/8 完了</p>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-emerald-50"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-4 h-4 text-ok shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      買掛金照合・支払確定
+                    </p>
+                    <p class="text-[11px] text-gray-400">3/9 完了</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-amber-50">
+                  <i data-lucide="clock" class="w-4 h-4 text-warn shrink-0"></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      仕掛品棚卸・評価
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      進行中 — 工場からのデータ待ち
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <i
+                    data-lucide="circle"
+                    class="w-4 h-4 text-gray-300 shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      減価償却費計上
+                    </p>
+                    <p class="text-[11px] text-gray-400">未着手</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <i
+                    data-lucide="circle"
+                    class="w-4 h-4 text-gray-300 shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      原価差異振替仕訳
+                    </p>
+                    <p class="text-[11px] text-gray-400">未着手</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                  <i
+                    data-lucide="circle"
+                    class="w-4 h-4 text-gray-300 shrink-0"
+                  ></i>
+                  <div>
+                    <p class="text-[12px] font-medium text-gray-700">
+                      経営会議報告資料作成
+                    </p>
+                    <p class="text-[11px] text-gray-400">未着手</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: BUDGET ==================== -->
+          <div id="page-budget" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'bu')">
+                  予実対比
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'bu')">
+                  部門別
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'bu')">
+                  費目別
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <select
+                  class="text-[12px] px-3 py-2 border rounded-lg bg-white"
+                >
+                  <option>2026年度</option>
+                  <option>2025年度</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">売上 予算達成率</div>
+                <div class="stat-val text-ok">
+                  101.4<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ok">
+                  <i data-lucide="check" class="w-3 h-3"></i>+4,000千円
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">原価 予算達成率</div>
+                <div class="stat-val text-ng">
+                  106.1<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="alert-circle" class="w-3 h-3"></i
+                  >11,200千円超過
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">販管費 予算達成率</div>
+                <div class="stat-val text-warn">
+                  102.5<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-warn">1,800千円超過</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">営業利益 予算達成率</div>
+                <div class="stat-val text-ng">
+                  61.2<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i
+                  >9,000千円未達
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  予実推移（月次）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  売上は予算到達だが原価超過で利益未達が常態化
+                </p>
+                <div style="height: 260px"><canvas id="buC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  部門別予算消化率
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  年度進捗 91.7% に対する消化状況
+                </p>
+                <div style="height: 260px"><canvas id="buC2"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Budget detail -->
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-4 pb-2">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  部門別予実管理表
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>部門</th>
+                      <th class="num">年間予算</th>
+                      <th class="num">累計実績</th>
+                      <th class="num">消化率</th>
+                      <th class="num">残予算</th>
+                      <th class="num">月平均</th>
+                      <th>ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">製造1課</td>
+                      <td class="num">¥86,400万</td>
+                      <td class="num">¥82,100万</td>
+                      <td class="num">95.0%</td>
+                      <td class="num">¥4,300万</td>
+                      <td class="num">¥7,463万</td>
+                      <td><span class="badge badge-ng">超過見込</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">製造2課</td>
+                      <td class="num">¥64,800万</td>
+                      <td class="num">¥58,200万</td>
+                      <td class="num">89.8%</td>
+                      <td class="num">¥6,600万</td>
+                      <td class="num">¥5,291万</td>
+                      <td><span class="badge badge-ok">適正</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">品質管理課</td>
+                      <td class="num">¥12,000万</td>
+                      <td class="num">¥11,400万</td>
+                      <td class="num">95.0%</td>
+                      <td class="num">¥600万</td>
+                      <td class="num">¥1,036万</td>
+                      <td><span class="badge badge-warn">注意</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">生産技術課</td>
+                      <td class="num">¥18,000万</td>
+                      <td class="num">¥15,800万</td>
+                      <td class="num">87.8%</td>
+                      <td class="num">¥2,200万</td>
+                      <td class="num">¥1,436万</td>
+                      <td><span class="badge badge-ok">適正</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">購買課</td>
+                      <td class="num">¥9,600万</td>
+                      <td class="num">¥9,100万</td>
+                      <td class="num">94.8%</td>
+                      <td class="num">¥500万</td>
+                      <td class="num">¥827万</td>
+                      <td><span class="badge badge-warn">注意</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">管理部門</td>
+                      <td class="num">¥14,400万</td>
+                      <td class="num">¥12,600万</td>
+                      <td class="num">87.5%</td>
+                      <td class="num">¥1,800万</td>
+                      <td class="num">¥1,145万</td>
+                      <td><span class="badge badge-ok">適正</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: AP/AR ==================== -->
+          <div id="page-apar" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'ar')">
+                  売掛金
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'ar')">
+                  買掛金
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'ar')">
+                  仕訳一覧
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg text-white font-medium cursor-pointer hover:opacity-90"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>仕訳入力
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">売掛金残高</div>
+                <div class="stat-val text-gray-800">
+                  ¥1.42<span class="text-[14px]">億</span>
+                </div>
+                <div class="stat-sub text-gray-400">回収サイト平均 52日</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">買掛金残高</div>
+                <div class="stat-val text-gray-800">
+                  ¥9,800<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-gray-400">支払サイト平均 45日</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">滞留売掛金</div>
+                <div class="stat-val text-warn">
+                  ¥1,240<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-warn">
+                  <i data-lucide="alert-circle" class="w-3 h-3"></i>90日超 3件
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">当月仕訳件数</div>
+                <div class="stat-val text-gray-800">
+                  1,847<span class="text-[14px]">件</span>
+                </div>
+                <div class="stat-sub text-gray-400">自動仕訳 72%</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  売掛金エイジング
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  期日超過の滞留債権を可視化
+                </p>
+                <div style="height: 240px"><canvas id="arC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  買掛金支払スケジュール
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">今後30日の支払予定</p>
+                <div style="height: 240px"><canvas id="arC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-4 pb-2">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  滞留売掛金一覧（90日超）
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>取引先</th>
+                      <th>請求日</th>
+                      <th>支払期日</th>
+                      <th class="num">請求額</th>
+                      <th class="num">入金額</th>
+                      <th class="num">残高</th>
+                      <th>滞留日数</th>
+                      <th>対応状況</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="bg-red-50/30">
+                      <td class="font-medium">東海精工(株)</td>
+                      <td>2025/11/30</td>
+                      <td>2025/12/31</td>
+                      <td class="num">¥580万</td>
+                      <td class="num">¥0</td>
+                      <td class="num text-ng font-bold">¥580万</td>
+                      <td><span class="badge badge-ng">100日</span></td>
+                      <td class="text-[12px]">督促済（3回目）</td>
+                    </tr>
+                    <tr class="bg-red-50/30">
+                      <td class="font-medium">関西メタル(株)</td>
+                      <td>2025/12/15</td>
+                      <td>2026/01/15</td>
+                      <td class="num">¥420万</td>
+                      <td class="num">¥200万</td>
+                      <td class="num text-ng font-bold">¥220万</td>
+                      <td><span class="badge badge-ng">95日</span></td>
+                      <td class="text-[12px]">分割払い交渉中</td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td class="font-medium">(株)北陸製作所</td>
+                      <td>2025/12/20</td>
+                      <td>2026/01/20</td>
+                      <td class="num">¥440万</td>
+                      <td class="num">¥0</td>
+                      <td class="num text-warn font-bold">¥440万</td>
+                      <td><span class="badge badge-warn">90日</span></td>
+                      <td class="text-[12px]">支払い予定確認中</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: CASH FLOW ==================== -->
+          <div id="page-cash" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'cf')">
+                  資金繰り表
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'cf')">
+                  キャッシュフロー
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'cf')">
+                  借入管理
+                </button>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border cursor-pointer hover:bg-gray-50"
+                style="color: #7c2d12; border-color: #7c2d12"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>資金繰り表DL
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">現預金残高</div>
+                <div class="stat-val text-gray-800">
+                  ¥3.21<span class="text-[14px]">億</span>
+                </div>
+                <div class="stat-sub text-ok">
+                  <i data-lucide="trending-up" class="w-3 h-3"></i>+2,400万
+                  前月比
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">月末資金残高（予測）</div>
+                <div class="stat-val text-gray-800">
+                  ¥2.87<span class="text-[14px]">億</span>
+                </div>
+                <div class="stat-sub text-gray-400">大型支払 3/25</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">借入金残高</div>
+                <div class="stat-val text-gray-800">
+                  ¥4.50<span class="text-[14px]">億</span>
+                </div>
+                <div class="stat-sub text-gray-400">短期2.0億 / 長期2.5億</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">フリーCF（累計）</div>
+                <div class="stat-val text-ok">
+                  ¥8,200<span class="text-[14px]">万</span>
+                </div>
+                <div class="stat-sub text-ok">営業CF - 投資CF</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  月別資金残高推移
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  入出金バランスと月末残高
+                </p>
+                <div style="height: 260px"><canvas id="cfC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  日次資金繰り（当月）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  3/25の大型支払に注意
+                </p>
+                <div style="height: 260px"><canvas id="cfC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-4 pb-2">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  借入金一覧
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="tbl">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th>金融機関</th>
+                      <th>種別</th>
+                      <th class="num">借入額</th>
+                      <th class="num">残高</th>
+                      <th class="num">金利</th>
+                      <th>返済期日</th>
+                      <th class="num">月額返済</th>
+                      <th>担保</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">三菱UFJ銀行</td>
+                      <td><span class="badge badge-info">長期</span></td>
+                      <td class="num">¥3.0億</td>
+                      <td class="num">¥1.8億</td>
+                      <td class="num">1.2%</td>
+                      <td>2030/03</td>
+                      <td class="num">¥500万</td>
+                      <td>工場土地・建物</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">みずほ銀行</td>
+                      <td><span class="badge badge-info">長期</span></td>
+                      <td class="num">¥1.0億</td>
+                      <td class="num">¥7,000万</td>
+                      <td class="num">1.5%</td>
+                      <td>2028/09</td>
+                      <td class="num">¥333万</td>
+                      <td>設備</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">りそな銀行</td>
+                      <td><span class="badge badge-warn">短期</span></td>
+                      <td class="num">¥1.0億</td>
+                      <td class="num">¥1.0億</td>
+                      <td class="num">0.8%</td>
+                      <td>2026/09</td>
+                      <td class="num">一括</td>
+                      <td>なし</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">信用金庫</td>
+                      <td><span class="badge badge-warn">短期</span></td>
+                      <td class="num">¥1.0億</td>
+                      <td class="num">¥1.0億</td>
+                      <td class="num">1.0%</td>
+                      <td>2026/12</td>
+                      <td class="num">一括</td>
+                      <td>なし</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: ANALYTICS ==================== -->
+          <div id="page-analytics" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab-btn active" onclick="switchTab(this, 'an')">
+                  経営指標
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'an')">
+                  セグメント損益
+                </button>
+                <button class="tab-btn" onclick="switchTab(this, 'an')">
+                  原価トレンド
+                </button>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border cursor-pointer hover:bg-gray-50"
+                style="color: #7c2d12; border-color: #7c2d12"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>レポート出力
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="stat-label">ROA</div>
+                <div class="stat-val text-gray-800">
+                  3.2<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-0.8pt
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">ROE</div>
+                <div class="stat-val text-gray-800">
+                  7.8<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-1.2pt
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">総資産回転率</div>
+                <div class="stat-val text-gray-800">
+                  1.12<span class="text-[14px]">回</span>
+                </div>
+                <div class="stat-sub text-gray-400">前年1.18回</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">自己資本比率</div>
+                <div class="stat-val text-ok">
+                  42.5<span class="text-[14px]">%</span>
+                </div>
+                <div class="stat-sub text-ok">健全水準</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">労働生産性</div>
+                <div class="stat-val text-gray-800">
+                  ¥685<span class="text-[14px]">万/人</span>
+                </div>
+                <div class="stat-sub text-ng">
+                  <i data-lucide="trending-down" class="w-3 h-3"></i>-3.2%
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  経営指標レーダー
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">業界平均との比較</p>
+                <div style="height: 280px"><canvas id="anC1"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  セグメント別損益
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  製品群ごとの貢献利益
+                </p>
+                <div style="height: 280px"><canvas id="anC2"></canvas></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  原価率トレンド（24ヶ月）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  材料費・労務費・間接費の推移
+                </p>
+                <div style="height: 240px"><canvas id="anC3"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  主要経営指標サマリー
+                </h3>
+                <div class="space-y-2.5">
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span class="text-[12px] text-gray-600"
+                      >売上高経常利益率</span
+                    >
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">4.8%</span
+                      ><span class="badge badge-warn">業界平均 5.5%</span>
+                    </div>
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span class="text-[12px] text-gray-600"
+                      >棚卸資産回転日数</span
+                    >
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">48日</span
+                      ><span class="badge badge-warn">業界平均 38日</span>
+                    </div>
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span class="text-[12px] text-gray-600"
+                      >売掛金回転日数</span
+                    >
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">52日</span
+                      ><span class="badge badge-info">業界平均 50日</span>
+                    </div>
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span class="text-[12px] text-gray-600"
+                      >買掛金回転日数</span
+                    >
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">45日</span
+                      ><span class="badge badge-ok">業界平均 45日</span>
+                    </div>
+                  </div>
+                  <div
+                    class="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span class="text-[12px] text-gray-600"
+                      >CCC（キャッシュ変換サイクル）</span
+                    >
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">55日</span
+                      ><span class="badge badge-ng">業界平均 43日</span>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center py-2">
+                    <span class="text-[12px] text-gray-600">EBITDA</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-bold">¥3.8億</span
+                      ><span class="badge badge-info">前年¥4.2億</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE: SETTINGS ==================== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl space-y-5">
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="calculator"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >原価計算設定
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >間接費配賦基準</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option>直接作業時間基準</option>
+                      <option selected>
+                        複数基準（機械時間+直接作業時間）
+                      </option>
+                      <option>ABC（活動基準原価計算）</option>
+                    </select>
+                    <p class="text-[11px] text-gray-400 mt-1">
+                      推奨: 複数基準またはABCで間接費の配賦精度を向上
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >標準原価改定サイクル</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option>年次</option>
+                      <option>半期</option>
+                      <option selected>四半期</option>
+                      <option>月次</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >在庫評価方法</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option selected>総平均法</option>
+                      <option>移動平均法</option>
+                      <option>先入先出法</option>
+                      <option>個別法</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >減価償却方法</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                    >
+                      <option selected>定率法</option>
+                      <option>定額法</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >アラート設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        原価差異アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        標準原価との乖離が閾値を超えた場合
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value="10"
+                        class="w-16 px-2 py-1.5 text-[12px] border rounded-lg text-center"
+                      />
+                      <span class="text-[11px] text-gray-400">%以上</span>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        赤字製品アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        製品別粗利率がマイナスの場合
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        月次締めリマインダー
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        締め日の3営業日前に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        滞留債権アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        支払期日超過時に自動通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="link"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >外部連携
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-emerald-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="check-circle-2"
+                        class="w-4 h-4 text-ok"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          生産管理システム連携
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          実績工数・材料消費の自動取込
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-ok">接続中</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-emerald-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="check-circle-2"
+                        class="w-4 h-4 text-ok"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          購買管理システム連携
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          発注・検収・請求データの自動連携
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-ok">接続中</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i data-lucide="circle" class="w-4 h-4 text-gray-300"></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          会計ソフト連携（freee / MFクラウド）
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          仕訳データの自動エクスポート
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="badge"
+                      style="background: #f3f4f6; color: #6b7280"
+                      >未接続</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i data-lucide="circle" class="w-4 h-4 text-gray-300"></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          BI連携（Looker / Tableau）
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          経営ダッシュボードへのデータ配信
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="badge"
+                      style="background: #f3f4f6; color: #6b7280"
+                      >未接続</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium cursor-pointer hover:opacity-90"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script>
+      const charts = [];
+      const PC = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "原価・利益のリアルタイム概要",
+        },
+        {
+          id: "product-cost",
+          title: "製品別原価",
+          desc: "標準原価 vs 実際原価・差異分析",
+        },
+        { id: "variance", title: "差異分析", desc: "原価差異の要因分解" },
+        {
+          id: "bep",
+          title: "損益分岐点",
+          desc: "CVP分析・利益シミュレーション",
+        },
+        { id: "monthly", title: "月次決算", desc: "P/L・製造原価報告書" },
+        { id: "budget", title: "予実管理", desc: "予算vs実績・部門別管理" },
+        { id: "apar", title: "債権債務", desc: "売掛金・買掛金・仕訳管理" },
+        { id: "cash", title: "資金繰り", desc: "キャッシュフロー・借入管理" },
+        {
+          id: "analytics",
+          title: "レポート",
+          desc: "経営指標・セグメント損益分析",
+        },
+        {
+          id: "settings",
+          title: "設定",
+          desc: "原価計算・アラート・外部連携設定",
+        },
+      ];
+
+      function nav(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = PC.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      function switchTab(btn, prefix) {
+        btn.parentElement
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+
+      window.addEventListener("hashchange", () => nav(location.hash.slice(1)));
+
+      const CO = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: "#f3f4f6" },
+            ticks: { font: { size: 10 } },
+          },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        },
+      };
+      const CL = {
+        display: true,
+        position: "bottom",
+        labels: {
+          font: { size: 10, family: "Plus Jakarta Sans" },
+          usePointStyle: true,
+          padding: 12,
+        },
+      };
+      const M12 = [
+        "4月",
+        "5月",
+        "6月",
+        "7月",
+        "8月",
+        "9月",
+        "10月",
+        "11月",
+        "12月",
+        "1月",
+        "2月",
+        "3月",
+      ];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        nav(location.hash.slice(1) || "dashboard");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        initCharts();
+      });
+
+      function initCharts() {
+        // === Dashboard ===
+        // dC1: Revenue / Cost / Profit trend
+        charts.push(
+          new Chart(document.getElementById("dC1"), {
+            type: "line",
+            data: {
+              labels: M12,
+              datasets: [
+                {
+                  label: "売上高",
+                  data: [
+                    248, 255, 262, 258, 270, 265, 275, 280, 268, 272, 280, 284,
+                  ],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1210",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 2,
+                },
+                {
+                  label: "売上原価",
+                  data: [
+                    160, 165, 172, 170, 178, 176, 182, 186, 180, 183, 190, 196,
+                  ],
+                  borderColor: "#ea580c",
+                  backgroundColor: "#ea580c10",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 2,
+                },
+                {
+                  label: "営業利益",
+                  data: [28, 27, 25, 24, 26, 22, 24, 23, 19, 18, 17, 14],
+                  borderColor: "#059669",
+                  borderDash: [4, 4],
+                  tension: 0.4,
+                  pointRadius: 2,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "百万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // dC2: Cost structure doughnut
+        charts.push(
+          new Chart(document.getElementById("dC2"), {
+            type: "doughnut",
+            data: {
+              labels: ["材料費", "労務費", "製造間接費"],
+              datasets: [
+                {
+                  data: [42.1, 28.3, 29.6],
+                  backgroundColor: ["#7c2d12", "#ea580c", "#fb923c"],
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "65%",
+              plugins: { legend: { display: false } },
+            },
+          }),
+        );
+
+        // dC3: Product profit ranking
+        charts.push(
+          new Chart(document.getElementById("dC3"), {
+            type: "bar",
+            data: {
+              labels: [
+                "シャフト",
+                "カップリング",
+                "ハウジング",
+                "ベアリング",
+                "ピニオン",
+                "バルブ",
+                "フランジ",
+                "精密ギア",
+              ],
+              datasets: [
+                {
+                  data: [38.7, 35.8, 32.6, 32.5, 30.7, 27.7, 2.1, -4.2],
+                  backgroundColor: [
+                    "#059669",
+                    "#059669",
+                    "#059669",
+                    "#059669",
+                    "#059669",
+                    "#d97706",
+                    "#d97706",
+                    "#dc2626",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              indexAxis: "y",
+              scales: {
+                x: {
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 10 }, callback: (v) => v + "%" },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+
+        // === Product Cost ===
+        charts.push(
+          new Chart(document.getElementById("pcC1"), {
+            type: "bar",
+            data: {
+              labels: ["直接材料費", "直接労務費", "製造間接費"],
+              datasets: [
+                {
+                  label: "標準原価",
+                  data: [10000, 7500, 5000],
+                  backgroundColor: "#e5e7eb",
+                  borderRadius: 4,
+                },
+                {
+                  label: "実際原価",
+                  data: [11200, 9370, 7200],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: { ...CO, plugins: { legend: CL } },
+          }),
+        );
+
+        // === Variance ===
+        // vaC1: Variance trend
+        charts.push(
+          new Chart(document.getElementById("vaC1"), {
+            type: "bar",
+            data: {
+              labels: M12,
+              datasets: [
+                {
+                  label: "材料費差異",
+                  data: [
+                    -80, -120, -150, -180, -200, -220, -250, -280, -300, -310,
+                    -330, -340,
+                  ],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 2,
+                },
+                {
+                  label: "労務費差異",
+                  data: [
+                    -50, -60, -80, -100, -120, -140, -160, -180, -200, -220,
+                    -250, -280,
+                  ],
+                  backgroundColor: "#ea580c",
+                  borderRadius: 2,
+                },
+                {
+                  label: "間接費差異",
+                  data: [
+                    -30, -40, -60, -80, -100, -120, -140, -160, -180, -200,
+                    -240, -270,
+                  ],
+                  backgroundColor: "#fb923c",
+                  borderRadius: 2,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                x: { ...CO.scales.x, stacked: true },
+                y: {
+                  ...CO.scales.y,
+                  stacked: true,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // vaC2: Waterfall (simulated with floating bars)
+        charts.push(
+          new Chart(document.getElementById("vaC2"), {
+            type: "bar",
+            data: {
+              labels: [
+                "標準原価",
+                "材料価格",
+                "材料数量",
+                "賃率",
+                "能率",
+                "間接費",
+                "実際原価",
+              ],
+              datasets: [
+                {
+                  label: "ベース",
+                  data: [19600, 19600, 19810, 19930, 20010, 20190, 0],
+                  backgroundColor: "transparent",
+                  borderWidth: 0,
+                },
+                {
+                  label: "差異",
+                  data: [0, 210, 120, 80, 180, 270, 20460],
+                  backgroundColor: [
+                    "#e5e7eb",
+                    "#dc2626",
+                    "#dc2626",
+                    "#dc2626",
+                    "#dc2626",
+                    "#dc2626",
+                    "#7c2d12",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: { display: false } },
+              scales: {
+                ...CO.scales,
+                x: { ...CO.scales.x, stacked: true },
+                y: {
+                  ...CO.scales.y,
+                  stacked: true,
+                  min: 18000,
+                  ticks: {
+                    ...CO.scales.y.ticks,
+                    callback: (v) => (v / 10000).toFixed(1) + "億",
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        // === BEP ===
+        // bpC1: CVP chart
+        const salesLine = Array.from({ length: 11 }, (_, i) => i * 4000);
+        const costLine = salesLine.map((v) => 8960 + v * 0.6);
+        charts.push(
+          new Chart(document.getElementById("bpC1"), {
+            type: "line",
+            data: {
+              labels: salesLine.map((v) => (v / 10000).toFixed(1) + "億"),
+              datasets: [
+                {
+                  label: "売上高",
+                  data: salesLine,
+                  borderColor: "#7c2d12",
+                  tension: 0,
+                  pointRadius: 0,
+                  fill: false,
+                },
+                {
+                  label: "総費用",
+                  data: costLine,
+                  borderColor: "#ea580c",
+                  tension: 0,
+                  pointRadius: 0,
+                  fill: false,
+                },
+                {
+                  label: "固定費",
+                  data: salesLine.map(() => 8960),
+                  borderColor: "#9ca3af",
+                  borderDash: [4, 4],
+                  tension: 0,
+                  pointRadius: 0,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: {
+                    ...CO.scales.y.ticks,
+                    callback: (v) => (v / 10000).toFixed(1) + "億",
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        // bpC2: Marginal profit by product
+        charts.push(
+          new Chart(document.getElementById("bpC2"), {
+            type: "bar",
+            data: {
+              labels: [
+                "シャフト",
+                "カップリング",
+                "ハウジング",
+                "ベアリング",
+                "バルブ",
+                "ピニオン",
+                "フランジ",
+                "精密ギア",
+              ],
+              datasets: [
+                {
+                  label: "限界利益率",
+                  data: [52.3, 48.7, 46.2, 44.8, 38.5, 36.2, 22.4, 15.8],
+                  backgroundColor: [
+                    "#059669",
+                    "#059669",
+                    "#059669",
+                    "#059669",
+                    "#d97706",
+                    "#d97706",
+                    "#dc2626",
+                    "#dc2626",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  max: 60,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "%" },
+                },
+              },
+            },
+          }),
+        );
+
+        // === Budget ===
+        charts.push(
+          new Chart(document.getElementById("buC1"), {
+            type: "bar",
+            data: {
+              labels: M12,
+              datasets: [
+                {
+                  label: "売上予算",
+                  data: [
+                    280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280, 280,
+                  ],
+                  backgroundColor: "#e5e7eb",
+                  borderRadius: 4,
+                },
+                {
+                  label: "売上実績",
+                  data: [
+                    248, 255, 262, 258, 270, 265, 275, 280, 268, 272, 280, 284,
+                  ],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+                {
+                  label: "利益予算",
+                  data: [23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23],
+                  type: "line",
+                  borderColor: "#059669",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                  fill: false,
+                  yAxisID: "y1",
+                },
+                {
+                  label: "利益実績",
+                  data: [28, 27, 25, 24, 26, 22, 24, 23, 19, 18, 17, 14],
+                  type: "line",
+                  borderColor: "#dc2626",
+                  pointRadius: 2,
+                  fill: false,
+                  yAxisID: "y1",
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "百万" },
+                },
+                y1: {
+                  position: "right",
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, callback: (v) => v + "百万" },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("buC2"), {
+            type: "bar",
+            data: {
+              labels: [
+                "製造1課",
+                "製造2課",
+                "品質管理",
+                "生産技術",
+                "購買課",
+                "管理部門",
+              ],
+              datasets: [
+                {
+                  label: "消化率",
+                  data: [95.0, 89.8, 95.0, 87.8, 94.8, 87.5],
+                  backgroundColor: [
+                    "#dc2626",
+                    "#059669",
+                    "#dc2626",
+                    "#059669",
+                    "#d97706",
+                    "#059669",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  max: 100,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "%" },
+                },
+              },
+            },
+          }),
+        );
+
+        // === AP/AR ===
+        charts.push(
+          new Chart(document.getElementById("arC1"), {
+            type: "bar",
+            data: {
+              labels: ["当月", "30日以内", "31-60日", "61-90日", "90日超"],
+              datasets: [
+                {
+                  data: [6800, 3200, 1800, 960, 1240],
+                  backgroundColor: [
+                    "#059669",
+                    "#059669",
+                    "#d97706",
+                    "#d97706",
+                    "#dc2626",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("arC2"), {
+            type: "bar",
+            data: {
+              labels: ["3/10-14", "3/15-19", "3/20-24", "3/25-31"],
+              datasets: [
+                {
+                  label: "支払予定",
+                  data: [1200, 2800, 1500, 4800],
+                  backgroundColor: ["#059669", "#d97706", "#059669", "#dc2626"],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // === Cash Flow ===
+        charts.push(
+          new Chart(document.getElementById("cfC1"), {
+            type: "bar",
+            data: {
+              labels: M12,
+              datasets: [
+                {
+                  label: "収入",
+                  data: [
+                    260, 270, 275, 265, 280, 275, 285, 290, 278, 282, 290, 296,
+                  ],
+                  backgroundColor: "#059669",
+                  borderRadius: 4,
+                },
+                {
+                  label: "支出",
+                  data: [
+                    240, 250, 258, 252, 264, 260, 270, 276, 268, 274, 282, 290,
+                  ],
+                  backgroundColor: "#dc2626",
+                  borderRadius: 4,
+                },
+                {
+                  label: "月末残高",
+                  data: [
+                    310, 330, 347, 360, 376, 391, 406, 420, 430, 438, 446, 452,
+                  ],
+                  type: "line",
+                  borderColor: "#7c2d12",
+                  pointRadius: 2,
+                  fill: false,
+                  yAxisID: "y1",
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "百万" },
+                },
+                y1: {
+                  position: "right",
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, callback: (v) => v + "百万" },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("cfC2"), {
+            type: "line",
+            data: {
+              labels: Array.from({ length: 31 }, (_, i) => i + 1 + "日"),
+              datasets: [
+                {
+                  label: "資金残高",
+                  data: [
+                    321, 318, 315, 310, 308, 312, 320, 316, 314, 310, 308, 305,
+                    302, 298, 295, 290, 288, 285, 282, 280, 278, 275, 273, 270,
+                    242, 245, 250, 260, 270, 280, 287,
+                  ],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1210",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 0,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: {
+                annotation: {
+                  annotations: {
+                    line1: {
+                      type: "line",
+                      yMin: 250,
+                      yMax: 250,
+                      borderColor: "#dc2626",
+                      borderDash: [4, 4],
+                      borderWidth: 1,
+                    },
+                  },
+                },
+              },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  min: 200,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "百万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // === Analytics ===
+        charts.push(
+          new Chart(document.getElementById("anC1"), {
+            type: "radar",
+            data: {
+              labels: ["収益性", "効率性", "安全性", "成長性", "生産性", "CF"],
+              datasets: [
+                {
+                  label: "自社",
+                  data: [55, 62, 75, 48, 58, 70],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1220",
+                  pointBackgroundColor: "#7c2d12",
+                },
+                {
+                  label: "業界平均",
+                  data: [65, 68, 60, 55, 65, 60],
+                  borderColor: "#9ca3af",
+                  backgroundColor: "#9ca3af10",
+                  pointBackgroundColor: "#9ca3af",
+                  borderDash: [4, 4],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: CL },
+              scales: {
+                r: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: { color: "#e5e7eb" },
+                  pointLabels: { font: { size: 10 } },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("anC2"), {
+            type: "bar",
+            data: {
+              labels: [
+                "シャフト系",
+                "ケース系",
+                "バルブ系",
+                "ギア系",
+                "その他",
+              ],
+              datasets: [
+                {
+                  label: "売上高",
+                  data: [8500, 5200, 4800, 3600, 6300],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+                {
+                  label: "変動費",
+                  data: [4100, 2800, 2950, 3040, 3800],
+                  backgroundColor: "#ea580c",
+                  borderRadius: 4,
+                },
+                {
+                  label: "貢献利益",
+                  data: [4400, 2400, 1850, 560, 2500],
+                  backgroundColor: "#059669",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("anC3"), {
+            type: "line",
+            data: {
+              labels: [
+                "1月",
+                "3月",
+                "5月",
+                "7月",
+                "9月",
+                "11月",
+                "1月",
+                "3月",
+                "5月",
+                "7月",
+                "9月",
+                "11月",
+                "1月",
+                "3月",
+              ],
+              datasets: [
+                {
+                  label: "材料費率",
+                  data: [
+                    28, 29, 29, 30, 30, 31, 31, 32, 33, 34, 35, 36, 38, 42,
+                  ],
+                  borderColor: "#7c2d12",
+                  tension: 0.4,
+                  pointRadius: 1,
+                },
+                {
+                  label: "労務費率",
+                  data: [
+                    22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28,
+                  ],
+                  borderColor: "#ea580c",
+                  tension: 0.4,
+                  pointRadius: 1,
+                },
+                {
+                  label: "間接費率",
+                  data: [
+                    24, 24, 25, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 30,
+                  ],
+                  borderColor: "#fb923c",
+                  tension: 0.4,
+                  pointRadius: 1,
+                },
+              ],
+            },
+            options: {
+              ...CO,
+              plugins: { legend: CL },
+              scales: {
+                ...CO.scales,
+                y: {
+                  ...CO.scales.y,
+                  ticks: { ...CO.scales.y.ticks, callback: (v) => v + "%" },
+                },
+              },
+            },
+          }),
+        );
+      }
+
+      // BEP Simulation
+      function runBepSim() {
+        const revD = parseInt(document.getElementById("simRev").value);
+        const varD = parseInt(document.getElementById("simVar").value);
+        const fixD = parseInt(document.getElementById("simFix").value);
+        document.getElementById("simRevVal").textContent =
+          (revD > 0 ? "+" : "") + revD + "%";
+        document.getElementById("simVarVal").textContent = varD + "%";
+        document.getElementById("simFixVal").textContent = fixD + "%";
+        const baseSales = 28400;
+        const baseVar = 17040; // 60% variable
+        const baseFix = 8960;
+        const sales = baseSales * (1 + revD / 100);
+        const varCost = baseVar * (1 - varD / 100) * (1 + revD / 100);
+        const fixCost = baseFix * (1 - fixD / 100);
+        const profit = sales - varCost - fixCost;
+        const margRate = (sales - varCost) / sales;
+        const bep = fixCost / margRate;
+        const margin = ((sales - bep) / sales) * 100;
+        document.getElementById("simSales").textContent =
+          "¥" + (sales / 10000).toFixed(2) + "億";
+        document.getElementById("simProfit").textContent =
+          "¥" + Math.round(profit).toLocaleString() + "万";
+        document.getElementById("simProfit").style.color =
+          profit > 0 ? "#059669" : "#dc2626";
+        document.getElementById("simBep").textContent =
+          "¥" + (bep / 10000).toFixed(2) + "億";
+        document.getElementById("simMargin").textContent =
+          margin.toFixed(1) + "%";
+        document.getElementById("simMargin").style.color =
+          margin > 25 ? "#059669" : margin > 15 ? "#d97706" : "#dc2626";
+      }
+    </script>
+  </body>
+</html>
