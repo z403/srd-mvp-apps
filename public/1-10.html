@@ -1,105 +1,3217 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>技能者の資格管理 | 建設業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>建設業 人事・総務統合管理システム | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              navy: {
+                50: "#f0f4f8",
+                100: "#dbeafe",
+                500: "#3b82f6",
+                700: "#1e3a5f",
+                800: "#172e4a",
+                900: "#0f1f33",
+              },
+              safety: { 500: "#f97316" },
+              ok: { 500: "#10b981" },
+              warn: { 500: "#f59e0b" },
+              danger: { 500: "#ef4444" },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        font-family:
+          "Plus Jakarta Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-group-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.4;
+        padding: 12px 16px 4px;
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-green {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-orange {
+        background: #ffedd5;
+        color: #9a3412;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e3a5f;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .badge-purple {
+        background: #ede9fe;
+        color: #5b21b6;
+      }
+      .badge-amber {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        transform: translateY(-1px);
+      }
+      .tbl {
+        width: 100%;
+        font-size: 13px;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      .tbl th {
+        background: #f8fafc;
+        font-weight: 600;
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .tbl td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+      }
+      .tbl tr:hover td {
+        background: #f8fafc;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #1e3a5f;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #172e4a;
+      }
+      .btn-outline {
+        border: 1px solid #d1d5db;
+        color: #374151;
+        background: #fff;
+      }
+      .btn-outline:hover {
+        background: #f9fafb;
+      }
+      .btn-success {
+        background: #10b981;
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #059669;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .tab-btn.active {
+        color: #1e3a5f;
+        border-bottom-color: #1e3a5f;
+      }
+      .tab-btn:hover:not(.active) {
+        color: #334155;
+      }
+      .filter-chip {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: #fff;
+        color: #64748b;
+      }
+      .filter-chip.active {
+        background: #1e3a5f;
+        color: #fff;
+        border-color: #1e3a5f;
+      }
+      .filter-chip:hover:not(.active) {
+        border-color: #94a3b8;
+      }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .modal-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .ccus-level {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .ccus-lv1 {
+        background: #e5e7eb;
+        color: #374151;
+      }
+      .ccus-lv2 {
+        background: #93c5fd;
+        color: #1e3a8a;
+      }
+      .ccus-lv3 {
+        background: #c084fc;
+        color: #581c87;
+      }
+      .ccus-lv4 {
+        background: #fbbf24;
+        color: #78350f;
+      }
+      .progress-ring {
+        width: 48px;
+        height: 48px;
+        transform: rotate(-90deg);
+      }
+      .progress-ring circle {
+        fill: none;
+        stroke-width: 4;
+        stroke-linecap: round;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[220px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #1e3a5f"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">
+                人事・総務統合管理
+              </p>
+              <p class="text-[10px] opacity-40 truncate">Construction HR</p>
+            </div>
+          </div>
+        </div>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#1e3a5f">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">1</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">技能者の資格管理</p>
-<p class="text-[11px] opacity-50 truncate">建設業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="git-commit" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">タイムライン</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="git-compare" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+        <nav class="flex-1 p-2 overflow-y-auto">
+          <div class="nav-group-title">概要</div>
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[16px] h-[16px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">トレンドとアラート</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#dbeafe;color:#1e3a5f">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">進捗率</span><i data-lucide="trending-up" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">69%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +13pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">残工数</span><i data-lucide="clock" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">86日</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">完了工程</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">16件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">5件</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次技能者の資格推移</h3><div style="height:300px"><canvas id="dC1"></canvas></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">技能者の資格種別構成</h3><div style="height:200px"><canvas id="dC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別技能者の資格比較</h3><div style="height:200px"><canvas id="dC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">アラート</h3><div class="space-y-2"><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">佐藤現場監督 — の技能者の資格を承認</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">田中職長 — の技能者の資格を承認</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">鈴木作業員 — に技能者の資格をコメント</span></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">計画</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/02</p><p class="text-[12px] text-gray-500 mt-1">技能者の資格の計画策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">準備</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/05</p><p class="text-[12px] text-gray-500 mt-1">必要な情報の収集</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">実行</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/04</p><p class="text-[12px] text-gray-500 mt-1">技能者の資格の実施</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">確認</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/11</p><p class="text-[12px] text-gray-500 mt-1">結果の確認・検証</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="w-0.5 flex-1 mx-auto" style="background:#e5e7eb"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">報告</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/22</p><p class="text-[12px] text-gray-500 mt-1">関係者への報告</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">改善</p><p class="text-[11px] text-gray-400 mt-0.5">2026/01/01</p><p class="text-[12px] text-gray-500 mt-1">次回への改善</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">ガントチャート</h3><div class="space-y-3"><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程1</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:51%;width:37%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">10日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程2</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:10%;width:34%;background:#3b82f6"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">9日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程3</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:11%;width:25%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">29日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程4</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:17%;width:33%;background:#3b82f6"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">25日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程5</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:37%;width:22%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">18日</span></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="dataSearch" type="text" placeholder="データを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div class="flex items-center gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="filter" class="w-4 h-4"></i>フィルタ</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="dataTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',0)">工程番号 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',1)">工程名 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',2)">開始日 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',3)">終了日 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',4)">進捗率 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',5)">担当 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9310</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤現場監督</td><td class="px-4 py-3 text-[13px]  text-gray-700">第1工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">中断</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/25</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥382万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#8502</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中職長</td><td class="px-4 py-3 text-[13px]  text-gray-700">鉄骨工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査待ち</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/09</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥906万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#8731</td><td class="px-4 py-3 text-[13px]  text-gray-700">鈴木作業員</td><td class="px-4 py-3 text-[13px]  text-gray-700">第2工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査待ち</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/08</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥430万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2376</td><td class="px-4 py-3 text-[13px]  text-gray-700">山田安全管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">設備工区</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/08</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥884万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6011</td><td class="px-4 py-3 text-[13px]  text-gray-700">高橋工事部長</td><td class="px-4 py-3 text-[13px]  text-gray-700">第2工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査待ち</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/06</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥178万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5382</td><td class="px-4 py-3 text-[13px]  text-gray-700">伊藤積算担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">基礎工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査待ち</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥13万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4303</td><td class="px-4 py-3 text-[13px]  text-gray-700">渡辺設計士</td><td class="px-4 py-3 text-[13px]  text-gray-700">第2工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">中断</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥421万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9430</td><td class="px-4 py-3 text-[13px]  text-gray-700">中村品質管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">外構工区</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/10</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥338万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#7401</td><td class="px-4 py-3 text-[13px]  text-gray-700">小林経理</td><td class="px-4 py-3 text-[13px]  text-gray-700">設備工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">施工中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/14</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥975万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2341</td><td class="px-4 py-3 text-[13px]  text-gray-700">加藤所長</td><td class="px-4 py-3 text-[13px]  text-gray-700">第1工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">中断</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/06</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥102万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3987</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤現場監督</td><td class="px-4 py-3 text-[13px]  text-gray-700">外構工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">施工中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/01</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥980万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3114</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中職長</td><td class="px-4 py-3 text-[13px]  text-gray-700">基礎工区</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査待ち</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/04</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥144万</td></tr></tbody></table></div></div><div class="flex items-center justify-between mt-4"><span class="text-[12px] text-gray-400">12件</span><div class="flex gap-1"><button class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer transition-colors" style=background:#1e3a5f>1</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >2</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >3</button></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#1e3a5f"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#1e3a5f"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#1e3a5f15"><i data-lucide="trending-up" class="w-7 h-7" style="color:#1e3a5f"></i></div><div><div class="text-3xl font-bold" style="color:#1e3a5f">410</div><div class="text-[13px] text-gray-500 mt-1">今期合計</div><div class="text-[11px] text-gray-400 mt-0.5">前期比 +18.8%</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#3b82f615"><i data-lucide="calendar" class="w-7 h-7" style="color:#3b82f6"></i></div><div><div class="text-3xl font-bold" style="color:#3b82f6">345</div><div class="text-[13px] text-gray-500 mt-1">前期合計</div><div class="text-[11px] text-gray-400 mt-0.5"></div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="arrow-up-right" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">+65</div><div class="text-[13px] text-gray-500 mt-1">増減</div><div class="text-[11px] text-gray-400 mt-0.5">18.8%増</div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">期間比較</h3><div style="height:260px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">構成比変化</h3><div style="height:260px"><canvas id="rpC2"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#1e3a5f"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#1e3a5f"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+          <div class="nav-group-title">資格・CCUS</div>
+          <a
+            data-page="license"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('license')"
+            ><i data-lucide="award" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">資格管理</span
+            ><span
+              class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              >7</span
+            ></a
+          >
+          <a
+            data-page="ccus"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('ccus')"
+            ><i data-lucide="id-card" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">CCUS連携</span></a
+          >
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "トレンドとアラート"}, {"id": "feature", "title": "タイムライン", "desc": "進捗・工程管理"}, {"id": "data", "title": "データ一覧", "desc": "検索・並べ替え"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "期間比較"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+          <div class="nav-group-title">人事管理</div>
+          <a
+            data-page="roster"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('roster')"
+            ><i data-lucide="users" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">技能者台帳</span></a
+          >
+          <a
+            data-page="training"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('training')"
+            ><i
+              data-lucide="graduation-cap"
+              class="w-[16px] h-[16px] shrink-0"
+            ></i
+            ><span class="truncate">教育訓練</span></a
+          >
+          <a
+            data-page="health"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('health')"
+            ><i data-lucide="heart-pulse" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">健康診断</span></a
+          >
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [89, 29, 89, 73, 84, 60, 25, 34, 85, 30, 39, 76], "borderColor": "#1e3a5f", "backgroundColor": "#1e3a5f20", "fill": true, "tension": 0.4, "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "doughnut", "data": {"labels": ["躯体", "外装", "内装", "設備"], "datasets": [{"data": [31, 17, 18, 19], "backgroundColor": ["#1e3a5f", "#3b82f6", "#1e3a5f60", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [89, 29, 89, 73, 84, 60], "backgroundColor": "#1e3a5f", "borderRadius": 4}, {"label": "前期", "data": [50, 10, 43, 37, 47, 60], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+          <div class="nav-group-title">総務・労務</div>
+          <a
+            data-page="insurance"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('insurance')"
+            ><i
+              data-lucide="shield-check"
+              class="w-[16px] h-[16px] shrink-0"
+            ></i
+            ><span class="truncate">社会保険</span></a
+          >
+          <a
+            data-page="documents"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('documents')"
+            ><i data-lucide="file-stack" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">書類管理</span></a
+          >
 
-// data
+          <div class="nav-group-title">分析</div>
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">レポート</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[16px] h-[16px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              総
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">総務部 管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              資格期限・CCUS・労務状況
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-gray-400" id="currentTime"></span>
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #dbeafe; color: #1e3a5f"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1工区", "2工区", "3工区", "4工区", "5工区", "6工区"], "datasets": [{"label": "今期", "data": [69, 77, 46, 78, 75, 65], "backgroundColor": "#1e3a5f", "borderRadius": 4}, {"label": "前期", "data": [61, 77, 32, 68, 58, 49], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["1工区", "2工区", "3工区", "4工区", "5工区"], "datasets": [{"data": [69, 77, 46, 78, 75], "backgroundColor": ["#1e3a5f", "#3b82f6", "#1e3a5f80", "#3b82f680", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ========== 1. DASHBOARD ========== -->
+          <div id="page-dashboard" class="page active">
+            <!-- Alerts -->
+            <div class="space-y-2 mb-5">
+              <div
+                class="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3"
+              >
+                <i
+                  data-lucide="alert-triangle"
+                  class="w-5 h-5 text-red-500 shrink-0"
+                ></i>
+                <div class="flex-1">
+                  <p class="text-[13px] font-medium text-red-800">
+                    資格期限切れ 3件 / 30日以内期限切れ 4件
+                  </p>
+                  <p class="text-[11px] text-red-600 mt-0.5">
+                    鈴木（足場主任者 3/15）、中村（車両系建機
+                    4/2）、加藤（有機溶剤 4/20）ほか
+                  </p>
+                </div>
+                <button
+                  class="btn btn-outline text-[11px] py-1 px-3 shrink-0"
+                  onclick="navigate('license')"
+                >
+                  確認する
+                </button>
+              </div>
+              <div
+                class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3"
+              >
+                <i
+                  data-lucide="id-card"
+                  class="w-5 h-5 text-amber-500 shrink-0"
+                ></i>
+                <div class="flex-1">
+                  <p class="text-[13px] font-medium text-amber-800">
+                    CCUS未登録の技能者が4名います
+                  </p>
+                  <p class="text-[11px] text-amber-600 mt-0.5">
+                    2026年度よりCCUS登録が実質義務化。早期対応を推奨
+                  </p>
+                </div>
+                <button
+                  class="btn btn-outline text-[11px] py-1 px-3 shrink-0"
+                  onclick="navigate('ccus')"
+                >
+                  対応する
+                </button>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Stats -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #1e3a5f12"
+                >
+                  <i
+                    data-lucide="users"
+                    class="w-5 h-5"
+                    style="color: #1e3a5f"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">
+                    42<span class="text-[13px] font-normal text-gray-400"
+                      >名</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-gray-400">登録技能者</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50"
+                >
+                  <i data-lucide="award" class="w-5 h-5 text-emerald-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">
+                    156<span class="text-[13px] font-normal text-gray-400"
+                      >件</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-emerald-600 font-medium">
+                    保有資格総数
+                  </div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-blue-50"
+                >
+                  <i data-lucide="id-card" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">
+                    38<span class="text-[13px] font-normal text-gray-400"
+                      >名</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-blue-600 font-medium">
+                    CCUS登録済
+                  </div>
+                  <div class="text-[10px] text-gray-400">登録率 90%</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-red-50"
+                >
+                  <i data-lucide="clock" class="w-5 h-5 text-red-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">
+                    7<span class="text-[13px] font-normal text-gray-400"
+                      >件</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-red-500 font-medium">
+                    要対応（期限切れ等）
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts + Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  資格種別分布
+                </h3>
+                <div style="height: 220px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  CCUS能力評価レベル分布
+                </h3>
+                <div style="height: 220px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  期限管理カレンダー
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="p-2.5 rounded-lg bg-red-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-red-600"
+                        >3/15</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        鈴木 — 足場組立主任者
+                      </p>
+                      <p class="text-[10px] text-red-500">期限切れまで5日</p>
+                    </div>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-amber-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-amber-600"
+                        >4/2</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        中村 — 車両系建設機械
+                      </p>
+                      <p class="text-[10px] text-amber-600">23日前</p>
+                    </div>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-amber-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-amber-600"
+                        >4/20</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        加藤 — 有機溶剤主任者
+                      </p>
+                      <p class="text-[10px] text-amber-600">41日前</p>
+                    </div>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-blue-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-blue-600"
+                        >5/1</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        田中 — 1級建築施工管理技士
+                      </p>
+                      <p class="text-[10px] text-blue-600">更新講習受講済</p>
+                    </div>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-blue-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-blue-600"
+                        >6/15</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        佐藤 — 玉掛け技能講習
+                      </p>
+                      <p class="text-[10px] text-blue-600">97日前</p>
+                    </div>
+                  </div>
+                  <div
+                    class="p-2.5 rounded-lg bg-emerald-50 flex items-center gap-3"
+                  >
+                    <div class="w-8 text-center">
+                      <span class="text-[14px] font-bold text-emerald-600"
+                        >6/30</span
+                      >
+                    </div>
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        全員 — 健康診断（年次）
+                      </p>
+                      <p class="text-[10px] text-emerald-600">受診予約中</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Compliance Overview -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                コンプライアンス状況
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="p-3 rounded-lg bg-emerald-50 text-center">
+                  <i
+                    data-lucide="shield-check"
+                    class="w-6 h-6 text-emerald-600 mx-auto mb-1"
+                  ></i>
+                  <p class="text-[14px] font-bold text-emerald-700">100%</p>
+                  <p class="text-[11px] text-emerald-600">社会保険加入</p>
+                </div>
+                <div class="p-3 rounded-lg bg-emerald-50 text-center">
+                  <i
+                    data-lucide="hard-hat"
+                    class="w-6 h-6 text-emerald-600 mx-auto mb-1"
+                  ></i>
+                  <p class="text-[14px] font-bold text-emerald-700">100%</p>
+                  <p class="text-[11px] text-emerald-600">建退共加入</p>
+                </div>
+                <div class="p-3 rounded-lg bg-amber-50 text-center">
+                  <i
+                    data-lucide="id-card"
+                    class="w-6 h-6 text-amber-600 mx-auto mb-1"
+                  ></i>
+                  <p class="text-[14px] font-bold text-amber-700">90%</p>
+                  <p class="text-[11px] text-amber-600">CCUS登録</p>
+                </div>
+                <div class="p-3 rounded-lg bg-amber-50 text-center">
+                  <i
+                    data-lucide="stethoscope"
+                    class="w-6 h-6 text-amber-600 mx-auto mb-1"
+                  ></i>
+                  <p class="text-[14px] font-bold text-amber-700">85%</p>
+                  <p class="text-[11px] text-amber-600">健診受診率</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 2. LICENSE (資格管理) ========== -->
+          <div id="page-license" class="page">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="氏名・資格名で検索..."
+                    class="pl-10 pr-4 py-2 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 w-64"
+                    oninput="filterTable('licTbl', this.value)"
+                  />
+                </div>
+                <button
+                  class="filter-chip active"
+                  onclick="chipFilter(this, 'all')"
+                >
+                  すべて
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'expired')"
+                >
+                  期限切れ
+                </button>
+                <button class="filter-chip" onclick="chipFilter(this, 'soon')">
+                  30日以内
+                </button>
+                <button class="filter-chip" onclick="chipFilter(this, 'valid')">
+                  有効
+                </button>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-outline">
+                  <i data-lucide="upload" class="w-4 h-4"></i>一括登録（CSV）
+                </button>
+                <button
+                  class="btn btn-primary"
+                  onclick="showModal('licenseModal')"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>資格登録
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-gray-400 block">保有資格総数</span
+                ><span class="text-lg font-bold" style="color: #1e3a5f"
+                  >156</span
+                >
+              </div>
+              <div class="card p-3 text-center border-red-200">
+                <span class="text-[11px] text-red-500 block">期限切れ</span
+                ><span class="text-lg font-bold text-red-600">3</span>
+              </div>
+              <div class="card p-3 text-center border-amber-200">
+                <span class="text-[11px] text-amber-500 block">30日以内</span
+                ><span class="text-lg font-bold text-amber-600">4</span>
+              </div>
+              <div class="card p-3 text-center">
+                <span class="text-[11px] text-emerald-500 block">有効</span
+                ><span class="text-lg font-bold text-emerald-600">149</span>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 340px)"
+              >
+                <table class="tbl" id="licTbl">
+                  <thead>
+                    <tr>
+                      <th>技能者</th>
+                      <th>資格名</th>
+                      <th>資格番号</th>
+                      <th>取得日</th>
+                      <th>有効期限</th>
+                      <th>残日数</th>
+                      <th>証明書</th>
+                      <th>ステータス</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="bg-red-50/40">
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium bg-red-500"
+                          >
+                            鈴
+                          </div>
+                          <span class="font-medium">鈴木次郎</span>
+                        </div>
+                      </td>
+                      <td class="font-medium">足場の組立て等作業主任者</td>
+                      <td class="text-[12px] text-gray-400">ASB-2021-3456</td>
+                      <td>2021/03/15</td>
+                      <td class="text-red-600 font-medium">2026/03/15</td>
+                      <td><span class="text-red-600 font-bold">5日</span></td>
+                      <td><span class="badge badge-orange">紙のみ</span></td>
+                      <td><span class="badge badge-red">期限切れ間近</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-red-50/40">
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium bg-red-500"
+                          >
+                            岡
+                          </div>
+                          <span class="font-medium">岡田勇一</span>
+                        </div>
+                      </td>
+                      <td class="font-medium">酸素欠乏危険作業主任者</td>
+                      <td class="text-[12px] text-gray-400">OXY-2021-1122</td>
+                      <td>2021/02/10</td>
+                      <td class="text-red-600 font-medium">2026/02/10</td>
+                      <td>
+                        <span class="text-red-600 font-bold">期限切れ</span>
+                      </td>
+                      <td><span class="badge badge-orange">紙のみ</span></td>
+                      <td><span class="badge badge-red">期限切れ</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium bg-amber-500"
+                          >
+                            中
+                          </div>
+                          <span class="font-medium">中村七郎</span>
+                        </div>
+                      </td>
+                      <td class="font-medium">車両系建設機械運転技能</td>
+                      <td class="text-[12px] text-gray-400">VHC-2021-7890</td>
+                      <td>2021/04/02</td>
+                      <td class="text-amber-600 font-medium">2026/04/02</td>
+                      <td>
+                        <span class="text-amber-600 font-bold">23日</span>
+                      </td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-orange">要更新</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="bg-amber-50/30">
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium bg-amber-500"
+                          >
+                            加
+                          </div>
+                          <span class="font-medium">加藤塗装工</span>
+                        </div>
+                      </td>
+                      <td class="font-medium">有機溶剤作業主任者</td>
+                      <td class="text-[12px] text-gray-400">ORG-2021-5678</td>
+                      <td>2021/04/20</td>
+                      <td class="text-amber-600 font-medium">2026/04/20</td>
+                      <td>
+                        <span class="text-amber-600 font-bold">41日</span>
+                      </td>
+                      <td><span class="badge badge-orange">紙のみ</span></td>
+                      <td><span class="badge badge-orange">要更新</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            田
+                          </div>
+                          <span class="font-medium">田中太郎</span>
+                        </div>
+                      </td>
+                      <td>1級建築施工管理技士</td>
+                      <td class="text-[12px] text-gray-400">KSG-2019-1234</td>
+                      <td>2019/12/01</td>
+                      <td>2026/05/01</td>
+                      <td>52日</td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-green">有効</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            田
+                          </div>
+                          <span class="font-medium">田中太郎</span>
+                        </div>
+                      </td>
+                      <td>1級土木施工管理技士</td>
+                      <td class="text-[12px] text-gray-400">DSG-2018-5678</td>
+                      <td>2018/06/15</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-green">永久</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            佐
+                          </div>
+                          <span class="font-medium">佐藤一郎</span>
+                        </div>
+                      </td>
+                      <td>玉掛け技能講習</td>
+                      <td class="text-[12px] text-gray-400">TMK-2020-9012</td>
+                      <td>2020/06/15</td>
+                      <td>2026/06/15</td>
+                      <td>97日</td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-green">有効</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #3b82f6"
+                          >
+                            高
+                          </div>
+                          <span class="font-medium">高橋四郎</span>
+                        </div>
+                      </td>
+                      <td>型枠支保工の組立て主任者</td>
+                      <td class="text-[12px] text-gray-400">KTW-2022-3456</td>
+                      <td>2022/08/01</td>
+                      <td>2027/08/01</td>
+                      <td>509日</td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-green">有効</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            伊
+                          </div>
+                          <span class="font-medium">伊藤五郎</span>
+                        </div>
+                      </td>
+                      <td>第二種電気工事士</td>
+                      <td class="text-[12px] text-gray-400">DKJ-2017-7890</td>
+                      <td>2017/03/20</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td><span class="badge badge-orange">紙のみ</span></td>
+                      <td><span class="badge badge-green">永久</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            渡
+                          </div>
+                          <span class="font-medium">渡辺六郎</span>
+                        </div>
+                      </td>
+                      <td>管工事施工管理技士2級</td>
+                      <td class="text-[12px] text-gray-400">KKJ-2020-1234</td>
+                      <td>2020/11/01</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td><span class="badge badge-green">デジタル</span></td>
+                      <td><span class="badge badge-green">永久</span></td>
+                      <td>
+                        <button
+                          class="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <i data-lucide="pencil" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 3. CCUS (建設キャリアアップシステム) ========== -->
+          <div id="page-ccus" class="page">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5">
+              <div class="flex items-start gap-3">
+                <i
+                  data-lucide="info"
+                  class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"
+                ></i>
+                <div>
+                  <p class="text-[13px] font-medium text-blue-800">
+                    CCUS（建設キャリアアップシステム）について
+                  </p>
+                  <p class="text-[12px] text-blue-700 mt-1">
+                    2026年度より公共工事でのCCUS活用が原則化。技能者の就業履歴・資格・社会保険加入状況を一元管理し、能力評価（レベル1〜4）に基づく処遇改善を実現します。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">
+                    38<span class="text-[13px] font-normal text-gray-400"
+                      >名</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-gray-400">登録済</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="user-x" class="w-5 h-5 text-red-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">
+                    4<span class="text-[13px] font-normal text-gray-400"
+                      >名</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-red-500">未登録</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">4</div>
+                  <div class="text-[11px] text-gray-400">事業者ID登録現場</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="scan-line"
+                    class="w-5 h-5 text-purple-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">1,247</div>
+                  <div class="text-[11px] text-gray-400">就業履歴蓄積数</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CCUS Level Distribution -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  能力評価レベル分布
+                </h3>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <span class="ccus-lv4">Lv.4 登録基幹技能者</span>
+                    <div
+                      class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-amber-400 rounded-full"
+                        style="width: 14%"
+                      ></div>
+                    </div>
+                    <span class="text-[12px] font-medium w-12 text-right"
+                      >6名</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="ccus-lv3">Lv.3 職長クラス</span>
+                    <div
+                      class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-purple-400 rounded-full"
+                        style="width: 26%"
+                      ></div>
+                    </div>
+                    <span class="text-[12px] font-medium w-12 text-right"
+                      >11名</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="ccus-lv2">Lv.2 中堅技能者</span>
+                    <div
+                      class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-blue-400 rounded-full"
+                        style="width: 40%"
+                      ></div>
+                    </div>
+                    <span class="text-[12px] font-medium w-12 text-right"
+                      >17名</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="ccus-lv1">Lv.1 初級技能者</span>
+                    <div
+                      class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden"
+                    >
+                      <div
+                        class="h-full bg-gray-400 rounded-full"
+                        style="width: 19%"
+                      ></div>
+                    </div>
+                    <span class="text-[12px] font-medium w-12 text-right"
+                      >8名</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  未登録者リスト
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-red-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-full bg-red-200 flex items-center justify-center text-[11px] font-medium text-red-700"
+                      >
+                        松
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          松本健一
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          土工 · 入社 2025/11
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary py-1 px-3 text-[11px]">
+                      <i data-lucide="plus" class="w-3 h-3"></i>登録開始
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-red-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-full bg-red-200 flex items-center justify-center text-[11px] font-medium text-red-700"
+                      >
+                        藤
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          藤田誠
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          配管工 · 入社 2025/12
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary py-1 px-3 text-[11px]">
+                      <i data-lucide="plus" class="w-3 h-3"></i>登録開始
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-[11px] font-medium text-amber-700"
+                      >
+                        木
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          木下大輔
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          塗装工 · 協力会社
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary py-1 px-3 text-[11px]">
+                      <i data-lucide="plus" class="w-3 h-3"></i>登録開始
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-[11px] font-medium text-amber-700"
+                      >
+                        石
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          石井拓也
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          鉄筋工 · 協力会社
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary py-1 px-3 text-[11px]">
+                      <i data-lucide="plus" class="w-3 h-3"></i>登録開始
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Registered list -->
+            <div class="card overflow-hidden">
+              <div class="overflow-auto" style="max-height: 320px">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>技能者</th>
+                      <th>技能者ID</th>
+                      <th>職種</th>
+                      <th>レベル</th>
+                      <th>就業日数</th>
+                      <th>保有資格</th>
+                      <th>社保</th>
+                      <th>最終タッチ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">田中太郎</td>
+                      <td class="text-[12px] text-gray-400">1234567890123</td>
+                      <td>職長</td>
+                      <td><span class="ccus-lv4">Lv.4</span></td>
+                      <td>2,847日</td>
+                      <td>5件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/10</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">佐藤一郎</td>
+                      <td class="text-[12px] text-gray-400">2345678901234</td>
+                      <td>鉄筋工</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td>1,523日</td>
+                      <td>3件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/10</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">高橋四郎</td>
+                      <td class="text-[12px] text-gray-400">3456789012345</td>
+                      <td>型枠工</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td>1,280日</td>
+                      <td>3件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/9</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">伊藤五郎</td>
+                      <td class="text-[12px] text-gray-400">4567890123456</td>
+                      <td>電気工</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td>2,105日</td>
+                      <td>6件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/10</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">渡辺六郎</td>
+                      <td class="text-[12px] text-gray-400">5678901234567</td>
+                      <td>配管工</td>
+                      <td><span class="ccus-lv2">Lv.2</span></td>
+                      <td>890日</td>
+                      <td>3件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/10</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">鈴木次郎</td>
+                      <td class="text-[12px] text-gray-400">6789012345678</td>
+                      <td>とび工</td>
+                      <td><span class="ccus-lv2">Lv.2</span></td>
+                      <td>720日</td>
+                      <td>4件</td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td>3/7</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 4. ROSTER (技能者台帳) ========== -->
+          <div id="page-roster" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i
+                  ><input
+                    type="text"
+                    placeholder="氏名・職種で検索..."
+                    class="pl-10 pr-4 py-2 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 w-56"
+                    oninput="filterTable('rosterTbl', this.value)"
+                  />
+                </div>
+                <select
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white"
+                >
+                  <option>全職種</option>
+                  <option>職長</option>
+                  <option>とび工</option>
+                  <option>鉄筋工</option>
+                  <option>型枠工</option>
+                  <option>電気工</option>
+                  <option>配管工</option>
+                  <option>重機オペ</option>
+                  <option>土工</option>
+                  <option>塗装工</option>
+                </select>
+                <select
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white"
+                >
+                  <option>全雇用形態</option>
+                  <option>正社員</option>
+                  <option>契約社員</option>
+                  <option>協力会社</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-outline">
+                  <i data-lucide="download" class="w-4 h-4"></i>作業員名簿出力
+                </button>
+                <button class="btn btn-primary">
+                  <i data-lucide="user-plus" class="w-4 h-4"></i>技能者登録
+                </button>
+              </div>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 230px)"
+              >
+                <table class="tbl" id="rosterTbl">
+                  <thead>
+                    <tr>
+                      <th>氏名</th>
+                      <th>職種</th>
+                      <th>雇用</th>
+                      <th>入社日</th>
+                      <th>CCUS</th>
+                      <th>資格数</th>
+                      <th>社保</th>
+                      <th>建退共</th>
+                      <th>健診</th>
+                      <th>血圧区分</th>
+                      <th>緊急連絡先</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            田
+                          </div>
+                          <span class="font-medium">田中太郎</span>
+                        </div>
+                      </td>
+                      <td>職長</td>
+                      <td>正社員</td>
+                      <td>2018/04</td>
+                      <td><span class="ccus-lv4">Lv.4</span></td>
+                      <td><span class="badge badge-purple">5</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">受診済</span></td>
+                      <td>A</td>
+                      <td>090-xxxx-1234</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            佐
+                          </div>
+                          <span class="font-medium">佐藤一郎</span>
+                        </div>
+                      </td>
+                      <td>鉄筋工</td>
+                      <td>正社員</td>
+                      <td>2020/04</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td><span class="badge badge-purple">3</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">受診済</span></td>
+                      <td>A</td>
+                      <td>090-xxxx-2345</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #3b82f6"
+                          >
+                            鈴
+                          </div>
+                          <span class="font-medium">鈴木次郎</span>
+                        </div>
+                      </td>
+                      <td>とび工</td>
+                      <td>契約</td>
+                      <td>2021/10</td>
+                      <td><span class="ccus-lv2">Lv.2</span></td>
+                      <td><span class="badge badge-purple">4</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-amber">要再検</span></td>
+                      <td>C</td>
+                      <td>080-xxxx-3456</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #64748b"
+                          >
+                            山
+                          </div>
+                          <span class="font-medium">山田三郎</span>
+                        </div>
+                      </td>
+                      <td>鉄筋工</td>
+                      <td>協力会社</td>
+                      <td>2022/07</td>
+                      <td><span class="ccus-lv2">Lv.2</span></td>
+                      <td><span class="badge badge-purple">2</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">受診済</span></td>
+                      <td>A</td>
+                      <td>090-xxxx-4567</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #3b82f6"
+                          >
+                            高
+                          </div>
+                          <span class="font-medium">高橋四郎</span>
+                        </div>
+                      </td>
+                      <td>型枠工</td>
+                      <td>正社員</td>
+                      <td>2019/04</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td><span class="badge badge-purple">3</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">受診済</span></td>
+                      <td>B</td>
+                      <td>090-xxxx-5678</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #1e3a5f"
+                          >
+                            伊
+                          </div>
+                          <span class="font-medium">伊藤五郎</span>
+                        </div>
+                      </td>
+                      <td>電気工</td>
+                      <td>正社員</td>
+                      <td>2017/04</td>
+                      <td><span class="ccus-lv3">Lv.3</span></td>
+                      <td><span class="badge badge-purple">6</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">受診済</span></td>
+                      <td>A</td>
+                      <td>090-xxxx-6789</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-medium"
+                            style="background: #ef4444"
+                          >
+                            松
+                          </div>
+                          <span class="font-medium">松本健一</span>
+                        </div>
+                      </td>
+                      <td>土工</td>
+                      <td>正社員</td>
+                      <td>2025/11</td>
+                      <td><span class="badge badge-red">未登録</span></td>
+                      <td><span class="badge badge-purple">1</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-green">加入</span></td>
+                      <td><span class="badge badge-red">未受診</span></td>
+                      <td>—</td>
+                      <td>080-xxxx-9012</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 5. TRAINING (教育訓練) ========== -->
+          <div id="page-training" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button
+                  class="filter-chip active"
+                  onclick="chipFilter(this, 'all')"
+                >
+                  すべて
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'upcoming')"
+                >
+                  予定
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'completed')"
+                >
+                  完了
+                </button>
+              </div>
+              <button class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>教育計画作成
+              </button>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="graduation-cap"
+                    class="w-5 h-5 text-blue-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">
+                    24<span class="text-[13px] font-normal text-gray-400"
+                      >回</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-gray-400">年間教育実施回数</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">18</div>
+                  <div class="text-[11px] text-gray-400">完了</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="calendar" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-amber-600">6</div>
+                  <div class="text-[11px] text-gray-400">今後予定</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="users" class="w-5 h-5 text-purple-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">42/42</div>
+                  <div class="text-[11px] text-gray-400">新規入場者教育</div>
+                </div>
+              </div>
+            </div>
+            <div class="card overflow-hidden flex-1">
+              <div
+                class="overflow-auto"
+                style="max-height: calc(100vh - 310px)"
+              >
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>教育名</th>
+                      <th>種別</th>
+                      <th>実施日</th>
+                      <th>対象者</th>
+                      <th>受講者数</th>
+                      <th>講師</th>
+                      <th>修了証</th>
+                      <th>ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">足場の組立て等特別教育</td>
+                      <td><span class="badge badge-blue">特別教育</span></td>
+                      <td>3/20</td>
+                      <td>とび工・土工</td>
+                      <td>8名</td>
+                      <td>外部講師</td>
+                      <td><span class="badge badge-gray">未発行</span></td>
+                      <td><span class="badge badge-amber">予定</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">フルハーネス型安全帯特別教育</td>
+                      <td><span class="badge badge-blue">特別教育</span></td>
+                      <td>3/25</td>
+                      <td>全作業員</td>
+                      <td>42名</td>
+                      <td>安全管理者</td>
+                      <td><span class="badge badge-gray">未発行</span></td>
+                      <td><span class="badge badge-amber">予定</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">有機溶剤取扱い安全教育</td>
+                      <td>
+                        <span class="badge badge-purple">安全衛生教育</span>
+                      </td>
+                      <td>4/5</td>
+                      <td>塗装工</td>
+                      <td>4名</td>
+                      <td>外部講師</td>
+                      <td><span class="badge badge-gray">未発行</span></td>
+                      <td><span class="badge badge-amber">予定</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">新規入場者教育（横浜新築）</td>
+                      <td><span class="badge badge-green">新規入場</span></td>
+                      <td>3/8</td>
+                      <td>新規2名</td>
+                      <td>2名</td>
+                      <td>高橋職長</td>
+                      <td><span class="badge badge-green">発行済</span></td>
+                      <td><span class="badge badge-green">完了</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">職長・安全衛生責任者教育</td>
+                      <td><span class="badge badge-orange">職長教育</span></td>
+                      <td>3/1-2</td>
+                      <td>佐藤・渡辺</td>
+                      <td>2名</td>
+                      <td>外部機関</td>
+                      <td><span class="badge badge-green">発行済</span></td>
+                      <td><span class="badge badge-green">完了</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">送り出し教育（川崎解体）</td>
+                      <td><span class="badge badge-green">送出教育</span></td>
+                      <td>2/28</td>
+                      <td>山田ほか</td>
+                      <td>6名</td>
+                      <td>田中職長</td>
+                      <td><span class="badge badge-green">発行済</span></td>
+                      <td><span class="badge badge-green">完了</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">酸素欠乏危険作業特別教育</td>
+                      <td><span class="badge badge-blue">特別教育</span></td>
+                      <td>2/15</td>
+                      <td>配管工・土工</td>
+                      <td>6名</td>
+                      <td>外部講師</td>
+                      <td><span class="badge badge-green">発行済</span></td>
+                      <td><span class="badge badge-green">完了</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 6. HEALTH (健康診断) ========== -->
+          <div id="page-health" class="page">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="stethoscope"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">
+                    36<span class="text-[13px] font-normal text-gray-400"
+                      >/42</span
+                    >
+                  </div>
+                  <div class="text-[11px] text-gray-400">受診済（85%）</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-5 h-5 text-red-500"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">6</div>
+                  <div class="text-[11px] text-red-500">未受診</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="activity" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-amber-600">3</div>
+                  <div class="text-[11px] text-amber-500">要再検査</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <i data-lucide="calendar" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-800">6/30</div>
+                  <div class="text-[11px] text-gray-400">次回集団健診</div>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  要対応者リスト
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-red-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        松本健一
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        土工 · 入社時健診未実施
+                      </p>
+                    </div>
+                    <span class="badge badge-red">未受診</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        鈴木次郎
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        とび工 · 血圧C判定
+                      </p>
+                    </div>
+                    <span class="badge badge-orange">要再検査</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        中村七郎
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        重機オペ · 聴力B判定
+                      </p>
+                    </div>
+                    <span class="badge badge-orange">要経過観察</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        小林土工
+                      </p>
+                      <p class="text-[11px] text-gray-400">土工 · 腰痛検診要</p>
+                    </div>
+                    <span class="badge badge-orange">要精密検査</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  特殊健診スケジュール
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="ear" class="w-4 h-4 text-gray-400"></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          騒音健康診断
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          重機オペ・はつり工 対象
+                        </p>
+                      </div>
+                    </div>
+                    <span class="text-[12px] font-medium text-gray-600"
+                      >4月予定</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="wind" class="w-4 h-4 text-gray-400"></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          じん肺健康診断
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          解体工・土工 対象
+                        </p>
+                      </div>
+                    </div>
+                    <span class="text-[12px] font-medium text-gray-600"
+                      >5月予定</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="flask-round"
+                        class="w-4 h-4 text-gray-400"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          有機溶剤健康診断
+                        </p>
+                        <p class="text-[11px] text-gray-400">塗装工 対象</p>
+                      </div>
+                    </div>
+                    <span class="text-[12px] font-medium text-gray-600"
+                      >5月予定</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="thermometer"
+                        class="w-4 h-4 text-gray-400"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          熱中症予防健診
+                        </p>
+                        <p class="text-[11px] text-gray-400">全作業員 対象</p>
+                      </div>
+                    </div>
+                    <span class="text-[12px] font-medium text-gray-600"
+                      >6月予定</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 7. INSURANCE (社会保険) ========== -->
+          <div id="page-insurance" class="page">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="shield-check"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">100%</div>
+                  <div class="text-[11px] text-gray-400">健康保険加入率</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="umbrella"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">100%</div>
+                  <div class="text-[11px] text-gray-400">厚生年金加入率</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="briefcase"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">100%</div>
+                  <div class="text-[11px] text-gray-400">雇用保険加入率</div>
+                </div>
+              </div>
+              <div class="card stat-card">
+                <div
+                  class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"
+                >
+                  <i
+                    data-lucide="hard-hat"
+                    class="w-5 h-5 text-emerald-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-emerald-600">100%</div>
+                  <div class="text-[11px] text-gray-400">建退共加入率</div>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  保険種別・加入状況
+                </h3>
+                <div class="overflow-auto" style="max-height: 360px">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th>氏名</th>
+                        <th>健保</th>
+                        <th>厚年</th>
+                        <th>雇保</th>
+                        <th>労災</th>
+                        <th>建退共</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="font-medium">田中太郎</td>
+                        <td>
+                          <span class="badge badge-green">協会けんぽ</span>
+                        </td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">佐藤一郎</td>
+                        <td>
+                          <span class="badge badge-green">協会けんぽ</span>
+                        </td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">鈴木次郎</td>
+                        <td><span class="badge badge-green">建設国保</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">山田三郎</td>
+                        <td><span class="badge badge-blue">元請確認</span></td>
+                        <td><span class="badge badge-blue">元請確認</span></td>
+                        <td><span class="badge badge-blue">元請確認</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">高橋四郎</td>
+                        <td>
+                          <span class="badge badge-green">協会けんぽ</span>
+                        </td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">松本健一</td>
+                        <td>
+                          <span class="badge badge-green">協会けんぽ</span>
+                        </td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                        <td><span class="badge badge-green">適用</span></td>
+                        <td><span class="badge badge-green">加入</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  建退共 証紙管理
+                </h3>
+                <div class="space-y-3 mb-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">今月購入証紙</span
+                    ><span class="text-[14px] font-bold" style="color: #1e3a5f"
+                      >420枚</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">今月貼付済</span
+                    ><span class="text-[14px] font-bold text-emerald-600"
+                      >380枚</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-500">在庫</span
+                    ><span class="text-[14px] font-bold text-gray-600"
+                      >40枚</span
+                    >
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-amber-50">
+                  <p class="text-[12px] text-amber-700">
+                    <span class="font-medium">注意:</span>
+                    在庫残40枚。今月残り20日で不足見込み。証紙追加購入を推奨します。
+                  </p>
+                </div>
+                <h4 class="font-semibold text-[12px] text-gray-600 mt-4 mb-2">
+                  手帳更新予定
+                </h4>
+                <div class="space-y-1.5">
+                  <div
+                    class="flex items-center justify-between p-2 rounded bg-gray-50"
+                  >
+                    <span class="text-[12px]">佐藤一郎</span
+                    ><span class="text-[11px] text-gray-400"
+                      >252日分貼付 → 満了間近</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-2 rounded bg-gray-50"
+                  >
+                    <span class="text-[12px]">伊藤五郎</span
+                    ><span class="text-[11px] text-gray-400">240日分貼付</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 8. DOCUMENTS (書類管理) ========== -->
+          <div id="page-documents" class="page">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <button
+                  class="filter-chip active"
+                  onclick="chipFilter(this, 'all')"
+                >
+                  すべて
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'roster')"
+                >
+                  名簿系
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'notification')"
+                >
+                  届出系
+                </button>
+                <button
+                  class="filter-chip"
+                  onclick="chipFilter(this, 'greensite')"
+                >
+                  グリーンサイト
+                </button>
+              </div>
+              <button class="btn btn-primary">
+                <i data-lucide="file-plus" class="w-4 h-4"></i>書類作成
+              </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="file-text"
+                    class="w-4 h-4"
+                    style="color: #1e3a5f"
+                  ></i
+                  >自動生成書類
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-3">
+                  登録データから自動生成。常に最新状態
+                </p>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="users" class="w-4 h-4 text-gray-400"></i
+                      ><span class="text-[13px] font-medium text-gray-700"
+                        >作業員名簿</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">最新</span
+                      ><button class="btn btn-outline py-1 px-2 text-[11px]">
+                        <i data-lucide="download" class="w-3 h-3"></i>DL
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="network" class="w-4 h-4 text-gray-400"></i
+                      ><span class="text-[13px] font-medium text-gray-700"
+                        >下請負業者編成表</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">最新</span
+                      ><button class="btn btn-outline py-1 px-2 text-[11px]">
+                        <i data-lucide="download" class="w-3 h-3"></i>DL
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="file-check"
+                        class="w-4 h-4 text-gray-400"
+                      ></i
+                      ><span class="text-[13px] font-medium text-gray-700"
+                        >再下請負通知書</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">最新</span
+                      ><button class="btn btn-outline py-1 px-2 text-[11px]">
+                        <i data-lucide="download" class="w-3 h-3"></i>DL
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="clipboard-list"
+                        class="w-4 h-4 text-gray-400"
+                      ></i
+                      ><span class="text-[13px] font-medium text-gray-700"
+                        >新規入場者調査票</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">最新</span
+                      ><button class="btn btn-outline py-1 px-2 text-[11px]">
+                        <i data-lucide="download" class="w-3 h-3"></i>DL
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="shield" class="w-4 h-4 text-gray-400"></i
+                      ><span class="text-[13px] font-medium text-gray-700"
+                        >安全書類一式（グリーンファイル）</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green">最新</span
+                      ><button class="btn btn-outline py-1 px-2 text-[11px]">
+                        <i data-lucide="download" class="w-3 h-3"></i>DL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="globe"
+                    class="w-4 h-4"
+                    style="color: #1e3a5f"
+                  ></i
+                  >グリーンサイト連携
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-3">
+                  グリーンサイトへのデータ同期状況
+                </p>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-emerald-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="check-circle-2"
+                        class="w-4 h-4 text-emerald-600"
+                      ></i
+                      ><span class="text-[13px] text-gray-700"
+                        >渋谷再開発 A棟</span
+                      >
+                    </div>
+                    <span class="text-[11px] text-emerald-600"
+                      >同期済 3/10 08:00</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-emerald-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="check-circle-2"
+                        class="w-4 h-4 text-emerald-600"
+                      ></i
+                      ><span class="text-[13px] text-gray-700"
+                        >品川オフィスビル改修</span
+                      >
+                    </div>
+                    <span class="text-[11px] text-emerald-600"
+                      >同期済 3/10 08:00</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-amber-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="refresh-cw"
+                        class="w-4 h-4 text-amber-500"
+                      ></i
+                      ><span class="text-[13px] text-gray-700"
+                        >横浜マンション新築</span
+                      >
+                    </div>
+                    <span class="text-[11px] text-amber-600"
+                      >作業員追加あり・要同期</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-emerald-50"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="check-circle-2"
+                        class="w-4 h-4 text-emerald-600"
+                      ></i
+                      ><span class="text-[13px] text-gray-700"
+                        >川崎倉庫解体</span
+                      >
+                    </div>
+                    <span class="text-[11px] text-emerald-600"
+                      >同期済 3/9 18:00</span
+                    >
+                  </div>
+                </div>
+                <button class="btn btn-primary mt-4 w-full justify-center">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>全現場一括同期
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 9. ANALYTICS ========== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  資格種別分布
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="anaChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別資格取得・更新推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="anaChart2"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                人事KPIサマリー
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="p-3 rounded-lg bg-emerald-50 text-center">
+                  <p class="text-[11px] text-emerald-600 font-medium mb-1">
+                    定着率
+                  </p>
+                  <p class="text-xl font-bold text-emerald-700">92%</p>
+                  <p class="text-[10px] text-emerald-600 mt-1">業界平均 78%</p>
+                </div>
+                <div class="p-3 rounded-lg bg-blue-50 text-center">
+                  <p class="text-[11px] text-blue-600 font-medium mb-1">
+                    平均資格保有数
+                  </p>
+                  <p class="text-xl font-bold text-blue-700">
+                    3.7<span class="text-[12px]">件/人</span>
+                  </p>
+                  <p class="text-[10px] text-blue-600 mt-1">前年 3.2件</p>
+                </div>
+                <div class="p-3 rounded-lg bg-amber-50 text-center">
+                  <p class="text-[11px] text-amber-600 font-medium mb-1">
+                    紙→デジタル移行
+                  </p>
+                  <p class="text-xl font-bold text-amber-700">72%</p>
+                  <p class="text-[10px] text-amber-600 mt-1">目標 100%</p>
+                </div>
+                <div class="p-3 rounded-lg bg-purple-50 text-center">
+                  <p class="text-[11px] text-purple-600 font-medium mb-1">
+                    CCUS Lv.3以上率
+                  </p>
+                  <p class="text-xl font-bold text-purple-700">40%</p>
+                  <p class="text-[10px] text-purple-600 mt-1">目標 50%</p>
+                </div>
+              </div>
+            </div>
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                紙→デジタル移行進捗
+              </h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <span class="text-[12px] text-gray-500 w-28">資格証</span>
+                  <div
+                    class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-emerald-500 rounded-full"
+                      style="width: 72%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-[12px] font-medium text-gray-600 w-12 text-right"
+                    >72%</span
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[12px] text-gray-500 w-28">健診結果</span>
+                  <div
+                    class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-emerald-500 rounded-full"
+                      style="width: 85%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-[12px] font-medium text-gray-600 w-12 text-right"
+                    >85%</span
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[12px] text-gray-500 w-28">社保書類</span>
+                  <div
+                    class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-emerald-500 rounded-full"
+                      style="width: 100%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-[12px] font-medium text-gray-600 w-12 text-right"
+                    >100%</span
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[12px] text-gray-500 w-28">教育修了証</span>
+                  <div
+                    class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-amber-400 rounded-full"
+                      style="width: 60%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-[12px] font-medium text-gray-600 w-12 text-right"
+                    >60%</span
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[12px] text-gray-500 w-28">建退共手帳</span>
+                  <div
+                    class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-amber-400 rounded-full"
+                      style="width: 45%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-[12px] font-medium text-gray-600 w-12 text-right"
+                    >45%</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 10. SETTINGS ========== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #1e3a5f"
+                  ></i
+                  >アラート設定
+                </h3>
+                <div class="divide-y">
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        資格期限アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        期限30日前・7日前・当日に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        健康診断リマインド
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        年次健診の2ヶ月前から通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        CCUS登録催促
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        未登録者がいる場合に週次で通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        建退共証紙残量アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        在庫50枚以下で通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="link"
+                    class="w-4 h-4"
+                    style="color: #1e3a5f"
+                  ></i
+                  >外部連携
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="globe"
+                        class="w-5 h-5 text-emerald-600"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          グリーンサイト
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          安全書類の自動同期
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-green">接続済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="id-card"
+                        class="w-5 h-5 text-blue-600"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          CCUS API
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          技能者情報・就業履歴の同期
+                        </p>
+                      </div>
+                    </div>
+                    <span class="badge badge-green">接続済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <i
+                        data-lucide="calculator"
+                        class="w-5 h-5 text-gray-400"
+                      ></i>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          給与計算ソフト
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          社会保険料の自動計算
+                        </p>
+                      </div>
+                    </div>
+                    <button class="btn btn-outline py-1 px-3 text-[11px]">
+                      接続する
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button class="btn btn-primary">
+                  <i data-lucide="save" class="w-4 h-4"></i>保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal: License Registration -->
+    <div
+      id="licenseModal"
+      class="modal-overlay"
+      onclick="if (event.target === this) hideModal('licenseModal');"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
+      >
+        <div class="p-5 border-b flex items-center justify-between">
+          <h3 class="font-bold text-[15px] text-gray-800">資格登録</h3>
+          <button
+            class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center cursor-pointer transition-colors"
+            onclick="hideModal('licenseModal')"
+          >
+            <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >技能者</label
+            ><select
+              class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option>選択してください</option>
+              <option>田中太郎</option>
+              <option>佐藤一郎</option>
+              <option>鈴木次郎</option>
+              <option>山田三郎</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >資格名</label
+            ><select
+              class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option>選択してください</option>
+              <optgroup label="施工管理技士">
+                <option>1級建築施工管理技士</option>
+                <option>2級建築施工管理技士</option>
+                <option>1級土木施工管理技士</option>
+                <option>2級土木施工管理技士</option>
+              </optgroup>
+              <optgroup label="作業主任者">
+                <option>足場の組立て等作業主任者</option>
+                <option>型枠支保工の組立て主任者</option>
+                <option>地山の掘削作業主任者</option>
+                <option>有機溶剤作業主任者</option>
+                <option>酸素欠乏危険作業主任者</option>
+              </optgroup>
+              <optgroup label="技能講習">
+                <option>玉掛け技能講習</option>
+                <option>車両系建設機械運転技能講習</option>
+                <option>高所作業車運転技能講習</option>
+              </optgroup>
+              <optgroup label="免許">
+                <option>第一種電気工事士</option>
+                <option>第二種電気工事士</option>
+                <option>管工事施工管理技士</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >資格番号</label
+            ><input
+              type="text"
+              placeholder="例: ASB-2021-3456"
+              class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                >取得日</label
+              ><input
+                type="date"
+                class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+            <div>
+              <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                >有効期限</label
+              ><input
+                type="date"
+                class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+              />
+              <p class="text-[10px] text-gray-400 mt-1">永久資格の場合は空欄</p>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[12px] font-medium text-gray-600 mb-1.5"
+              >証明書画像</label
+            >
+            <div
+              class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-blue-300 transition-colors cursor-pointer"
+            >
+              <i
+                data-lucide="upload"
+                class="w-8 h-8 text-gray-300 mx-auto mb-2"
+              ></i>
+              <p class="text-[12px] text-gray-400">
+                クリックまたはドラッグで資格証をアップロード
+              </p>
+              <p class="text-[10px] text-gray-300 mt-1">
+                JPG, PNG, PDF（10MB以下）
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-5 border-t flex justify-end gap-2">
+          <button class="btn btn-outline" onclick="hideModal('licenseModal')">
+            キャンセル
+          </button>
+          <button class="btn btn-primary" onclick="hideModal('licenseModal')">
+            <i data-lucide="check" class="w-4 h-4"></i>登録
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "資格期限・CCUS・労務状況",
+        },
+        {
+          id: "license",
+          title: "資格管理",
+          desc: "保有資格・期限管理・証明書デジタル化",
+        },
+        { id: "ccus", title: "CCUS連携", desc: "建設キャリアアップシステム" },
+        { id: "roster", title: "技能者台帳", desc: "人員マスタ・名簿出力" },
+        {
+          id: "training",
+          title: "教育訓練",
+          desc: "特別教育・安全教育・新規入場",
+        },
+        {
+          id: "health",
+          title: "健康診断",
+          desc: "一般健診・特殊健診・フォロー",
+        },
+        { id: "insurance", title: "社会保険", desc: "加入状況・建退共証紙" },
+        {
+          id: "documents",
+          title: "書類管理",
+          desc: "安全書類・グリーンサイト連携",
+        },
+        {
+          id: "analytics",
+          title: "レポート",
+          desc: "人事KPI・コンプライアンス",
+        },
+        { id: "settings", title: "設定", desc: "通知・外部連携" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      function updateClock() {
+        const ct = document.getElementById("currentTime");
+        if (ct)
+          ct.textContent = new Date().toLocaleString("ja-JP", {
+            month: "numeric",
+            day: "numeric",
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+      }
+      setInterval(updateClock, 1000);
+
+      function filterTable(id, q) {
+        const rows = document.querySelectorAll("#" + id + " tbody tr");
+        q = q.toLowerCase();
+        rows.forEach((r) => {
+          r.style.display = r.textContent.toLowerCase().includes(q)
+            ? ""
+            : "none";
+        });
+      }
+      function chipFilter(el) {
+        el.parentElement
+          .querySelectorAll(".filter-chip")
+          .forEach((c) => c.classList.remove("active"));
+        el.classList.add("active");
+      }
+      function showModal(id) {
+        document.getElementById(id).classList.add("show");
+        setTimeout(() => {
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      function hideModal(id) {
+        document.getElementById(id).classList.remove("show");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || "dashboard");
+        updateClock();
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        // Dashboard: qualification type donut
+        charts.push(
+          new Chart(document.getElementById("dashChart1"), {
+            type: "doughnut",
+            data: {
+              labels: [
+                "施工管理技士",
+                "作業主任者",
+                "技能講習",
+                "特別教育",
+                "免許・その他",
+              ],
+              datasets: [
+                {
+                  data: [24, 38, 42, 32, 20],
+                  backgroundColor: [
+                    "#1e3a5f",
+                    "#3b82f6",
+                    "#10b981",
+                    "#f59e0b",
+                    "#94a3b8",
+                  ],
+                  borderWidth: 0,
+                  borderRadius: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "62%",
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Plus Jakarta Sans" },
+                    usePointStyle: true,
+                    padding: 10,
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        // Dashboard: CCUS level bar
+        charts.push(
+          new Chart(document.getElementById("dashChart2"), {
+            type: "bar",
+            data: {
+              labels: ["Lv.4 登録基幹", "Lv.3 職長", "Lv.2 中堅", "Lv.1 初級"],
+              datasets: [
+                {
+                  data: [6, 11, 17, 8],
+                  backgroundColor: ["#fbbf24", "#c084fc", "#60a5fa", "#9ca3af"],
+                  borderRadius: 6,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              indexAxis: "y",
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                y: {
+                  grid: { display: false },
+                  ticks: { font: { size: 11, family: "Plus Jakarta Sans" } },
+                },
+              },
+            },
+          }),
+        );
+
+        // Analytics: qualification distribution
+        charts.push(
+          new Chart(document.getElementById("anaChart1"), {
+            type: "bar",
+            data: {
+              labels: [
+                "施工管理",
+                "作業主任者",
+                "技能講習",
+                "特別教育",
+                "免許",
+              ],
+              datasets: [
+                {
+                  label: "有効",
+                  data: [22, 35, 40, 30, 18],
+                  backgroundColor: "#1e3a5f",
+                  borderRadius: 4,
+                },
+                {
+                  label: "期限切れ/要更新",
+                  data: [2, 3, 2, 2, 2],
+                  backgroundColor: "#ef4444",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Plus Jakarta Sans" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  stacked: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                x: {
+                  stacked: true,
+                  grid: { display: false },
+                  ticks: { font: { size: 11 } },
+                },
+              },
+            },
+          }),
+        );
+
+        // Analytics: monthly trend
+        charts.push(
+          new Chart(document.getElementById("anaChart2"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "新規取得",
+                  data: [3, 2, 5, 4, 3, 6],
+                  borderColor: "#10b981",
+                  backgroundColor: "#10b98120",
+                  tension: 0.4,
+                  fill: true,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#10b981",
+                },
+                {
+                  label: "更新完了",
+                  data: [2, 4, 3, 5, 2, 4],
+                  borderColor: "#3b82f6",
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#3b82f6",
+                },
+                {
+                  label: "期限切れ",
+                  data: [1, 0, 2, 1, 1, 3],
+                  borderColor: "#ef4444",
+                  borderDash: [4, 4],
+                  tension: 0.4,
+                  pointRadius: 3,
+                  pointBackgroundColor: "#ef4444",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Plus Jakarta Sans" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+      });
+    </script>
+  </body>
+</html>
