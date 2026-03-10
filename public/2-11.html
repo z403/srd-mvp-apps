@@ -1,119 +1,3762 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>日報・作業実績の手書き | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>WorkLog — 製造日報・作業実績デジタル管理 | 製造業 | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .heatcell {
+        min-width: 48px;
+        text-align: center;
+        padding: 6px 4px;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #1c1917"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0"
+              style="background: #7c2d12"
+            >
+              W
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">WorkLog</p>
+              <p class="text-[11px] opacity-50 truncate">製造日報管理</p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="entry"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('entry')"
+            ><i data-lucide="file-edit" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">日報入力</span></a
+          >
+          <a
+            data-page="reports"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('reports')"
+            ><i data-lucide="file-text" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">日報一覧</span></a
+          >
+          <a
+            data-page="performance"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('performance')"
+            ><i data-lucide="users" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">作業実績</span></a
+          >
+          <a
+            data-page="production"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('production')"
+            ><i data-lucide="factory" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">生産実績</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">分析レポート</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">日報・作業実績の手書き</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="columns" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ボード</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="eye" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              本日の生産状況と日報提出率
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #ffedd5; color: #7c2d12"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">パフォーマンス概要</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6"><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="100.4" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">53%</div><div class="text-[11px] text-gray-400">完了率</div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="32.0" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">85%</div><div class="text-[11px] text-gray-400">効率</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="117.5" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">45%</div><div class="text-[11px] text-gray-400">遵守</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="121.8" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">43%</div><div class="text-[11px] text-gray-400">満足度</div></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">日報・作業実績管理指標</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">日報・作業実績の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> に日報・作業実績をコメント</p><p class="text-[11px] text-gray-400">17時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の日報・作業実績を更新</p><p class="text-[11px] text-gray-400">7時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の日報・作業実績を完了</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の日報・作業実績を完了</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に日報・作業実績を報告</p><p class="text-[11px] text-gray-400">36時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="kSearch" type="text" placeholder="タスクを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規タスク</button></div><div class="flex gap-4 overflow-x-auto pb-4"><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#94a3b8"></div><span class="text-[13px] font-semibold text-gray-700">未着手</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">4</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/24</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/17</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">山</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク7</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/24</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">渡</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク8</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/25</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#7c2d12"></div><span class="text-[13px] font-semibold text-gray-700">進行中</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">3</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/9</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">佐</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/15</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">佐</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/6</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">中</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div><span class="text-[13px] font-semibold text-gray-700">レビュー</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">1</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク8</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/24</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">高</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#10b981"></div><span class="text-[13px] font-semibold text-gray-700">完了</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">8</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/9</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">伊</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/20</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/15</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">山</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">日報・作業実績タスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/6</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">加</div></div></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4499</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/02/16</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥351万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2707</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/01/27</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥432万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木品質管理 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5723</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/02/27</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥12万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田生産管理 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7756</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/03/02</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥234万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋設備保全 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9779</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/02/08</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥290万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤購買担当 製造2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5424</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400 mt-1">製造2課 · 2026/03/16</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥313万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺設計者 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2130</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/03/20</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥457万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村品質検査員 製造2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9797</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400 mt-1">製造2課 · 2026/01/16</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥959万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林ライン長 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6516</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/03/17</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥43万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤倉庫管理 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4537</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/03/09</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥291万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7845</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/03/17</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥136万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4424</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/02/07</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥675万</p></div></div></div>
-<div id="page-detail" class="page"><div class="card p-5"><div class="flex gap-0 border-b mb-4"><button class="tab-btn px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer" style="border-b-2;border-color:#7c2d12" data-tab="dtlTab-0" onclick="switchTab('dtlTab',0,'#7c2d12')">基本情報</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-1" onclick="switchTab('dtlTab',1,'#7c2d12')">履歴</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-2" onclick="switchTab('dtlTab',2,'#7c2d12')">添付ファイル</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-3" onclick="switchTab('dtlTab',3,'#7c2d12')">コメント</button></div><div data-panel="dtlTab-0" style="display:block"><div class="grid grid-cols-2 gap-4"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">ID</span><span class="text-[14px] font-medium">#4499</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">担当</span><span class="text-[14px] font-medium">佐藤工場長</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">状態</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">検査中</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">金額</span><span class="text-[14px] font-bold" style="color:#7c2d12">¥351万</span></div></div></div><div data-panel="dtlTab-1" style="display:none"><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> に日報・作業実績をコメント</p><p class="text-[11px] text-gray-400">17時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の日報・作業実績を更新</p><p class="text-[11px] text-gray-400">7時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の日報・作業実績を完了</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の日報・作業実績を完了</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に日報・作業実績を報告</p><p class="text-[11px] text-gray-400">36時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤購買担当</span> の日報・作業実績を作成</p><p class="text-[11px] text-gray-400">12時間前</p></div></div></div></div><div data-panel="dtlTab-2" style="display:none"><div class="text-center py-16"><i data-lucide="paperclip" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i><p class="text-[13px] text-gray-400">添付ファイルはありません</p></div></div><div data-panel="dtlTab-3" style="display:none"><div class="space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px]" style="background:#7c2d12">管</div><div class="flex-1 card p-3"><p class="text-[13px] text-gray-700">問題ありません。承認します。</p><p class="text-[11px] text-gray-400 mt-1">2時間前</p></div></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">コメント追加</label><textarea name="コメント追加" rows="3" placeholder="コメントを入力..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次日報・作業実績推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">28</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥901</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥631</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥270</td><td class="px-4 py-3 text-[13px]  text-gray-700">30.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥493</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥291</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥202</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥466</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥214</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥252</td><td class="px-4 py-3 text-[13px]  text-gray-700">54.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">12</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥225</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥144</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥81</td><td class="px-4 py-3 text-[13px]  text-gray-700">36.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">19</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥345</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥217</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥128</td><td class="px-4 py-3 text-[13px]  text-gray-700">37.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">14</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥828</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥397</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥431</td><td class="px-4 py-3 text-[13px]  text-gray-700">52.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">111</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥3,258</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,894</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,364</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.9%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次日報・作業実績推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ====== DASHBOARD ====== -->
+          <div id="page-dashboard" class="page active">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">本日日報提出率</span
+                  ><i
+                    data-lucide="clipboard-check"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  87.5%
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  &#8593; +4.2% 前日比
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">平均作業効率</span
+                  ><i
+                    data-lucide="gauge"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  94.2%
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  &#8593; +1.8% 前日比
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">総生産数(今日)</span
+                  ><i
+                    data-lucide="boxes"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  3,842個
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  &#8593; +156 前日比
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">残業時間合計</span
+                  ><i
+                    data-lucide="clock"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #ea580c">
+                  12.5h
+                </div>
+                <div class="text-[11px] mt-2 text-red-500">
+                  &#8593; +2.0h 前日比
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "パフォーマンス概要"}, {"id": "feature", "title": "ボード", "desc": "タスク管理"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "詳細", "desc": "タブ切替表示"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  日別生産数推移（直近10日）
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashProdChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  ライン別作業効率
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashEffChart"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "現在", "data": [48, 25, 20, 55, 40, 50], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <h3 class="font-semibold text-[14px] text-gray-700 mb-3">
+              本日のシフト稼働状況
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[13px] font-medium text-gray-700"
+                    >ライン1 — プレス加工</span
+                  ><span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                    >稼働中</span
+                  >
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                  <div
+                    class="h-2 rounded-full"
+                    style="width: 92%; background: #7c2d12"
+                  ></div>
+                </div>
+                <div class="flex justify-between mt-1.5">
+                  <span class="text-[11px] text-gray-400">進捗 92%</span
+                  ><span class="text-[11px] text-gray-400">920/1,000個</span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">
+                  担当: 佐藤, 田中, 鈴木
+                </p>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[13px] font-medium text-gray-700"
+                    >ライン2 — 組立</span
+                  ><span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                    >稼働中</span
+                  >
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                  <div
+                    class="h-2 rounded-full"
+                    style="width: 78%; background: #7c2d12"
+                  ></div>
+                </div>
+                <div class="flex justify-between mt-1.5">
+                  <span class="text-[11px] text-gray-400">進捗 78%</span
+                  ><span class="text-[11px] text-gray-400">780/1,000個</span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">
+                  担当: 山田, 高橋, 伊藤
+                </p>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[13px] font-medium text-gray-700"
+                    >ライン3 — 検査</span
+                  ><span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700"
+                    >一時停止</span
+                  >
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                  <div
+                    class="h-2 rounded-full"
+                    style="width: 45%; background: #ea580c"
+                  ></div>
+                </div>
+                <div class="flex justify-between mt-1.5">
+                  <span class="text-[11px] text-gray-400">進捗 45%</span
+                  ><span class="text-[11px] text-gray-400">540/1,200個</span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">担当: 中村, 小林</p>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[13px] font-medium text-gray-700"
+                    >ライン4 — 溶接</span
+                  ><span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                    >稼働中</span
+                  >
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2 mt-2">
+                  <div
+                    class="h-2 rounded-full"
+                    style="width: 88%; background: #7c2d12"
+                  ></div>
+                </div>
+                <div class="flex justify-between mt-1.5">
+                  <span class="text-[11px] text-gray-400">進捗 88%</span
+                  ><span class="text-[11px] text-gray-400">704/800個</span>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">
+                  担当: 加藤, 渡辺, 松本
+                </p>
+              </div>
+            </div>
+          </div>
 
-// feature
+          <!-- ====== ENTRY ====== -->
+          <div id="page-entry" class="page">
+            <div class="max-w-4xl">
+              <div class="card p-6">
+                <h3
+                  class="font-semibold text-[15px] text-gray-700 mb-5 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="file-edit"
+                    class="w-5 h-5"
+                    style="color: #7c2d12"
+                  ></i
+                  >製造日報入力
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >日付</label
+                    ><input
+                      type="date"
+                      value="2026-03-10"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >作業者名</label
+                    ><select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option>佐藤 太郎</option>
+                      <option>田中 一郎</option>
+                      <option>鈴木 花子</option>
+                      <option>山田 健二</option>
+                      <option>高橋 美咲</option>
+                      <option>伊藤 洋平</option>
+                      <option>中村 大輔</option>
+                      <option>小林 幸子</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >ライン / 設備</label
+                    ><select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option>ライン1 — プレス加工</option>
+                      <option>ライン2 — 組立</option>
+                      <option>ライン3 — 検査</option>
+                      <option>ライン4 — 溶接</option>
+                      <option>ライン5 — 塗装</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >シフト</label
+                    ><select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option>日勤 (8:00-17:00)</option>
+                      <option>夜勤 (20:00-5:00)</option>
+                    </select>
+                  </div>
+                </div>
 
-document.querySelectorAll('[draggable]').forEach(c=>{c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text',c.innerHTML);c.classList.add('opacity-40')});c.addEventListener('dragend',()=>c.classList.remove('opacity-40'))});
-document.querySelectorAll('.kanban-cards').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const d=document.createElement('div');d.className='bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move';d.draggable=true;d.innerHTML=e.dataTransfer.getData('text');col.appendChild(d)})});
+                <h4 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  作業明細
+                </h4>
+                <div class="overflow-x-auto mb-4">
+                  <table class="w-full text-[12px]" id="entryTable">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-2 py-2 text-left font-semibold text-gray-500"
+                        >
+                          開始
+                        </th>
+                        <th
+                          class="px-2 py-2 text-left font-semibold text-gray-500"
+                        >
+                          終了
+                        </th>
+                        <th
+                          class="px-2 py-2 text-left font-semibold text-gray-500"
+                        >
+                          品番
+                        </th>
+                        <th
+                          class="px-2 py-2 text-left font-semibold text-gray-500"
+                        >
+                          品名
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          計画数
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          実績数
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          良品数
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          不良数
+                        </th>
+                        <th
+                          class="px-2 py-2 text-left font-semibold text-gray-500"
+                        >
+                          メモ
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          作業時間
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          良品率
+                        </th>
+                        <th
+                          class="px-2 py-2 text-right font-semibold text-gray-500"
+                        >
+                          達成率
+                        </th>
+                        <th class="px-2 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-100">
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="08:00"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="10:30"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <select
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px] bg-white"
+                          >
+                            <option>A-1001</option>
+                            <option>A-1002</option>
+                            <option>B-2001</option>
+                            <option>B-2002</option>
+                            <option>C-3001</option>
+                          </select>
+                        </td>
+                        <td class="px-1 py-2 text-[12px] text-gray-600">
+                          フランジ部品A
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="200"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="195"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="192"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="3"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[60px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="text"
+                            value="通常稼働"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px]"
+                          />
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          2.5h
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium text-emerald-600"
+                        >
+                          98.5%
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          97.5%
+                        </td>
+                        <td class="px-1 py-2">
+                          <button
+                            class="text-gray-300 hover:text-red-500 cursor-pointer"
+                          >
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="10:45"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="12:00"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <select
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px] bg-white"
+                          >
+                            <option>A-1002</option>
+                            <option>A-1001</option>
+                            <option>B-2001</option>
+                            <option>B-2002</option>
+                            <option>C-3001</option>
+                          </select>
+                        </td>
+                        <td class="px-1 py-2 text-[12px] text-gray-600">
+                          シャフト部品B
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="150"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="148"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="145"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="3"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[60px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="text"
+                            value="金型交換あり"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px]"
+                          />
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          1.25h
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium text-emerald-600"
+                        >
+                          98.0%
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          98.7%
+                        </td>
+                        <td class="px-1 py-2">
+                          <button
+                            class="text-gray-300 hover:text-red-500 cursor-pointer"
+                          >
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-100">
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="13:00"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="time"
+                            value="15:30"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[90px]"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <select
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px] bg-white"
+                          >
+                            <option>B-2001</option>
+                            <option>A-1001</option>
+                            <option>A-1002</option>
+                            <option>B-2002</option>
+                            <option>C-3001</option>
+                          </select>
+                        </td>
+                        <td class="px-1 py-2 text-[12px] text-gray-600">
+                          ブラケットC
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="300"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="285"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="280"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="number"
+                            value="5"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[60px] text-right"
+                          />
+                        </td>
+                        <td class="px-1 py-2">
+                          <input
+                            type="text"
+                            value="午後から通常"
+                            class="px-2 py-1.5 border rounded text-[12px] w-[100px]"
+                          />
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          2.5h
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium text-emerald-600"
+                        >
+                          98.2%
+                        </td>
+                        <td
+                          class="px-1 py-2 text-right text-[12px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          95.0%
+                        </td>
+                        <td class="px-1 py-2">
+                          <button
+                            class="text-gray-300 hover:text-red-500 cursor-pointer"
+                          >
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex items-center justify-between">
+                  <button
+                    onclick="addRow()"
+                    class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                    style="color: #7c2d12; border-color: #7c2d12"
+                  >
+                    <i data-lucide="plus" class="w-4 h-4"></i>行追加
+                  </button>
+                  <div class="flex gap-3">
+                    <div class="text-right">
+                      <span class="text-[11px] text-gray-400 block"
+                        >合計作業時間</span
+                      ><span
+                        class="text-[14px] font-bold"
+                        style="color: #7c2d12"
+                        >6.25h</span
+                      >
+                    </div>
+                    <div class="text-right">
+                      <span class="text-[11px] text-gray-400 block"
+                        >合計生産数</span
+                      ><span
+                        class="text-[14px] font-bold"
+                        style="color: #7c2d12"
+                        >628個</span
+                      >
+                    </div>
+                    <div class="text-right">
+                      <span class="text-[11px] text-gray-400 block"
+                        >総合良品率</span
+                      ><span class="text-[14px] font-bold text-emerald-600"
+                        >98.3%</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-5 pt-4 border-t flex justify-end gap-3">
+                  <button
+                    class="py-2.5 px-5 text-[13px] rounded-lg font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  >
+                    下書き保存
+                  </button>
+                  <button
+                    class="py-2.5 px-5 text-[13px] rounded-lg text-white font-medium hover:opacity-90 cursor-pointer"
+                    style="background: #7c2d12"
+                  >
+                    提出する
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
+          <!-- ====== REPORTS ====== -->
+          <div id="page-reports" class="page">
+            <div class="flex flex-wrap items-center justify-between mb-5 gap-3">
+              <div class="flex flex-wrap gap-3 items-center">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i
+                  ><input
+                    id="reportSearch"
+                    type="text"
+                    placeholder="作業者・ラインを検索..."
+                    class="pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 w-[220px]"
+                  />
+                </div>
+                <input
+                  type="date"
+                  value="2026-03-01"
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                />
+                <span class="text-gray-400 text-[12px]">〜</span>
+                <input
+                  type="date"
+                  value="2026-03-10"
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                />
+                <select
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white"
+                >
+                  <option value="">全ライン</option>
+                  <option>ライン1</option>
+                  <option>ライン2</option>
+                  <option>ライン3</option>
+                  <option>ライン4</option>
+                </select>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                style="color: #7c2d12; border-color: #7c2d12"
+              >
+                <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+              </button>
+            </div>
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table id="reportTbl" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 0)"
+                      >
+                        日付 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 1)"
+                      >
+                        作業者 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 2)"
+                      >
+                        ライン <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        シフト
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 4)"
+                      >
+                        総作業時間 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 5)"
+                      >
+                        総生産数 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('reportTbl', 6)"
+                      >
+                        良品率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        提出時刻
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="佐藤太郎 ライン1"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        佐藤 太郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        628
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.3%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:15</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >提出済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="田中一郎 ライン2"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        田中 一郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        8.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        542
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.8%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:30</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="鈴木花子 ライン1"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        鈴木 花子
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        510
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        99.0%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:05</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="山田健二 ライン3"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        山田 健二
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        480
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-amber-600 font-medium"
+                      >
+                        95.2%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:45</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600"
+                          >差戻し</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="高橋美咲 ライン2"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        高橋 美咲
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        8.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        598
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.7%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:20</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="伊藤洋平 ライン4"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/09
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        伊藤 洋平
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン4
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">夜勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        8.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        620
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.4%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">05:10</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="中村大輔 ライン3"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/09
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        中村 大輔
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        465
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.1%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:25</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="小林幸子 ライン1"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/09
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        小林 幸子
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        535
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.9%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:10</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >提出済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="加藤誠 ライン4"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/09
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        加藤 誠
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン4
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        8.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        580
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.6%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:35</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50"
+                      data-search="佐藤太郎 ライン1"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026/03/08
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        佐藤 太郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">日勤</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        7.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        612
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.5%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">17:20</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+          <!-- ====== PERFORMANCE ====== -->
+          <div id="page-performance" class="page">
+            <div class="flex flex-wrap items-center justify-between mb-5 gap-3">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                作業者別実績ランキング
+              </h3>
+              <div class="flex gap-2">
+                <select
+                  id="perfMetric"
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white"
+                >
+                  <option value="prod">生産数順</option>
+                  <option value="eff">効率順</option>
+                  <option value="qual">良品率順</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>エクスポート
+                </button>
+              </div>
+            </div>
+            <div class="card overflow-hidden mb-6">
+              <div class="overflow-x-auto">
+                <table id="perfTbl" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        順位
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 1)"
+                      >
+                        作業者名 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 2)"
+                      >
+                        稼働日数 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 3)"
+                      >
+                        総作業時間 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 4)"
+                      >
+                        総生産数 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 5)"
+                      >
+                        良品率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('perfTbl', 6)"
+                      >
+                        平均効率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-center text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        ランク
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-bold"
+                        style="color: #ea580c"
+                      >
+                        1
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        高橋 美咲
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        22
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        172.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        13,420
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        99.1%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        98.2%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
+                          style="background: #7c2d12"
+                          >S</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-bold"
+                        style="color: #ea580c"
+                      >
+                        2
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        鈴木 花子
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        21
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        163.5h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        12,850
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        99.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        97.5%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-white"
+                          style="background: #7c2d12"
+                          >S</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-bold"
+                        style="color: #ea580c"
+                      >
+                        3
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        佐藤 太郎
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        22
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        170.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        12,640
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.5%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        96.8%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-white bg-orange-500"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] font-bold text-gray-500">
+                        4
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        田中 一郎
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        20
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        158.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        11,920
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.8%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        95.4%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-white bg-orange-500"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] font-bold text-gray-500">
+                        5
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        伊藤 洋平
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        22
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        175.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        11,580
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.4%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        94.1%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-amber-800 bg-amber-100"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] font-bold text-gray-500">
+                        6
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        加藤 誠
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        21
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        165.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        11,200
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        97.6%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        93.5%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-amber-800 bg-amber-100"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] font-bold text-gray-500">
+                        7
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        中村 大輔
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        19
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        148.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        10,450
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        98.1%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        92.0%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-amber-800 bg-amber-100"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] font-bold text-gray-500">
+                        8
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田 健二
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        18
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        140.0h
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        9,800
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-amber-600 font-medium"
+                      >
+                        95.2%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium"
+                        style="color: #7c2d12"
+                      >
+                        88.5%
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span
+                          class="px-2.5 py-1 rounded-full text-[11px] font-bold text-gray-600 bg-gray-200"
+                          >C</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-// detail
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  作業者別生産性比較（今月）
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="perfBarChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  週次効率推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="perfLineChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function switchTab(gid,idx,color){
-document.querySelectorAll('[data-tab^="'+gid+'"]').forEach((b,i)=>{
-b.style.borderColor=i===idx?color:'transparent';
-b.classList.toggle('font-semibold',i===idx);b.classList.toggle('text-gray-400',i!==idx);});
-document.querySelectorAll('[data-panel^="'+gid+'"]').forEach((p,i)=>{
-p.style.display=i===idx?'block':'none';});}
+          <!-- ====== PRODUCTION ====== -->
+          <div id="page-production" class="page">
+            <div class="flex flex-wrap items-center justify-between mb-5 gap-3">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                品目別生産実績
+              </h3>
+              <div class="flex gap-2">
+                <select
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white"
+                >
+                  <option>2026年3月</option>
+                  <option>2026年2月</option>
+                  <option>2026年1月</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>エクスポート
+                </button>
+              </div>
+            </div>
+            <div class="card overflow-hidden mb-6">
+              <div class="overflow-x-auto">
+                <table id="prodTbl" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('prodTbl', 0)"
+                      >
+                        品番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('prodTbl', 2)"
+                      >
+                        計画数 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('prodTbl', 3)"
+                      >
+                        実績数 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('prodTbl', 4)"
+                      >
+                        達成率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('prodTbl', 5)"
+                      >
+                        良品率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        不良内訳
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        A-1001
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        フランジ部品A
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        5,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        4,850
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-emerald-600"
+                      >
+                        97.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        98.5%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        キズ:38 / 寸法:25 / 変形:10
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        A-1002
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        シャフト部品B
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        3,500
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        3,420
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-emerald-600"
+                      >
+                        97.7%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        97.8%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        キズ:42 / 寸法:18 / バリ:15
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        B-2001
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ブラケットC
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        8,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        7,680
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-emerald-600"
+                      >
+                        96.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        98.2%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        溶接不良:72 / 寸法:42 / 変形:24
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        B-2002
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        カバーD
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        4,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        3,760
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-amber-600"
+                      >
+                        94.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-amber-600"
+                      >
+                        96.5%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        塗装ムラ:68 / キズ:38 / 変形:26
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        C-3001
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">ギアE</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        2,500
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        2,480
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-emerald-600"
+                      >
+                        99.2%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        99.1%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        寸法:12 / バリ:10
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        C-3002
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">ピンF</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        6,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-gray-700"
+                      >
+                        5,820
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right font-medium text-emerald-600"
+                      >
+                        97.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        98.8%
+                      </td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        寸法:35 / キズ:22 / バリ:13
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  品目別 計画 vs 実績
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="prodGroupedBar"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  不良要因パレート図
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="prodPareto"></canvas>
+                </div>
+              </div>
+            </div>
 
-// report
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                月別比較
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        月
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        総計画数
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        総実績数
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        達成率
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        良品率
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        不良数
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026年1月
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        28,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        26,880
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        96.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        97.5%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-right text-red-500">
+                        672
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026年2月
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        26,500
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        25,650
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        96.8%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        98.0%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-right text-red-500">
+                        513
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        2026年3月（途中）
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        29,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        28,010
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600 font-medium"
+                      >
+                        96.6%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                      >
+                        98.2%
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-right text-red-500">
+                        504
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ====== ANALYTICS ====== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              <div
+                class="card p-4 border-l-4"
+                style="border-left-color: #7c2d12"
+              >
+                <div class="flex items-start gap-3">
+                  <i
+                    data-lucide="lightbulb"
+                    class="w-5 h-5 shrink-0 mt-0.5"
+                    style="color: #ea580c"
+                  ></i>
+                  <div>
+                    <p class="text-[13px] font-medium text-gray-700">
+                      火曜午前のライン2が最高効率
+                    </p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">
+                      過去4週の平均で99.2%を記録。担当: 高橋美咲
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="card p-4 border-l-4"
+                style="border-left-color: #ea580c"
+              >
+                <div class="flex items-start gap-3">
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-5 h-5 shrink-0 mt-0.5 text-amber-500"
+                  ></i>
+                  <div>
+                    <p class="text-[13px] font-medium text-gray-700">
+                      金曜夜勤の不良率が平均+2.3%
+                    </p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">
+                      疲労蓄積の影響と推定。休憩タイミングの見直しを推奨
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4 border-l-4 border-emerald-500">
+                <div class="flex items-start gap-3">
+                  <i
+                    data-lucide="trending-up"
+                    class="w-5 h-5 shrink-0 mt-0.5 text-emerald-500"
+                  ></i>
+                  <div>
+                    <p class="text-[13px] font-medium text-gray-700">
+                      残業1h以内の日は効率+3.8%
+                    </p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">
+                      定時退社の推奨が生産性向上に寄与
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [901, 493, 466, 225, 345, 828], "backgroundColor": "#7c2d12", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <div class="card p-5 mb-6">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                時間帯別生産性ヒートマップ（良品率 %）
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr>
+                      <th class="px-2 py-2 text-[11px] text-gray-500 text-left">
+                        時間帯
+                      </th>
+                      <th class="px-1 py-2 text-[11px] text-gray-500">月</th>
+                      <th class="px-1 py-2 text-[11px] text-gray-500">火</th>
+                      <th class="px-1 py-2 text-[11px] text-gray-500">水</th>
+                      <th class="px-1 py-2 text-[11px] text-gray-500">木</th>
+                      <th class="px-1 py-2 text-[11px] text-gray-500">金</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        8:00-10:00
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        98.2
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #bbf7d0; color: #166534"
+                      >
+                        99.1
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        98.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.5
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        10:00-12:00
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #bbf7d0; color: #166534"
+                      >
+                        99.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #86efac; color: #166534"
+                      >
+                        99.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #bbf7d0; color: #166534"
+                      >
+                        99.2
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        98.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        98.0
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        13:00-15:00
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        98.4
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.2
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        15:00-17:00
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.2
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        95.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fed7aa; color: #9a3412"
+                      >
+                        94.5
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        17:00-19:00 (残業)
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fed7aa; color: #9a3412"
+                      >
+                        94.2
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        95.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fed7aa; color: #9a3412"
+                      >
+                        93.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fecaca; color: #991b1b"
+                      >
+                        92.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fecaca; color: #991b1b"
+                      >
+                        91.0
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        20:00-22:00 (夜勤)
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        97.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.8
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fed7aa; color: #9a3412"
+                      >
+                        93.5
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-2 py-1 text-[12px] text-gray-600 font-medium"
+                      >
+                        22:00-0:00 (夜勤)
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        95.5
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        96.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fef9c3; color: #854d0e"
+                      >
+                        95.2
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fed7aa; color: #9a3412"
+                      >
+                        94.0
+                      </td>
+                      <td
+                        class="heatcell"
+                        style="background: #fecaca; color: #991b1b"
+                      >
+                        91.8
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  曜日別生産性傾向
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="analDayChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  残業時間 vs 良品率 相関
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="analOtChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                ライン別稼働率推移（週次）
+              </h3>
+              <div style="height: 280px">
+                <canvas id="analLineChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== SETTINGS ====== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl">
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="users"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >作業者マスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full mb-3">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ID
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          氏名
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          所属ライン
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          資格
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ステータス
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2 text-[12px] text-gray-500">
+                          W001
+                        </td>
+                        <td class="px-3 py-2 text-[13px] text-gray-700">
+                          佐藤 太郎
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          ライン1
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          フォークリフト, 溶接
+                        </td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                            >在籍</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2 text-[12px] text-gray-500">
+                          W002
+                        </td>
+                        <td class="px-3 py-2 text-[13px] text-gray-700">
+                          田中 一郎
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          ライン2
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          クレーン
+                        </td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                            >在籍</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2 text-[12px] text-gray-500">
+                          W003
+                        </td>
+                        <td class="px-3 py-2 text-[13px] text-gray-700">
+                          鈴木 花子
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          ライン1
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          品質管理
+                        </td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                            >在籍</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2 text-[12px] text-gray-500">
+                          W004
+                        </td>
+                        <td class="px-3 py-2 text-[13px] text-gray-700">
+                          山田 健二
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          ライン3
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          溶接, 検査
+                        </td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                            >在籍</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2 text-[12px] text-gray-500">
+                          W005
+                        </td>
+                        <td class="px-3 py-2 text-[13px] text-gray-700">
+                          高橋 美咲
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          ライン2
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          組立, 品質管理
+                        </td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                            >在籍</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>作業者追加
+                </button>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="package"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >品番マスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full mb-3">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品番
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品名
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          工程
+                        </th>
+                        <th
+                          class="px-3 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          標準CT(秒)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50">
+                        <td
+                          class="px-3 py-2 text-[13px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          A-1001
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-700">
+                          フランジ部品A
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          プレス → 検査
+                        </td>
+                        <td
+                          class="px-3 py-2 text-[12px] text-right text-gray-700"
+                        >
+                          18
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td
+                          class="px-3 py-2 text-[13px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          A-1002
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-700">
+                          シャフト部品B
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          旋盤 → 研磨 → 検査
+                        </td>
+                        <td
+                          class="px-3 py-2 text-[12px] text-right text-gray-700"
+                        >
+                          25
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td
+                          class="px-3 py-2 text-[13px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          B-2001
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-700">
+                          ブラケットC
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          切断 → 溶接 → 検査
+                        </td>
+                        <td
+                          class="px-3 py-2 text-[12px] text-right text-gray-700"
+                        >
+                          12
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td
+                          class="px-3 py-2 text-[13px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          B-2002
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-700">
+                          カバーD
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          プレス → 塗装 → 検査
+                        </td>
+                        <td
+                          class="px-3 py-2 text-[12px] text-right text-gray-700"
+                        >
+                          30
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td
+                          class="px-3 py-2 text-[13px] font-medium"
+                          style="color: #7c2d12"
+                        >
+                          C-3001
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-700">
+                          ギアE
+                        </td>
+                        <td class="px-3 py-2 text-[12px] text-gray-600">
+                          旋盤 → 熱処理 → 研磨
+                        </td>
+                        <td
+                          class="px-3 py-2 text-[12px] text-right text-gray-700"
+                        >
+                          45
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>品番追加
+                </button>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="cpu"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >ライン・設備マスタ
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <div
+                    class="p-3 rounded-lg bg-gray-50 flex items-center justify-between"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン1 — プレス加工
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        設備: 200tプレス x2, 100tプレス x1
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                      >稼働中</span
+                    >
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-gray-50 flex items-center justify-between"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン2 — 組立
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        設備: 自動組立機 x1, 手動ステーション x4
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                      >稼働中</span
+                    >
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-gray-50 flex items-center justify-between"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン3 — 検査
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        設備: 画像検査装置 x2, 三次元測定器 x1
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700"
+                      >メンテ中</span
+                    >
+                  </div>
+                  <div
+                    class="p-3 rounded-lg bg-gray-50 flex items-center justify-between"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン4 — 溶接
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        設備: ロボット溶接機 x2, スポット溶接 x3
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700"
+                      >稼働中</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="git-branch"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >承認フロー設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center gap-4 p-3 rounded-lg bg-gray-50"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] text-white font-bold"
+                      style="background: #7c2d12"
+                    >
+                      1
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-[13px] font-medium text-gray-700">
+                        作業者が日報を提出
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        ステータス: 提出済
+                      </p>
+                    </div>
+                    <i
+                      data-lucide="arrow-right"
+                      class="w-4 h-4 text-gray-300"
+                    ></i>
+                  </div>
+                  <div
+                    class="flex items-center gap-4 p-3 rounded-lg bg-gray-50"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] text-white font-bold"
+                      style="background: #ea580c"
+                    >
+                      2
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン長が確認・承認
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        ステータス: 承認済 or 差戻し
+                      </p>
+                    </div>
+                    <i
+                      data-lucide="arrow-right"
+                      class="w-4 h-4 text-gray-300"
+                    ></i>
+                  </div>
+                  <div
+                    class="flex items-center gap-4 p-3 rounded-lg bg-gray-50"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] text-white font-bold bg-gray-400"
+                    >
+                      3
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-[13px] font-medium text-gray-700">
+                        工場長が最終承認
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        ステータス: 最終承認
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="file-check"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >日報テンプレート
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        標準日報テンプレート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        基本的な作業記録用。全ラインで利用可能
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700"
+                      >デフォルト</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        夜勤専用テンプレート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        夜勤特有の引き継ぎ項目を含む
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
+                      >カスタム</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        検査工程テンプレート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        不良分類の詳細入力項目付き
+                      </p>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600"
+                      >カスタム</span
+                    >
+                  </div>
+                </div>
+                <button
+                  class="mt-3 inline-flex items-center gap-1.5 py-2 px-4 text-[12px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #7c2d12; border-color: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>テンプレート追加
+                </button>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium hover:opacity-90 cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "本日の生産状況と日報提出率",
+        },
+        { id: "entry", title: "日報入力", desc: "製造日報のデジタル入力" },
+        { id: "reports", title: "日報一覧", desc: "提出済み日報の検索・確認" },
+        {
+          id: "performance",
+          title: "作業実績",
+          desc: "作業者別パフォーマンス分析",
+        },
+        {
+          id: "production",
+          title: "生産実績",
+          desc: "品目別生産結果・不良分析",
+        },
+        {
+          id: "analytics",
+          title: "分析レポート",
+          desc: "時間帯別・曜日別の生産性分析",
+        },
+        { id: "settings", title: "設定", desc: "マスタデータ・承認フロー管理" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(b.querySelectorAll("tr"));
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => b.appendChild(r));
+      }
+
+      function addRow() {
+        const tb = document.querySelector("#entryTable tbody");
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-gray-100";
+        tr.innerHTML =
+          '<td class="px-1 py-2"><input type="time" class="px-2 py-1.5 border rounded text-[12px] w-[90px]"><\/td><td class="px-1 py-2"><input type="time" class="px-2 py-1.5 border rounded text-[12px] w-[90px]"><\/td><td class="px-1 py-2"><select class="px-2 py-1.5 border rounded text-[12px] w-[100px] bg-white"><option>A-1001<\/option><option>A-1002<\/option><option>B-2001<\/option><option>B-2002<\/option><option>C-3001<\/option><\/select><\/td><td class="px-1 py-2 text-[12px] text-gray-600">-<\/td><td class="px-1 py-2"><input type="number" class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"><\/td><td class="px-1 py-2"><input type="number" class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"><\/td><td class="px-1 py-2"><input type="number" class="px-2 py-1.5 border rounded text-[12px] w-[70px] text-right"><\/td><td class="px-1 py-2"><input type="number" class="px-2 py-1.5 border rounded text-[12px] w-[60px] text-right"><\/td><td class="px-1 py-2"><input type="text" class="px-2 py-1.5 border rounded text-[12px] w-[100px]"><\/td><td class="px-1 py-2 text-right text-[12px] text-gray-400">-<\/td><td class="px-1 py-2 text-right text-[12px] text-gray-400">-<\/td><td class="px-1 py-2 text-right text-[12px] text-gray-400">-<\/td><td class="px-1 py-2"><button class="text-gray-300 hover:text-red-500 cursor-pointer" onclick="this.closest(\'tr\').remove()"><i data-lucide="trash-2" class="w-4 h-4"><\/i><\/button><\/td>';
+        tb.appendChild(tr);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const rs = document.getElementById("reportSearch");
+        if (rs)
+          rs.addEventListener("input", function () {
+            const q = this.value.toLowerCase();
+            document
+              .querySelectorAll("#reportTbl tbody tr[data-search]")
+              .forEach((el) => {
+                el.style.display = el.dataset.search.toLowerCase().includes(q)
+                  ? ""
+                  : "none";
+              });
+          });
+      });
+
+      const cOpt = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              font: { size: 11, family: "Inter" },
+              usePointStyle: true,
+              padding: 14,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: "#f3f4f6" },
+            ticks: { font: { size: 11 } },
+          },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        },
+      };
+      const cOptNoLeg = JSON.parse(JSON.stringify(cOpt));
+      cOptNoLeg.plugins.legend.display = false;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        // Dashboard: production trend bar
+        charts.push(
+          new Chart(document.getElementById("dashProdChart"), {
+            type: "bar",
+            data: {
+              labels: [
+                "3/1",
+                "3/2",
+                "3/3",
+                "3/4",
+                "3/5",
+                "3/6",
+                "3/7",
+                "3/8",
+                "3/9",
+                "3/10",
+              ],
+              datasets: [
+                {
+                  label: "生産数",
+                  data: [
+                    3650, 3720, 3580, 3810, 3900, 3450, 0, 3780, 3690, 3842,
+                  ],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: cOptNoLeg,
+          }),
+        );
+
+        // Dashboard: efficiency by line horizontal bar
+        charts.push(
+          new Chart(document.getElementById("dashEffChart"), {
+            type: "bar",
+            data: {
+              labels: ["ライン1", "ライン2", "ライン3", "ライン4", "ライン5"],
+              datasets: [
+                {
+                  label: "効率(%)",
+                  data: [96.5, 97.2, 91.8, 95.4, 93.0],
+                  backgroundColor: [
+                    "#7c2d12",
+                    "#7c2d12",
+                    "#ea580c",
+                    "#7c2d12",
+                    "#ea580c",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              indexAxis: "y",
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Performance: worker bar chart
+        charts.push(
+          new Chart(document.getElementById("perfBarChart"), {
+            type: "bar",
+            data: {
+              labels: [
+                "高橋",
+                "鈴木",
+                "佐藤",
+                "田中",
+                "伊藤",
+                "加藤",
+                "中村",
+                "山田",
+              ],
+              datasets: [
+                {
+                  label: "生産数",
+                  data: [13420, 12850, 12640, 11920, 11580, 11200, 10450, 9800],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+                {
+                  label: "目標",
+                  data: [
+                    13000, 13000, 13000, 13000, 13000, 13000, 13000, 13000,
+                  ],
+                  type: "line",
+                  borderColor: "#ea580c",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                  borderWidth: 2,
+                  fill: false,
+                },
+              ],
+            },
+            options: cOpt,
+          }),
+        );
+
+        // Performance: weekly efficiency line
+        charts.push(
+          new Chart(document.getElementById("perfLineChart"), {
+            type: "line",
+            data: {
+              labels: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+              datasets: [
+                {
+                  label: "高橋",
+                  data: [96.5, 97.0, 97.8, 98.0, 98.5, 98.2, 98.5, 98.2],
+                  borderColor: "#7c2d12",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                },
+                {
+                  label: "鈴木",
+                  data: [95.8, 96.5, 97.0, 97.2, 97.5, 97.8, 97.5, 97.5],
+                  borderColor: "#ea580c",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                },
+                {
+                  label: "山田",
+                  data: [90.0, 89.5, 88.0, 88.5, 89.0, 88.0, 89.0, 88.5],
+                  borderColor: "#9ca3af",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                  borderDash: [4, 4],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  min: 85,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Production: plan vs actual grouped bar
+        charts.push(
+          new Chart(document.getElementById("prodGroupedBar"), {
+            type: "bar",
+            data: {
+              labels: [
+                "A-1001",
+                "A-1002",
+                "B-2001",
+                "B-2002",
+                "C-3001",
+                "C-3002",
+              ],
+              datasets: [
+                {
+                  label: "計画数",
+                  data: [5000, 3500, 8000, 4000, 2500, 6000],
+                  backgroundColor: "#fed7aa",
+                  borderRadius: 4,
+                },
+                {
+                  label: "実績数",
+                  data: [4850, 3420, 7680, 3760, 2480, 5820],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: cOpt,
+          }),
+        );
+
+        // Production: defect pareto
+        var dL = ["キズ", "寸法", "溶接不良", "塗装ムラ", "変形", "バリ"],
+          dD = [140, 132, 72, 68, 60, 38],
+          dT = dD.reduce(function (a, b) {
+            return a + b;
+          }, 0),
+          cum = 0,
+          cP = dD.map(function (v) {
+            cum += v;
+            return Math.round((cum / dT) * 100);
+          });
+        charts.push(
+          new Chart(document.getElementById("prodPareto"), {
+            type: "bar",
+            data: {
+              labels: dL,
+              datasets: [
+                {
+                  label: "不良数",
+                  data: dD,
+                  backgroundColor: "#ea580c",
+                  borderRadius: 4,
+                  yAxisID: "y",
+                },
+                {
+                  label: "累積%",
+                  data: cP,
+                  type: "line",
+                  borderColor: "#7c2d12",
+                  pointBackgroundColor: "#7c2d12",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  yAxisID: "y1",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  position: "left",
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                y1: {
+                  beginAtZero: true,
+                  max: 100,
+                  position: "right",
+                  grid: { display: false },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Analytics: day-of-week chart
+        charts.push(
+          new Chart(document.getElementById("analDayChart"), {
+            type: "bar",
+            data: {
+              labels: ["月", "火", "水", "木", "金"],
+              datasets: [
+                {
+                  label: "平均生産数",
+                  data: [3720, 3850, 3680, 3600, 3480],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+                {
+                  label: "平均良品率(%)",
+                  data: [97.2, 98.4, 97.0, 96.5, 95.2],
+                  type: "line",
+                  borderColor: "#ea580c",
+                  pointBackgroundColor: "#ea580c",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  yAxisID: "y1",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  position: "left",
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                y1: {
+                  min: 92,
+                  max: 100,
+                  position: "right",
+                  grid: { display: false },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Analytics: overtime vs quality scatter
+        charts.push(
+          new Chart(document.getElementById("analOtChart"), {
+            type: "scatter",
+            data: {
+              datasets: [
+                {
+                  label: "日勤",
+                  data: [
+                    { x: 0, y: 98.5 },
+                    { x: 0.5, y: 98.2 },
+                    { x: 1, y: 97.8 },
+                    { x: 1.5, y: 97.0 },
+                    { x: 2, y: 96.2 },
+                    { x: 2.5, y: 95.0 },
+                    { x: 3, y: 93.5 },
+                  ],
+                  backgroundColor: "#7c2d12",
+                  pointRadius: 6,
+                },
+                {
+                  label: "夜勤",
+                  data: [
+                    { x: 0, y: 97.5 },
+                    { x: 0.5, y: 97.0 },
+                    { x: 1, y: 96.2 },
+                    { x: 1.5, y: 95.0 },
+                    { x: 2, y: 93.8 },
+                    { x: 2.5, y: 92.0 },
+                    { x: 3, y: 90.5 },
+                  ],
+                  backgroundColor: "#ea580c",
+                  pointRadius: 6,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 88,
+                  max: 100,
+                  title: {
+                    display: true,
+                    text: "良品率(%)",
+                    font: { size: 11 },
+                  },
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: "残業時間(h)",
+                    font: { size: 11 },
+                  },
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+              },
+            },
+          }),
+        );
+
+        // Analytics: line utilization trend
+        charts.push(
+          new Chart(document.getElementById("analLineChart"), {
+            type: "line",
+            data: {
+              labels: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+              datasets: [
+                {
+                  label: "ライン1",
+                  data: [92, 93, 94, 93, 95, 94, 96, 95],
+                  borderColor: "#7c2d12",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                },
+                {
+                  label: "ライン2",
+                  data: [88, 90, 91, 92, 93, 94, 93, 94],
+                  borderColor: "#ea580c",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                },
+                {
+                  label: "ライン3",
+                  data: [78, 80, 82, 75, 85, 83, 80, 82],
+                  borderColor: "#fb923c",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                  borderDash: [4, 4],
+                },
+                {
+                  label: "ライン4",
+                  data: [90, 91, 92, 93, 92, 94, 95, 94],
+                  borderColor: "#a16207",
+                  tension: 0.3,
+                  fill: false,
+                  pointRadius: 3,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  min: 70,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: function (v) {
+                      return v + "%";
+                    },
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+      });
+    </script>
+  </body>
+</html>

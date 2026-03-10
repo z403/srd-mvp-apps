@@ -1,111 +1,2951 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>倉庫内ロケーション管理 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>WarehouseNavi — 倉庫ロケーション・在庫管理システム | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .tab-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        border: 1px solid #e5e7eb;
+        border-bottom: none;
+        background: #f9fafb;
+        color: #6b7280;
+        transition: all 0.15s;
+      }
+      .tab-btn.active {
+        background: #fff;
+        color: #065f46;
+        font-weight: 600;
+        border-color: #d1d5db;
+      }
+      .rack-cell {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: 2px solid transparent;
+      }
+      .rack-cell:hover {
+        transform: scale(1.1);
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .rack-cell.empty {
+        background: #f3f4f6;
+        color: #9ca3af;
+        border-color: #e5e7eb;
+      }
+      .rack-cell.used {
+        background: #d1fae5;
+        color: #065f46;
+        border-color: #10b981;
+      }
+      .rack-cell.full {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #f87171;
+      }
+      .rack-cell.reserved {
+        background: #fef9c3;
+        color: #a16207;
+        border-color: #facc15;
+      }
+      .toggle-switch {
+        position: relative;
+        width: 40px;
+        height: 20px;
+        background: #d1d5db;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .toggle-switch.on {
+        background: #10b981;
+      }
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: 0.3s;
+      }
+      .toggle-switch.on::after {
+        left: 22px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #0c4a6e"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0"
+              style="background: #065f46"
+            >
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">WarehouseNavi</p>
+              <p class="text-[11px] opacity-50 truncate">
+                倉庫ロケーション管理
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('dashboard')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="map"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('map')"
+          >
+            <i data-lucide="map" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">倉庫マップ</span></a
+          >
+          <a
+            data-page="inventory"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('inventory')"
+          >
+            <i
+              data-lucide="package-search"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">在庫一覧</span></a
+          >
+          <a
+            data-page="inout"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('inout')"
+          >
+            <i
+              data-lucide="arrow-left-right"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">入出庫管理</span></a
+          >
+          <a
+            data-page="locations"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('locations')"
+          >
+            <i data-lucide="grid-3x3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">ロケーション管理</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('analytics')"
+          >
+            <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">分析</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer hover:bg-white/10"
+            onclick="navigate('settings')"
+          >
+            <i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              倉
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">倉庫管理者</p>
+              <p class="text-[10px] opacity-40">admin@warehouse.co.jp</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">倉庫内ロケーション管理</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="map-pin" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">マップ</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="layout-list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">サマリー</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              KPIと最新状況
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #d1fae5; color: #065f46"
+              >MVP Demo</span
+            >
+            <button
+              class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <i data-lucide="bell" class="w-4 h-4 text-gray-400"></i>
+            </button>
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">KPIと最新状況</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">稼働数</span><i data-lucide="truck" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">7台</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">本日配送</span><i data-lucide="package" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">20件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">1件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">稼働率</span><i data-lucide="activity" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">76%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +4%</div></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次倉庫内ロケーション推移</h3><div style="height:260px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">倉庫内ロケーションの最新状況</h3><div class="space-y-4"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> の入荷を登録</p><p class="text-[11px] text-gray-400">8時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> に発注点アラート</p><p class="text-[11px] text-gray-400">5時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> の在庫を調整</p><p class="text-[11px] text-gray-400">39時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> の在庫を調整</p><p class="text-[11px] text-gray-400">10時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋経理</span> に発注点アラート</p><p class="text-[11px] text-gray-400">1時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤営業</span> の出庫を処理</p><p class="text-[11px] text-gray-400">23時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2 card p-4"><div class="relative bg-gradient-to-br from-blue-50 to-green-50 rounded-lg overflow-hidden" style="height:420px"><div class="absolute inset-0 opacity-10" style="background:repeating-linear-gradient(0deg,#065f4622 0,#065f4622 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#065f4622 0,#065f4622 1px,transparent 1px,transparent 40px)"></div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-red-500" style="left:59%;top:13%" title="拠点A">A</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-blue-500" style="left:59%;top:30%" title="拠点B">B</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-gray-400" style="left:41%;top:64%" title="拠点C">C</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-blue-500" style="left:39%;top:70%" title="拠点D">D</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-emerald-500" style="left:43%;top:33%" title="拠点E">E</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-emerald-500" style="left:60%;top:59%" title="拠点F">F</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-emerald-500" style="left:25%;top:69%" title="拠点G">G</div><div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center text-[9px] text-white cursor-pointer hover:scale-125 transition-transform bg-emerald-500" style="left:23%;top:15%" title="拠点H">H</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">拠点一覧</h3><div class="space-y-1"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点A</p><p class="text-[11px] text-gray-400">35km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">要対応</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点B</p><p class="text-[11px] text-gray-400">30km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">移動中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点C</p><p class="text-[11px] text-gray-400">25km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点D</p><p class="text-[11px] text-gray-400">17km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">移動中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点E</p><p class="text-[11px] text-gray-400">13km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">稼働中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点F</p><p class="text-[11px] text-gray-400">44km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">稼働中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点G</p><p class="text-[11px] text-gray-400">41km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">稼働中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="map-pin" class="w-4 h-4" style="color:#065f46"></i><div><p class="text-[13px] font-medium text-gray-700">拠点H</p><p class="text-[11px] text-gray-400">34km</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">稼働中</span></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="dataSearch" type="text" placeholder="データを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div class="flex items-center gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="filter" class="w-4 h-4"></i>フィルタ</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="dataTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',0)">品番 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',1)">品名 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',2)">在庫数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',3)">発注点 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',4)">単価 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',5)">状況 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2050</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤配車担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">整備課</td><td class="px-4 py-3 text-[13px]  text-gray-700">待機中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/13</td><td class="px-4 py-3 text-[13px]  text-gray-700">63個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3625</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中ドライバー</td><td class="px-4 py-3 text-[13px]  text-gray-700">整備課</td><td class="px-4 py-3 text-[13px]  text-gray-700">待機中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/12</td><td class="px-4 py-3 text-[13px]  text-gray-700">347個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4701</td><td class="px-4 py-3 text-[13px]  text-gray-700">鈴木運行管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">倉庫課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/06</td><td class="px-4 py-3 text-[13px]  text-gray-700">222個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9950</td><td class="px-4 py-3 text-[13px]  text-gray-700">山田倉庫管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">倉庫課</td><td class="px-4 py-3 text-[13px]  text-gray-700">待機中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/18</td><td class="px-4 py-3 text-[13px]  text-gray-700">327個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2283</td><td class="px-4 py-3 text-[13px]  text-gray-700">高橋経理</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/14</td><td class="px-4 py-3 text-[13px]  text-gray-700">130個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9742</td><td class="px-4 py-3 text-[13px]  text-gray-700">伊藤営業</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/03</td><td class="px-4 py-3 text-[13px]  text-gray-700">289個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5969</td><td class="px-4 py-3 text-[13px]  text-gray-700">渡辺整備管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送2課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/22</td><td class="px-4 py-3 text-[13px]  text-gray-700">412個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6055</td><td class="px-4 py-3 text-[13px]  text-gray-700">中村安全管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-red-50 text-red-600">遅延</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/01</td><td class="px-4 py-3 text-[13px]  text-gray-700">189個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#1620</td><td class="px-4 py-3 text-[13px]  text-gray-700">小林荷役担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">営業課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/10</td><td class="px-4 py-3 text-[13px]  text-gray-700">353個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3205</td><td class="px-4 py-3 text-[13px]  text-gray-700">加藤事務</td><td class="px-4 py-3 text-[13px]  text-gray-700">管理課</td><td class="px-4 py-3 text-[13px]  text-gray-700">待機中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/21</td><td class="px-4 py-3 text-[13px]  text-gray-700">40個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4043</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤配車担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/08</td><td class="px-4 py-3 text-[13px]  text-gray-700">298個</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9674</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中ドライバー</td><td class="px-4 py-3 text-[13px]  text-gray-700">倉庫課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/09</td><td class="px-4 py-3 text-[13px]  text-gray-700">189個</td></tr></tbody></table></div></div><div class="flex items-center justify-between mt-4"><span class="text-[12px] text-gray-400">12件</span><div class="flex gap-1"><button class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer transition-colors" style=background:#065f46>1</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >2</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >3</button></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-4xl"><div class="card p-6 mb-5"><div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold" style="background:#065f46">倉</div><div><h2 class="text-[18px] font-bold text-gray-800">倉庫内ロケーション管理</h2><p class="text-[13px] text-gray-400">運輸業・物流業 · 倉庫作業員</p></div></div><div class="p-4 rounded-lg mb-5" style="background:#d1fae5"><p class="text-[13px]" style="color:#065f46">紙伝票管理で在庫場所不明</p></div><div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#065f46">7台</div><div class="text-[11px] text-gray-400 mt-1">稼働数</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#065f46">20件</div><div class="text-[11px] text-gray-400 mt-1">本日配送</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#065f46">1件</div><div class="text-[11px] text-gray-400 mt-1">遅延</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#065f46">76%</div><div class="text-[11px] text-gray-400 mt-1">稼働率</div></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">倉庫内ロケーションの最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> の入荷を登録</p><p class="text-[11px] text-gray-400">8時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> に発注点アラート</p><p class="text-[11px] text-gray-400">5時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> の在庫を調整</p><p class="text-[11px] text-gray-400">39時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> の在庫を調整</p><p class="text-[11px] text-gray-400">10時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋経理</span> に発注点アラート</p><p class="text-[11px] text-gray-400">1時間前</p></div></div></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次倉庫内ロケーション推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">入荷数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">出荷数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">在庫数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">回転率 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">充足率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">13</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥726</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥465</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥261</td><td class="px-4 py-3 text-[13px]  text-gray-700">36.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">17</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥236</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥142</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥94</td><td class="px-4 py-3 text-[13px]  text-gray-700">39.8%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">8</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥191</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥118</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥73</td><td class="px-4 py-3 text-[13px]  text-gray-700">38.2%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">21</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥337</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥152</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥185</td><td class="px-4 py-3 text-[13px]  text-gray-700">54.9%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">6</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥294</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥176</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥118</td><td class="px-4 py-3 text-[13px]  text-gray-700">40.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">7</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥218</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥116</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥102</td><td class="px-4 py-3 text-[13px]  text-gray-700">46.8%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">72</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥2,002</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,169</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥833</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.6%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次倉庫内ロケーション推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ===== PAGE 1: DASHBOARD ===== -->
+          <div id="page-dashboard" class="page active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">総保管品目数</span>
+                  <i
+                    data-lucide="packages"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  1,284
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">+12 今月</div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500"
+                    >保管スペース利用率</span
+                  >
+                  <i
+                    data-lucide="percent"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  78.3%
+                </div>
+                <div class="flex items-center gap-1 mt-2">
+                  <div
+                    class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full rounded-full"
+                      style="width: 78.3%; background: #10b981"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">本日入出庫件数</span>
+                  <i
+                    data-lucide="arrow-left-right"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  47<span class="text-sm font-normal text-gray-400 ml-1"
+                    >件</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  入庫 28 / 出庫 19
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500"
+                    >ロケーション不明品</span
+                  >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-red-500">
+                  3<span class="text-sm font-normal text-gray-400 ml-1"
+                    >件</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-red-500">要確認</div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "KPIと最新状況"}, {"id": "feature", "title": "マップ", "desc": "拠点・ルート管理"}, {"id": "data", "title": "データ一覧", "desc": "検索・並べ替え"}, {"id": "detail", "title": "サマリー", "desc": "概要カード"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+              <div class="card p-5 lg:col-span-2">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  入出庫数推移（直近6ヶ月）
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  エリア別利用率
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [83, 27, 43, 53, 72, 20, 89, 48, 35, 23, 31, 60], "borderColor": "#065f46", "backgroundColor": "#065f4615", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#065f46"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Recent Activity -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                直近の入出庫
+              </h3>
+              <div class="space-y-3">
+                <div class="flex gap-3 items-center">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #10b981"
+                  >
+                    入
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">品番 WH-0412</span>
+                      ステンレスボルト M8 x 200個をA-3-2へ入庫
+                    </p>
+                    <p class="text-[11px] text-gray-400">佐藤 太郎 — 10分前</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0 bg-blue-500"
+                  >
+                    出
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">品番 WH-0198</span>
+                      精密ベアリング x 50個をB-1-3から出庫
+                    </p>
+                    <p class="text-[11px] text-gray-400">田中 花子 — 25分前</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #10b981"
+                  >
+                    入
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">品番 WH-0756</span>
+                      耐熱シリコンパッキン x 500個をC-2-1へ入庫
+                    </p>
+                    <p class="text-[11px] text-gray-400">鈴木 一郎 — 1時間前</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0 bg-blue-500"
+                  >
+                    出
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">品番 WH-0334</span> アルミ板
+                      t3.0 x 30枚をD-4-2から出庫
+                    </p>
+                    <p class="text-[11px] text-gray-400">山田 美咲 — 2時間前</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0 bg-amber-500"
+                  >
+                    移
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">品番 WH-0521</span> 配線ハーネス
+                      x 100本をA-5-1からB-2-4へ移動
+                    </p>
+                    <p class="text-[11px] text-gray-400">高橋 健太 — 3時間前</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-// data
+          <!-- ===== PAGE 2: WAREHOUSE MAP ===== -->
+          <div id="page-map" class="page">
+            <!-- Legend & Stats -->
+            <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5">
+                  <div
+                    class="w-4 h-4 rounded bg-gray-200 border border-gray-300"
+                  ></div>
+                  <span class="text-[12px] text-gray-500">空き</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div
+                    class="w-4 h-4 rounded"
+                    style="background: #d1fae5; border: 1px solid #10b981"
+                  ></div>
+                  <span class="text-[12px] text-gray-500">使用中</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div
+                    class="w-4 h-4 rounded"
+                    style="background: #fee2e2; border: 1px solid #f87171"
+                  ></div>
+                  <span class="text-[12px] text-gray-500">満杯</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div
+                    class="w-4 h-4 rounded"
+                    style="background: #fef9c3; border: 1px solid #facc15"
+                  ></div>
+                  <span class="text-[12px] text-gray-500">予約済</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 text-[12px] text-gray-500">
+                <span>空き: <strong class="text-gray-700">24</strong></span>
+                <span>使用中: <strong class="text-gray-700">41</strong></span>
+                <span>満杯: <strong class="text-gray-700">12</strong></span>
+                <span>予約済: <strong class="text-gray-700">3</strong></span>
+              </div>
+            </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+            <!-- Warehouse Zones Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <!-- Zone A -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="font-semibold text-[14px] text-gray-700">
+                      Aエリア
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >— 常温保管</span
+                      >
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">利用率 85%</p>
+                  </div>
+                  <i
+                    data-lucide="thermometer"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <div class="grid grid-cols-5 gap-2" id="zoneA"></div>
+              </div>
+              <!-- Zone B -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="font-semibold text-[14px] text-gray-700">
+                      Bエリア
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >— 常温保管</span
+                      >
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">利用率 72%</p>
+                  </div>
+                  <i
+                    data-lucide="thermometer"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <div class="grid grid-cols-5 gap-2" id="zoneB"></div>
+              </div>
+              <!-- Zone C -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="font-semibold text-[14px] text-gray-700">
+                      Cエリア
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >— 冷蔵保管</span
+                      >
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">利用率 68%</p>
+                  </div>
+                  <i data-lucide="snowflake" class="w-4 h-4 text-blue-300"></i>
+                </div>
+                <div class="grid grid-cols-5 gap-2" id="zoneC"></div>
+              </div>
+              <!-- Zone D -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="font-semibold text-[14px] text-gray-700">
+                      Dエリア
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >— 冷凍保管</span
+                      >
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">利用率 90%</p>
+                  </div>
+                  <i data-lucide="snowflake" class="w-4 h-4 text-blue-500"></i>
+                </div>
+                <div class="grid grid-cols-5 gap-2" id="zoneD"></div>
+              </div>
+            </div>
 
+            <!-- Location Detail Panel -->
+            <div id="mapDetail" class="card p-5 hidden">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-[14px] text-gray-700">
+                  ロケーション詳細
+                </h3>
+                <button
+                  onclick="
+                    document.getElementById('mapDetail').classList.add('hidden')
+                  "
+                  class="text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div
+                id="mapDetailContent"
+                class="text-[13px] text-gray-600"
+              ></div>
+            </div>
+          </div>
 
-// report
+          <!-- ===== PAGE 3: INVENTORY ===== -->
+          <div id="page-inventory" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="invSearch"
+                    type="text"
+                    placeholder="品番・品名・ロケーションで検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100 transition"
+                    oninput="filterInventory()"
+                  />
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select
+                  id="invStatusFilter"
+                  class="py-2 px-3 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  onchange="filterInventory()"
+                >
+                  <option value="">全ての状態</option>
+                  <option value="保管中">保管中</option>
+                  <option value="出庫待ち">出庫待ち</option>
+                  <option value="検品中">検品中</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+                </button>
+              </div>
+            </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full" id="invTable">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('invTable', 0)"
+                      >
+                        品番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('invTable', 1)"
+                      >
+                        品名 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('invTable', 2)"
+                      >
+                        ロケーション <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('invTable', 3)"
+                      >
+                        数量 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('invTable', 4)"
+                      >
+                        入庫日 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        荷主
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        ロット番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        状態
+                      </th>
+                      <th
+                        class="px-4 py-3 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-10"
+                      ></th>
+                    </tr>
+                  </thead>
+                  <tbody id="invBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span id="invCount" class="text-[12px] text-gray-400"></span>
+            </div>
+          </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [726, 236, 191, 337, 294, 218], "backgroundColor": "#065f46", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+          <!-- ===== PAGE 4: IN/OUT MANAGEMENT ===== -->
+          <div id="page-inout" class="page">
+            <!-- Tabs -->
+            <div class="flex gap-1 mb-0">
+              <button
+                class="tab-btn active"
+                onclick="switchInoutTab('in', this)"
+              >
+                入庫
+              </button>
+              <button class="tab-btn" onclick="switchInoutTab('out', this)">
+                出庫
+              </button>
+            </div>
 
-</script>
-</body></html>
+            <!-- Inbound Form -->
+            <div id="inoutTabIn" class="card p-5 rounded-tl-none mb-5">
+              <h3
+                class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="package-plus"
+                  class="w-4 h-4"
+                  style="color: #065f46"
+                ></i
+                >入庫登録
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >品番 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="text"
+                    placeholder="WH-0000"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >品名 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="text"
+                    placeholder="品名を入力"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >数量 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="number"
+                    placeholder="0"
+                    min="1"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >ロケーション割当 <span class="text-red-400">*</span></label
+                  >
+                  <select
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option value="">自動割当</option>
+                    <option>A-1-1</option>
+                    <option>A-2-3</option>
+                    <option>A-3-2</option>
+                    <option>B-1-1</option>
+                    <option>B-2-4</option>
+                    <option>B-3-1</option>
+                    <option>C-1-2</option>
+                    <option>C-2-1</option>
+                    <option>D-1-1</option>
+                    <option>D-2-3</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >荷主</label
+                  >
+                  <select
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option value="">選択してください</option>
+                    <option>東京部品工業</option>
+                    <option>大阪精機</option>
+                    <option>名古屋電子</option>
+                    <option>九州金属</option>
+                    <option>北海道食品</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >ロット番号</label
+                  >
+                  <input
+                    type="text"
+                    placeholder="LOT-000000"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-end mt-5 gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer transition-all"
+                >
+                  <i data-lucide="scan-barcode" class="w-4 h-4"></i
+                  >バーコード読取
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="check" class="w-4 h-4"></i>入庫登録
+                </button>
+              </div>
+            </div>
+
+            <!-- Outbound Form (hidden by default) -->
+            <div id="inoutTabOut" class="card p-5 rounded-tl-none mb-5 hidden">
+              <h3
+                class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="package-minus"
+                  class="w-4 h-4"
+                  style="color: #065f46"
+                ></i
+                >出庫登録
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >品番 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="text"
+                    placeholder="WH-0000"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >数量 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="number"
+                    placeholder="0"
+                    min="1"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >出庫先 <span class="text-red-400">*</span></label
+                  >
+                  <input
+                    type="text"
+                    placeholder="出庫先名を入力"
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-end mt-5 gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer transition-all"
+                >
+                  <i data-lucide="scan-barcode" class="w-4 h-4"></i
+                  >バーコード読取
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="check" class="w-4 h-4"></i>出庫登録
+                </button>
+              </div>
+            </div>
+
+            <!-- Operations Log -->
+            <div class="card overflow-hidden">
+              <div class="px-5 pt-5 pb-3">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  最近の入出庫履歴
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        日時
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        種別
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        品番
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        数量
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        ロケーション
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        作業者
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 09:15
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >入庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0412
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ステンレスボルト M8
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">200</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A-3-2</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        佐藤 太郎
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 08:50
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >出庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0198
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        精密ベアリング 6205
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">50</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">B-1-3</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        田中 花子
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 08:32
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >入庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0756
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        耐熱シリコンパッキン
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">500</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">C-2-1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        鈴木 一郎
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 08:10
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >出庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0334
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        アルミ板 t3.0
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">30</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">D-4-2</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        山田 美咲
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 07:45
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >入庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0521
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        配線ハーネス AWG18
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">100</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A-5-1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        高橋 健太
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/09 17:30
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >出庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0089
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        銅パイプ 15A
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">80</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">B-4-2</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        伊藤 裕子
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/09 16:55
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                          >入庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0945
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        LED基板モジュール
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">250</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A-2-3</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        渡辺 大輔
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/09 16:20
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >出庫</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        WH-0167
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ゴムガスケット
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">300</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">C-3-4</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        中村 智子
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE 5: LOCATION MANAGEMENT ===== -->
+          <div id="page-locations" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="棚番・エリアで検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100 transition"
+                  />
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="shuffle" class="w-4 h-4"></i>一括割当
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>ロケーション追加
+                </button>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full" id="locTable">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('locTable', 0)"
+                      >
+                        棚番 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        エリア
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        段
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        間口サイズ
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('locTable', 4)"
+                      >
+                        耐荷重(kg) <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        温度区分
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        現在保管品
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('locTable', 7)"
+                      >
+                        使用率 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        A-1-1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">1段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1200 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">500</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
+                          >常温</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ステンレスボルト M6
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-emerald-500"
+                              style="width: 85%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">85%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        A-1-2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">2段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1200 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">500</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
+                          >常温</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        六角ナット M8
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-emerald-500"
+                              style="width: 60%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">60%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        A-2-3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">A</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">3段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W900 x D600
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">300</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
+                          >常温</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        LED基板モジュール
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-red-500"
+                              style="width: 95%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">95%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        B-1-3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">B</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">3段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1500 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">800</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
+                          >常温</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        精密ベアリング 6205
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-emerald-500"
+                              style="width: 45%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">45%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        B-2-4
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">B</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">4段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W900 x D600
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">300</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
+                          >常温</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-400">
+                        — 空き —
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-gray-300"
+                              style="width: 0%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">0%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        C-1-2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">C</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">2段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1200 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">400</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >冷蔵</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        耐熱シリコンパッキン
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-emerald-500"
+                              style="width: 72%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">72%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        C-2-1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">C</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">1段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1500 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">600</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                          >冷蔵</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        食品包装フィルム
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-red-500"
+                              style="width: 98%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">98%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        D-1-1
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">D</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">1段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1200 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">500</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700"
+                          >冷凍</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        冷凍食品原料A
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-red-500"
+                              style="width: 92%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">92%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        D-2-3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">D</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">3段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W900 x D600
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">300</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700"
+                          >冷凍</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        冷凍部品サンプル
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-amber-500"
+                              style="width: 55%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">55%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        D-4-2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">D</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">2段</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        W1500 x D900
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">800</td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700"
+                          >冷凍</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        アルミ板 t3.0
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"
+                          >
+                            <div
+                              class="h-full rounded-full bg-emerald-500"
+                              style="width: 30%"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] text-gray-500">30%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE 6: ANALYTICS ===== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <!-- ABC Analysis -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  ABC分析（品目別出庫頻度）
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  パレート分析: 上位20%の品目が全出庫の80%を占有
+                </p>
+                <div style="height: 280px">
+                  <canvas id="anaChart1"></canvas>
+                </div>
+              </div>
+              <!-- Turnover by Area -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  エリア別回転率
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  月間在庫回転率の比較
+                </p>
+                <div style="height: 280px">
+                  <canvas id="anaChart2"></canvas>
+                </div>
+              </div>
+              <!-- Hourly Workload -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  時間帯別作業負荷
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  入出庫作業件数の時間帯分布
+                </p>
+                <div style="height: 280px">
+                  <canvas id="anaChart3"></canvas>
+                </div>
+              </div>
+              <!-- Location Efficiency -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-1">
+                  ロケーション効率スコア
+                </h3>
+                <p class="text-[11px] text-gray-400 mb-4">
+                  アクセス頻度 x 動線距離の効率指標
+                </p>
+                <div style="height: 280px">
+                  <canvas id="anaChart4"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optimization Suggestions -->
+            <h3 class="font-semibold text-[14px] text-gray-700 mb-3">
+              最適化サジェスション
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #10b981"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i
+                    data-lucide="lightbulb"
+                    class="w-4 h-4"
+                    style="color: #10b981"
+                  ></i>
+                  <span class="text-[13px] font-semibold text-gray-700"
+                    >高頻度品の前出し</span
+                  >
+                </div>
+                <p class="text-[12px] text-gray-500 leading-relaxed">
+                  品番
+                  WH-0412（ステンレスボルト）の出庫頻度が高いため、A-1エリア前列への移動を推奨。動線距離を約35%短縮可能。
+                </p>
+                <div class="mt-3">
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                    style="background: #d1fae5; color: #065f46"
+                    >効果: 高</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #f59e0b"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-4 h-4 text-amber-500"
+                  ></i>
+                  <span class="text-[13px] font-semibold text-gray-700"
+                    >Dエリア過密警告</span
+                  >
+                </div>
+                <p class="text-[12px] text-gray-500 leading-relaxed">
+                  D-1,
+                  D-2ゾーンの利用率が90%超。冷凍品の一部をC-3エリアへ移動し、緊急入庫スペースを確保すべき。
+                </p>
+                <div class="mt-3">
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-700"
+                    >優先度: 中</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #3b82f6"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i
+                    data-lucide="trending-up"
+                    class="w-4 h-4 text-blue-500"
+                  ></i>
+                  <span class="text-[13px] font-semibold text-gray-700"
+                    >午前集中の分散</span
+                  >
+                </div>
+                <p class="text-[12px] text-gray-500 leading-relaxed">
+                  9:00-11:00に入出庫作業が集中（全体の42%）。午後シフトへの一部移行で、作業効率とミス率を改善可能。
+                </p>
+                <div class="mt-3">
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700"
+                    >効果: 中</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE 7: SETTINGS ===== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl">
+              <!-- Area & Shelf Master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="grid-3x3"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >エリア・棚番マスタ
+                </h3>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >エリア数</label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option>4 エリア (A-D)</option>
+                        <option>6 エリア (A-F)</option>
+                        <option>8 エリア (A-H)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >棚番フォーマット</label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option>エリア-列-段 (A-1-1)</option>
+                        <option>エリア-列-段-間口 (A-1-1-L)</option>
+                        <option>カスタム</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >列数 / エリア</label
+                      >
+                      <input
+                        type="number"
+                        value="5"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >段数 / 列</label
+                      >
+                      <input
+                        type="number"
+                        value="4"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >デフォルト耐荷重(kg)</label
+                      >
+                      <input
+                        type="number"
+                        value="500"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Consignor Master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="building-2"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >荷主マスタ
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #065f46"
+                      >
+                        東
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          東京部品工業
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          契約: 2025/04〜2026/03
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                      >有効</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #065f46"
+                      >
+                        大
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          大阪精機
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          契約: 2025/01〜2025/12
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                      >有効</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #065f46"
+                      >
+                        名
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          名古屋電子
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          契約: 2025/06〜2026/05
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                      >有効</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white bg-gray-400"
+                      >
+                        九
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          九州金属
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          契約: 2024/10〜2025/09
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700"
+                      >更新待ち</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #065f46"
+                      >
+                        北
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          北海道食品
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          契約: 2025/07〜2026/06
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
+                      >有効</span
+                    >
+                  </div>
+                </div>
+                <button
+                  class="mt-3 inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>荷主追加
+                </button>
+              </div>
+
+              <!-- Barcode Settings -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="scan-barcode"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >バーコード設定
+                </h3>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >バーコード規格</label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option>CODE128</option>
+                        <option>CODE39</option>
+                        <option>QRコード</option>
+                        <option>EAN-13</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >ラベルサイズ</label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option>50mm x 25mm</option>
+                        <option>70mm x 35mm</option>
+                        <option>100mm x 50mm</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        自動スキャン入力
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        バーコードスキャン時に自動的に入力欄にフォーカス
+                      </p>
+                    </div>
+                    <div
+                      class="toggle-switch on"
+                      onclick="this.classList.toggle('on')"
+                    ></div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        棚番ラベル自動印刷
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        ロケーション追加時に棚番ラベルを自動印刷
+                      </p>
+                    </div>
+                    <div
+                      class="toggle-switch"
+                      onclick="this.classList.toggle('on')"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Picking Rules -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="route"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >ピッキングルール
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >出庫順序ルール</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
+                      <option>FIFO（先入先出）</option>
+                      <option>LIFO（後入先出）</option>
+                      <option>ロット番号順</option>
+                      <option>有効期限順</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >ピッキング動線</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
+                      <option>最短距離優先</option>
+                      <option>エリア順</option>
+                      <option>棚番順</option>
+                    </select>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        在庫切れアラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        在庫が最低数量を下回った場合に通知
+                      </p>
+                    </div>
+                    <div
+                      class="toggle-switch on"
+                      onclick="this.classList.toggle('on')"
+                    ></div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ロケーション不一致アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        スキャン時にロケーション不一致を検出して警告
+                      </p>
+                    </div>
+                    <div
+                      class="toggle-switch on"
+                      onclick="this.classList.toggle('on')"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 cursor-pointer transition-all"
+                >
+                  キャンセル
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ===== NAVIGATION =====
+      const charts = [];
+      const pageConfig = [
+        { id: "dashboard", title: "ダッシュボード", desc: "KPIと最新状況" },
+        { id: "map", title: "倉庫マップ", desc: "エリア別ラック配置図" },
+        { id: "inventory", title: "在庫一覧", desc: "全品目の在庫状況" },
+        { id: "inout", title: "入出庫管理", desc: "入庫・出庫の登録と履歴" },
+        {
+          id: "locations",
+          title: "ロケーション管理",
+          desc: "棚番マスタと割当",
+        },
+        { id: "analytics", title: "分析", desc: "在庫分析と最適化" },
+        { id: "settings", title: "設定", desc: "システム設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || "dashboard");
+        buildWarehouseMap();
+        buildInventoryTable();
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      // ===== TABLE SORT =====
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(b.querySelectorAll("tr"));
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.\-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.\-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => b.appendChild(r));
+      }
+
+      // ===== INOUT TAB SWITCH =====
+      function switchInoutTab(tab, btn) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        document
+          .getElementById("inoutTabIn")
+          .classList.toggle("hidden", tab !== "in");
+        document
+          .getElementById("inoutTabOut")
+          .classList.toggle("hidden", tab !== "out");
+      }
+
+      // ===== DASHBOARD CHARTS =====
+      // Stacked bar: inbound/outbound over 6 months
+      charts.push(
+        new Chart(document.getElementById("dashChart1"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "入庫",
+                data: [142, 168, 155, 180, 165, 178],
+                backgroundColor: "#065f46",
+                borderRadius: 4,
+                stack: "stack0",
+              },
+              {
+                label: "出庫",
+                data: [128, 145, 160, 152, 170, 158],
+                backgroundColor: "#10b981",
+                borderRadius: 4,
+                stack: "stack0",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 } },
+              },
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { font: { size: 11 } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Doughnut: area usage
+      charts.push(
+        new Chart(document.getElementById("dashChart2"), {
+          type: "doughnut",
+          data: {
+            labels: ["Aエリア", "Bエリア", "Cエリア", "Dエリア"],
+            datasets: [
+              {
+                data: [85, 72, 68, 90],
+                backgroundColor: ["#065f46", "#10b981", "#34d399", "#6ee7b7"],
+                borderWidth: 0,
+                cutout: "65%",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 10,
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (ctx) {
+                    return ctx.label + ": " + ctx.parsed + "%";
+                  },
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      // ===== WAREHOUSE MAP =====
+      function buildWarehouseMap() {
+        const zones = {
+          A: {
+            el: "zoneA",
+            rows: 5,
+            cols: 4,
+            data: [
+              ["used", "used", "full", "used"],
+              ["used", "empty", "used", "full"],
+              ["full", "used", "used", "reserved"],
+              ["used", "used", "empty", "used"],
+              ["used", "full", "used", "used"],
+            ],
+          },
+          B: {
+            el: "zoneB",
+            rows: 5,
+            cols: 4,
+            data: [
+              ["used", "used", "used", "empty"],
+              ["empty", "used", "full", "used"],
+              ["used", "empty", "used", "used"],
+              ["used", "used", "reserved", "full"],
+              ["empty", "used", "used", "used"],
+            ],
+          },
+          C: {
+            el: "zoneC",
+            rows: 4,
+            cols: 4,
+            data: [
+              ["used", "used", "full", "empty"],
+              ["used", "full", "used", "used"],
+              ["empty", "used", "used", "reserved"],
+              ["used", "empty", "used", "used"],
+            ],
+          },
+          D: {
+            el: "zoneD",
+            rows: 4,
+            cols: 4,
+            data: [
+              ["full", "used", "full", "used"],
+              ["used", "full", "used", "full"],
+              ["full", "used", "used", "used"],
+              ["used", "full", "reserved", "used"],
+            ],
+          },
+        };
+
+        const itemMap = {
+          "A-1-1": "ステンレスボルト M6 (350個)",
+          "A-1-2": "六角ナット M8 (200個)",
+          "A-1-3": "ワッシャー M10 (満杯)",
+          "A-1-4": "スプリングワッシャー (180個)",
+          "A-2-1": "銅パイプ 15A (120本)",
+          "A-2-3": "LED基板モジュール (250個)",
+          "A-2-4": "ヒューズ 5A (満杯)",
+          "A-3-1": "配線ハーネス (満杯)",
+          "A-3-2": "ステンレスボルト M8 (200個)",
+          "A-3-3": "タッピングビス (180個)",
+          "A-3-4": "予約: 3/12入庫予定",
+          "A-4-1": "絶縁テープ (400巻)",
+          "A-4-2": "結束バンド (800個)",
+          "A-4-4": "プラスチックキャップ (150個)",
+          "A-5-1": "配線ハーネス AWG18 (100本)",
+          "A-5-2": "コネクタ端子 (満杯)",
+          "A-5-3": "電線管 (50本)",
+          "A-5-4": "ケーブルクランプ (300個)",
+          "B-1-1": "精密ベアリング 6204 (80個)",
+          "B-1-2": "Oリング P-20 (500個)",
+          "B-1-3": "精密ベアリング 6205 (50個)",
+          "B-2-2": "リニアガイド (30本)",
+          "B-2-3": "ボールねじ (満杯)",
+          "B-2-4": "シャフト Φ12 (45本)",
+          "B-3-1": "カップリング (60個)",
+          "B-3-3": "タイミングベルト (40本)",
+          "B-3-4": "プーリー (25個)",
+          "B-4-1": "油圧シリンダー (15本)",
+          "B-4-2": "銅パイプ 15A (80本)",
+          "B-4-3": "予約: 3/11入庫予定",
+          "B-4-4": "エアシリンダー (満杯)",
+          "B-5-2": "スプロケット (35個)",
+          "B-5-3": "チェーン 40B (20巻)",
+          "B-5-4": "カムフォロア (50個)",
+          "C-1-1": "耐熱シリコンパッキン (500個)",
+          "C-1-2": "ゴムガスケット (300個)",
+          "C-1-3": "フッ素樹脂シート (満杯)",
+          "C-2-1": "食品包装フィルム (200巻)",
+          "C-2-2": "真空パック材 (満杯)",
+          "C-2-3": "保冷剤 (400個)",
+          "C-2-4": "冷却ジェル (200個)",
+          "C-3-2": "防湿シート (100巻)",
+          "C-3-3": "断熱材サンプル (80枚)",
+          "C-3-4": "予約: 3/13入庫予定",
+          "C-4-1": "フィルターカートリッジ (60個)",
+          "C-4-3": "活性炭フィルター (45個)",
+          "C-4-4": "逆浸透膜 (20枚)",
+          "D-1-1": "冷凍食品原料A (満杯)",
+          "D-1-2": "冷凍部品サンプル (30個)",
+          "D-1-3": "低温グリス (満杯)",
+          "D-1-4": "冷凍保存試薬 (100本)",
+          "D-2-1": "クライオジェン容器 (25個)",
+          "D-2-2": "ドライアイス (満杯)",
+          "D-2-3": "冷凍部品サンプル (50個)",
+          "D-2-4": "低温接着剤 (満杯)",
+          "D-3-1": "冷凍基板 (満杯)",
+          "D-3-2": "超低温センサー (40個)",
+          "D-3-3": "冷凍包装材 (200枚)",
+          "D-3-4": "保冷ボックス (30個)",
+          "D-4-1": "冷凍テストピース (80個)",
+          "D-4-2": "アルミ板 t3.0 (30枚)",
+          "D-4-3": "予約: 3/14入庫予定",
+          "D-4-4": "冷凍サンプル (60個)",
+        };
+
+        Object.entries(zones).forEach(([zone, cfg]) => {
+          const container = document.getElementById(cfg.el);
+          container.innerHTML = "";
+          for (let r = 0; r < cfg.rows; r++) {
+            for (let c = 0; c < cfg.cols; c++) {
+              const state = cfg.data[r][c];
+              const loc = zone + "-" + (r + 1) + "-" + (c + 1);
+              const cell = document.createElement("div");
+              cell.className = "rack-cell " + state;
+              cell.textContent = loc;
+              cell.title = loc;
+              cell.onclick = function () {
+                const detail = document.getElementById("mapDetail");
+                const content = document.getElementById("mapDetailContent");
+                const stateLabel = {
+                  empty: "空き",
+                  used: "使用中",
+                  full: "満杯",
+                  reserved: "予約済",
+                }[state];
+                const stateColor = {
+                  empty: "bg-gray-100 text-gray-600",
+                  used: "bg-emerald-50 text-emerald-700",
+                  full: "bg-red-50 text-red-600",
+                  reserved: "bg-amber-50 text-amber-700",
+                }[state];
+                const item =
+                  itemMap[loc] ||
+                  (state === "empty" ? "保管品なし" : "情報なし");
+                content.innerHTML =
+                  '<div class="flex items-center gap-3 mb-3">' +
+                  '<span class="text-[16px] font-bold text-gray-800">' +
+                  loc +
+                  "</span>" +
+                  '<span class="px-2 py-0.5 rounded-full text-[11px] font-medium ' +
+                  stateColor +
+                  '">' +
+                  stateLabel +
+                  "</span>" +
+                  "</div>" +
+                  '<div class="grid grid-cols-2 gap-3">' +
+                  '<div class="p-3 bg-gray-50 rounded-lg"><p class="text-[11px] text-gray-400">保管品</p><p class="text-[13px] font-medium text-gray-700 mt-1">' +
+                  item +
+                  "</p></div>" +
+                  '<div class="p-3 bg-gray-50 rounded-lg"><p class="text-[11px] text-gray-400">ゾーン</p><p class="text-[13px] font-medium text-gray-700 mt-1">' +
+                  zone +
+                  "エリア</p></div>" +
+                  "</div>";
+                detail.classList.remove("hidden");
+              };
+              container.appendChild(cell);
+            }
+          }
+        });
+      }
+
+      // ===== INVENTORY TABLE =====
+      const inventoryData = [
+        {
+          code: "WH-0412",
+          name: "ステンレスボルト M8",
+          loc: "A-3-2",
+          qty: 200,
+          date: "2026/03/10",
+          owner: "東京部品工業",
+          lot: "LOT-260310-A",
+          status: "保管中",
+        },
+        {
+          code: "WH-0198",
+          name: "精密ベアリング 6205",
+          loc: "B-1-3",
+          qty: 50,
+          date: "2026/03/05",
+          owner: "大阪精機",
+          lot: "LOT-260305-B",
+          status: "出庫待ち",
+        },
+        {
+          code: "WH-0756",
+          name: "耐熱シリコンパッキン",
+          loc: "C-2-1",
+          qty: 500,
+          date: "2026/03/10",
+          owner: "名古屋電子",
+          lot: "LOT-260310-C",
+          status: "保管中",
+        },
+        {
+          code: "WH-0334",
+          name: "アルミ板 t3.0",
+          loc: "D-4-2",
+          qty: 30,
+          date: "2026/03/08",
+          owner: "九州金属",
+          lot: "LOT-260308-D",
+          status: "保管中",
+        },
+        {
+          code: "WH-0521",
+          name: "配線ハーネス AWG18",
+          loc: "A-5-1",
+          qty: 100,
+          date: "2026/03/10",
+          owner: "名古屋電子",
+          lot: "LOT-260310-A2",
+          status: "保管中",
+        },
+        {
+          code: "WH-0089",
+          name: "銅パイプ 15A",
+          loc: "B-4-2",
+          qty: 80,
+          date: "2026/03/01",
+          owner: "東京部品工業",
+          lot: "LOT-260301-B",
+          status: "出庫待ち",
+        },
+        {
+          code: "WH-0945",
+          name: "LED基板モジュール",
+          loc: "A-2-3",
+          qty: 250,
+          date: "2026/03/09",
+          owner: "名古屋電子",
+          lot: "LOT-260309-A",
+          status: "保管中",
+        },
+        {
+          code: "WH-0167",
+          name: "ゴムガスケット",
+          loc: "C-3-4",
+          qty: 300,
+          date: "2026/02/28",
+          owner: "大阪精機",
+          lot: "LOT-260228-C",
+          status: "保管中",
+        },
+        {
+          code: "WH-0623",
+          name: "タイミングベルト L450",
+          loc: "B-3-3",
+          qty: 40,
+          date: "2026/03/07",
+          owner: "大阪精機",
+          lot: "LOT-260307-B",
+          status: "検品中",
+        },
+        {
+          code: "WH-0278",
+          name: "ステンレスボルト M6",
+          loc: "A-1-1",
+          qty: 350,
+          date: "2026/02/25",
+          owner: "東京部品工業",
+          lot: "LOT-260225-A",
+          status: "保管中",
+        },
+        {
+          code: "WH-0811",
+          name: "冷凍食品原料A",
+          loc: "D-1-1",
+          qty: 180,
+          date: "2026/03/06",
+          owner: "北海道食品",
+          lot: "LOT-260306-D",
+          status: "保管中",
+        },
+        {
+          code: "WH-0445",
+          name: "油圧シリンダー SC-50",
+          loc: "B-4-1",
+          qty: 15,
+          date: "2026/03/04",
+          owner: "九州金属",
+          lot: "LOT-260304-B",
+          status: "出庫待ち",
+        },
+        {
+          code: "WH-0112",
+          name: "フッ素樹脂シート",
+          loc: "C-1-3",
+          qty: 120,
+          date: "2026/03/02",
+          owner: "名古屋電子",
+          lot: "LOT-260302-C",
+          status: "保管中",
+        },
+        {
+          code: "WH-0390",
+          name: "食品包装フィルム",
+          loc: "C-2-1",
+          qty: 200,
+          date: "2026/03/09",
+          owner: "北海道食品",
+          lot: "LOT-260309-C",
+          status: "検品中",
+        },
+        {
+          code: "WH-0567",
+          name: "リニアガイド HGR20",
+          loc: "B-2-2",
+          qty: 30,
+          date: "2026/03/03",
+          owner: "大阪精機",
+          lot: "LOT-260303-B",
+          status: "保管中",
+        },
+      ];
+
+      function buildInventoryTable() {
+        renderInventory(inventoryData);
+      }
+
+      function renderInventory(data) {
+        const tbody = document.getElementById("invBody");
+        tbody.innerHTML = data
+          .map((item) => {
+            const statusColor =
+              {
+                保管中: "bg-emerald-50 text-emerald-700",
+                出庫待ち: "bg-blue-50 text-blue-700",
+                検品中: "bg-amber-50 text-amber-700",
+              }[item.status] || "bg-gray-100 text-gray-600";
+            return (
+              '<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">' +
+              '<td class="px-4 py-3 text-[13px] font-medium text-gray-700">' +
+              item.code +
+              "</td>" +
+              '<td class="px-4 py-3 text-[13px] text-gray-700">' +
+              item.name +
+              "</td>" +
+              '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[12px] font-mono bg-gray-100 text-gray-700">' +
+              item.loc +
+              "</span></td>" +
+              '<td class="px-4 py-3 text-[13px] text-gray-700 text-right">' +
+              item.qty.toLocaleString() +
+              "</td>" +
+              '<td class="px-4 py-3 text-[13px] text-gray-500">' +
+              item.date +
+              "</td>" +
+              '<td class="px-4 py-3 text-[13px] text-gray-700">' +
+              item.owner +
+              "</td>" +
+              '<td class="px-4 py-3 text-[12px] font-mono text-gray-500">' +
+              item.lot +
+              "</td>" +
+              '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ' +
+              statusColor +
+              '">' +
+              item.status +
+              "</span></td>" +
+              '<td class="px-4 py-3 text-center"><i data-lucide="scan-barcode" class="w-4 h-4 text-gray-300 inline-block"></i></td>' +
+              "</tr>"
+            );
+          })
+          .join("");
+        document.getElementById("invCount").textContent =
+          data.length + "件表示";
+        setTimeout(() => {
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 30);
+      }
+
+      function filterInventory() {
+        const q = document.getElementById("invSearch").value.toLowerCase();
+        const status = document.getElementById("invStatusFilter").value;
+        const filtered = inventoryData.filter((item) => {
+          const matchQ =
+            !q ||
+            item.code.toLowerCase().includes(q) ||
+            item.name.toLowerCase().includes(q) ||
+            item.loc.toLowerCase().includes(q);
+          const matchS = !status || item.status === status;
+          return matchQ && matchS;
+        });
+        renderInventory(filtered);
+      }
+
+      // ===== ANALYTICS CHARTS =====
+
+      // ABC Pareto
+      (function () {
+        const items = [
+          "WH-0412",
+          "WH-0278",
+          "WH-0198",
+          "WH-0756",
+          "WH-0089",
+          "WH-0521",
+          "WH-0334",
+          "WH-0945",
+          "WH-0167",
+          "WH-0623",
+        ];
+        const freq = [285, 240, 195, 160, 130, 110, 85, 65, 40, 20];
+        const total = freq.reduce((a, b) => a + b, 0);
+        let cumPct = [],
+          cum = 0;
+        freq.forEach((v) => {
+          cum += v;
+          cumPct.push(Math.round((cum / total) * 100));
+        });
+
+        charts.push(
+          new Chart(document.getElementById("anaChart1"), {
+            type: "bar",
+            data: {
+              labels: items,
+              datasets: [
+                {
+                  label: "出庫回数",
+                  data: freq,
+                  backgroundColor: "#065f46",
+                  borderRadius: 4,
+                  yAxisID: "y",
+                  order: 2,
+                },
+                {
+                  label: "累積比率(%)",
+                  data: cumPct,
+                  type: "line",
+                  borderColor: "#10b981",
+                  backgroundColor: "transparent",
+                  pointBackgroundColor: "#10b981",
+                  pointRadius: 3,
+                  tension: 0.3,
+                  yAxisID: "y1",
+                  order: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 10 } },
+                  title: {
+                    display: true,
+                    text: "出庫回数",
+                    font: { size: 10 },
+                  },
+                },
+                y1: {
+                  position: "right",
+                  min: 0,
+                  max: 100,
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, callback: (v) => v + "%" },
+                  title: { display: true, text: "累積%", font: { size: 10 } },
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, maxRotation: 45 },
+                },
+              },
+            },
+          }),
+        );
+      })();
+
+      // Area turnover rate
+      charts.push(
+        new Chart(document.getElementById("anaChart2"), {
+          type: "bar",
+          data: {
+            labels: ["Aエリア", "Bエリア", "Cエリア", "Dエリア"],
+            datasets: [
+              {
+                label: "回転率(回/月)",
+                data: [4.2, 3.8, 2.5, 1.9],
+                backgroundColor: ["#065f46", "#10b981", "#34d399", "#6ee7b7"],
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 } },
+              },
+              y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Hourly workload
+      charts.push(
+        new Chart(document.getElementById("anaChart3"), {
+          type: "bar",
+          data: {
+            labels: [
+              "7時",
+              "8時",
+              "9時",
+              "10時",
+              "11時",
+              "12時",
+              "13時",
+              "14時",
+              "15時",
+              "16時",
+              "17時",
+              "18時",
+            ],
+            datasets: [
+              {
+                label: "入庫",
+                data: [2, 8, 18, 15, 12, 3, 6, 10, 14, 11, 7, 2],
+                backgroundColor: "#065f46",
+                borderRadius: 3,
+                stack: "stack0",
+              },
+              {
+                label: "出庫",
+                data: [1, 5, 14, 12, 10, 2, 4, 8, 12, 9, 5, 1],
+                backgroundColor: "#10b981",
+                borderRadius: 3,
+                stack: "stack0",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 10 } },
+              },
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Location efficiency radar
+      charts.push(
+        new Chart(document.getElementById("anaChart4"), {
+          type: "radar",
+          data: {
+            labels: [
+              "アクセス頻度",
+              "動線効率",
+              "スペース利用率",
+              "回転率",
+              "充填精度",
+              "温度適合",
+            ],
+            datasets: [
+              {
+                label: "Aエリア",
+                data: [92, 85, 88, 78, 90, 95],
+                borderColor: "#065f46",
+                backgroundColor: "rgba(6,95,70,0.1)",
+                pointBackgroundColor: "#065f46",
+                pointRadius: 3,
+              },
+              {
+                label: "Bエリア",
+                data: [75, 72, 70, 82, 68, 90],
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16,185,129,0.1)",
+                pointBackgroundColor: "#10b981",
+                pointRadius: 3,
+              },
+              {
+                label: "Cエリア",
+                data: [60, 65, 68, 55, 72, 85],
+                borderColor: "#34d399",
+                backgroundColor: "rgba(52,211,153,0.1)",
+                pointBackgroundColor: "#34d399",
+                pointRadius: 3,
+              },
+              {
+                label: "Dエリア",
+                data: [45, 50, 90, 42, 80, 78],
+                borderColor: "#6ee7b7",
+                backgroundColor: "rgba(110,231,183,0.1)",
+                pointBackgroundColor: "#6ee7b7",
+                pointRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 10, family: "Inter" },
+                  usePointStyle: true,
+                  padding: 10,
+                },
+              },
+            },
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  stepSize: 20,
+                  font: { size: 9 },
+                  backdropColor: "transparent",
+                },
+                pointLabels: { font: { size: 10 } },
+                grid: { color: "#e5e7eb" },
+                angleLines: { color: "#e5e7eb" },
+              },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>

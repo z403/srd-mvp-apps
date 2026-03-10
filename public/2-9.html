@@ -1,110 +1,3196 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>多品種少量への対応 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>FlexLine — 多品種少量生産 段取り最適化システム | 製造業 | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .gantt-bar {
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 11px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: grab;
+        position: absolute;
+        top: 4px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .status-running {
+        background: #16a34a;
+        color: #fff;
+      }
+      .status-setup {
+        background: #ea580c;
+        color: #fff;
+      }
+      .status-stopped {
+        background: #6b7280;
+        color: #fff;
+      }
+      .status-error {
+        background: #dc2626;
+        color: #fff;
+      }
+      .eq-card {
+        border-left: 4px solid;
+      }
+      .eq-running {
+        border-left-color: #16a34a;
+      }
+      .eq-setup {
+        border-left-color: #ea580c;
+      }
+      .eq-stopped {
+        border-left-color: #6b7280;
+      }
+      .eq-error {
+        border-left-color: #dc2626;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #1c1917"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0"
+              style="background: #7c2d12"
+            >
+              FL
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">FlexLine</p>
+              <p class="text-[11px] opacity-50 truncate">
+                段取り最適化システム
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="schedule"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('schedule')"
+            ><i data-lucide="gantt-chart" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">生産スケジュール</span></a
+          >
+          <a
+            data-page="changeover"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('changeover')"
+            ><i data-lucide="repeat" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">段取り替え管理</span></a
+          >
+          <a
+            data-page="products"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('products')"
+            ><i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">品種マスタ</span></a
+          >
+          <a
+            data-page="equipment"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('equipment')"
+            ><i data-lucide="monitor" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設備モニター</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">分析レポート</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">多品種少量への対応</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="columns" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ボード</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="eye" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              段取り替え最適化の概要
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #ffedd5; color: #7c2d12"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">KPIと最新状況</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">進行中タスク</span><i data-lucide="clipboard-list" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">27件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">完了率</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">70%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +10pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延件数</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">4件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">メンバー数</span><i data-lucide="users" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">25名</div></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次多品種少量へ推移</h3><div style="height:260px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">多品種少量への最新状況</h3><div class="space-y-4"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の多品種少量へを承認</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> に多品種少量へをコメント</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に多品種少量へをコメント</p><p class="text-[11px] text-gray-400">46時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の多品種少量へを作成</p><p class="text-[11px] text-gray-400">33時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> の多品種少量へを完了</p><p class="text-[11px] text-gray-400">15時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤購買担当</span> の多品種少量へを更新</p><p class="text-[11px] text-gray-400">34時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="kSearch" type="text" placeholder="タスクを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規タスク</button></div><div class="flex gap-4 overflow-x-auto pb-4"><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#94a3b8"></div><span class="text-[13px] font-semibold text-gray-700">未着手</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">8</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/13</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">山</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/8</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">佐</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/18</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">中</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク7</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/19</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">田</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#7c2d12"></div><span class="text-[13px] font-semibold text-gray-700">進行中</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">6</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/18</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">小</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク8</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/7</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/17</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">小</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/26</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div><span class="text-[13px] font-semibold text-gray-700">レビュー</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">1</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/19</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">小</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#10b981"></div><span class="text-[13px] font-semibold text-gray-700">完了</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">1</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">多品種少量へタスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/1</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">田</div></div></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 製造2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5619</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">製造2課 · 2026/02/04</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥773万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3070</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/01/23</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥855万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木品質管理 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3350</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/01/14</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥364万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田生産管理 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2558</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/02/21</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥560万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋設備保全 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6568</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/02/18</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥922万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤購買担当 製造2課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3072</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400 mt-1">製造2課 · 2026/03/15</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥595万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺設計者 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6214</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/03/18</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥758万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村品質検査員 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4206</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/01/12</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥39万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林ライン長 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1660</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/01/21</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥889万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤倉庫管理 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5594</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/03/06</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥49万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5687</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/02/15</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥629万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 生産技術課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4072</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">生産技術課 · 2026/03/04</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥58万</p></div></div></div>
-<div id="page-detail" class="page"><div class="card p-5"><div class="flex gap-0 border-b mb-4"><button class="tab-btn px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer" style="border-b-2;border-color:#7c2d12" data-tab="dtlTab-0" onclick="switchTab('dtlTab',0,'#7c2d12')">基本情報</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-1" onclick="switchTab('dtlTab',1,'#7c2d12')">履歴</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-2" onclick="switchTab('dtlTab',2,'#7c2d12')">添付ファイル</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-3" onclick="switchTab('dtlTab',3,'#7c2d12')">コメント</button></div><div data-panel="dtlTab-0" style="display:block"><div class="grid grid-cols-2 gap-4"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">ID</span><span class="text-[14px] font-medium">#5619</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">担当</span><span class="text-[14px] font-medium">佐藤工場長</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">状態</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">金額</span><span class="text-[14px] font-bold" style="color:#7c2d12">¥773万</span></div></div></div><div data-panel="dtlTab-1" style="display:none"><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の多品種少量へを承認</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> に多品種少量へをコメント</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に多品種少量へをコメント</p><p class="text-[11px] text-gray-400">46時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の多品種少量へを作成</p><p class="text-[11px] text-gray-400">33時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> の多品種少量へを完了</p><p class="text-[11px] text-gray-400">15時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤購買担当</span> の多品種少量へを更新</p><p class="text-[11px] text-gray-400">34時間前</p></div></div></div></div><div data-panel="dtlTab-2" style="display:none"><div class="text-center py-16"><i data-lucide="paperclip" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i><p class="text-[13px] text-gray-400">添付ファイルはありません</p></div></div><div data-panel="dtlTab-3" style="display:none"><div class="space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px]" style="background:#7c2d12">管</div><div class="flex-1 card p-3"><p class="text-[13px] text-gray-700">問題ありません。承認します。</p><p class="text-[11px] text-gray-400 mt-1">2時間前</p></div></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">コメント追加</label><textarea name="コメント追加" rows="3" placeholder="コメントを入力..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">進行中タスク</span><i data-lucide="clipboard-list" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">27件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">完了率</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">70%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +10pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延件数</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">4件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">メンバー数</span><i data-lucide="users" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">25名</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進行中タスクトレンド分析</h3><div style="height:320px"><canvas id="rpC1"></canvas></div></div><div class="card p-5 mt-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-3">分析サマリー</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">進行中タスクが前月比改善</p></div><div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">完了率が変動傾向</p></div><div class="p-3 rounded-lg" style="background:#ffedd5"><p class="text-[11px] font-medium mb-1" style="color:#7c2d12">予測</p><p class="text-[13px]" style="color:#7c2d12">Q2目標達成見込み</p></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ===== PAGE: DASHBOARD ===== -->
+          <div id="page-dashboard" class="page active">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="repeat"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-medium"
+                    >+12% vs 先月</span
+                  >
+                </div>
+                <p class="text-2xl font-bold" style="color: #7c2d12">
+                  87<span class="text-sm font-normal text-gray-400">
+                    回/月</span
+                  >
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">段取り替え回数</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="timer"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-600 font-medium"
+                    >-8% 改善</span
+                  >
+                </div>
+                <p class="text-2xl font-bold" style="color: #7c2d12">
+                  24.3<span class="text-sm font-normal text-gray-400"> 分</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">平均段取り時間</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="activity"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-600 font-medium"
+                    >+2.1pt</span
+                  >
+                </div>
+                <p class="text-2xl font-bold" style="color: #7c2d12">
+                  78.4<span class="text-sm font-normal text-gray-400"> %</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">設備稼働率</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="trending-up"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-600 font-medium"
+                    >+3.5pt</span
+                  >
+                </div>
+                <p class="text-2xl font-bold" style="color: #7c2d12">
+                  72.1<span class="text-sm font-normal text-gray-400"> %</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">生産効率 (OEE)</p>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "KPIと最新状況"}, {"id": "feature", "title": "ボード", "desc": "タスク管理"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "詳細", "desc": "タブ切替表示"}, {"id": "report", "title": "レポート", "desc": "トレンド分析"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  日別 段取り替え回数
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashChangeoverChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次 OEE推移
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashOeeChart"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [29, 66, 41, 48, 73, 60, 42, 45, 56, 28, 72, 82], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1215", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="alert-triangle"
+                  class="w-4 h-4"
+                  style="color: #ea580c"
+                ></i
+                >本日の段取り替え予定
+              </h3>
+              <div class="space-y-3">
+                <div
+                  class="flex items-center gap-4 p-3 bg-orange-50 rounded-lg border border-orange-100"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #ea580c"
+                  >
+                    1
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      ライン1(旋盤) — SH-A102 → SH-B205
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      08:30 予定 / 計画時間: 18分 / 担当: 佐藤
+                    </p>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0"
+                    >完了</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-4 p-3 bg-orange-50 rounded-lg border border-orange-100"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #ea580c"
+                  >
+                    2
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      ライン2(プレス) — PR-C301 → PR-A108
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      10:15 予定 / 計画時間: 32分 / 担当: 田中
+                    </p>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium shrink-0"
+                    >進行中</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #6b7280"
+                  >
+                    3
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      ライン3(射出成形) — IM-D412 → IM-B107
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      13:00 予定 / 計画時間: 45分 / 担当: 鈴木
+                    </p>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium shrink-0"
+                    >待機中</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #6b7280"
+                  >
+                    4
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      ライン4(組立) — AS-E503 → AS-A201
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      15:30 予定 / 計画時間: 22分 / 担当: 高橋
+                    </p>
+                  </div>
+                  <span
+                    class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium shrink-0"
+                    >待機中</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
 
-// feature
+          <!-- ===== PAGE: SCHEDULE ===== -->
+          <div id="page-schedule" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <button
+                  class="px-3 py-1.5 text-[12px] rounded-lg border hover:bg-gray-50 transition"
+                >
+                  ← 前日
+                </button>
+                <span class="text-[14px] font-semibold text-gray-700"
+                  >2026年3月10日 (火)</span
+                >
+                <button
+                  class="px-3 py-1.5 text-[12px] rounded-lg border hover:bg-gray-50 transition"
+                >
+                  翌日 →
+                </button>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>自動最適化
+                </button>
+              </div>
+            </div>
 
-document.querySelectorAll('[draggable]').forEach(c=>{c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text',c.innerHTML);c.classList.add('opacity-40')});c.addEventListener('dragend',()=>c.classList.remove('opacity-40'))});
-document.querySelectorAll('.kanban-cards').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const d=document.createElement('div');d.className='bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move';d.draggable=true;d.innerHTML=e.dataTransfer.getData('text');col.appendChild(d)})});
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <div style="min-width: 900px">
+                  <div class="flex border-b bg-gray-50">
+                    <div
+                      class="w-[140px] shrink-0 px-4 py-2 text-[11px] font-semibold text-gray-500 border-r"
+                    >
+                      設備
+                    </div>
+                    <div class="flex-1 flex">
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        06:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        08:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        10:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        12:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        14:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        16:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2 border-r border-gray-100"
+                      >
+                        18:00
+                      </div>
+                      <div
+                        class="flex-1 text-center text-[10px] text-gray-400 py-2"
+                      >
+                        20:00
+                      </div>
+                    </div>
+                  </div>
 
+                  <div class="flex border-b hover:bg-gray-50/50 transition">
+                    <div class="w-[140px] shrink-0 px-4 py-3 border-r">
+                      <p class="text-[12px] font-semibold text-gray-700">
+                        ライン1
+                      </p>
+                      <p class="text-[10px] text-gray-400">旋盤 CNC-L01</p>
+                    </div>
+                    <div class="flex-1 relative" style="height: 40px">
+                      <div
+                        class="gantt-bar"
+                        style="left: 2%; width: 18%; background: #7c2d12"
+                      >
+                        SH-A102 / 200個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 20.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 23%; width: 22%; background: #b45309"
+                      >
+                        SH-B205 / 150個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 45.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 48%; width: 25%; background: #7c2d12"
+                      >
+                        SH-C310 / 300個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 73.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 76%; width: 20%; background: #b45309"
+                      >
+                        SH-A102 / 100個
+                      </div>
+                    </div>
+                  </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+                  <div class="flex border-b hover:bg-gray-50/50 transition">
+                    <div class="w-[140px] shrink-0 px-4 py-3 border-r">
+                      <p class="text-[12px] font-semibold text-gray-700">
+                        ライン2
+                      </p>
+                      <p class="text-[10px] text-gray-400">プレス PRS-02</p>
+                    </div>
+                    <div class="flex-1 relative" style="height: 40px">
+                      <div
+                        class="gantt-bar"
+                        style="left: 2%; width: 28%; background: #92400e"
+                      >
+                        PR-C301 / 500個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 30.5%;
+                          width: 3%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 34%; width: 30%; background: #78350f"
+                      >
+                        PR-A108 / 400個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 64.5%;
+                          width: 3%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 68%; width: 28%; background: #92400e"
+                      >
+                        PR-B215 / 350個
+                      </div>
+                    </div>
+                  </div>
 
-// detail
+                  <div class="flex border-b hover:bg-gray-50/50 transition">
+                    <div class="w-[140px] shrink-0 px-4 py-3 border-r">
+                      <p class="text-[12px] font-semibold text-gray-700">
+                        ライン3
+                      </p>
+                      <p class="text-[10px] text-gray-400">射出成形 INJ-03</p>
+                    </div>
+                    <div class="flex-1 relative" style="height: 40px">
+                      <div
+                        class="gantt-bar"
+                        style="left: 2%; width: 35%; background: #78350f"
+                      >
+                        IM-D412 / 800個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 37.5%;
+                          width: 4%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 42%; width: 30%; background: #7c2d12"
+                      >
+                        IM-B107 / 600個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 72.5%;
+                          width: 4%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 77%; width: 19%; background: #92400e"
+                      >
+                        IM-A203 / 450個
+                      </div>
+                    </div>
+                  </div>
 
-function switchTab(gid,idx,color){
-document.querySelectorAll('[data-tab^="'+gid+'"]').forEach((b,i)=>{
-b.style.borderColor=i===idx?color:'transparent';
-b.classList.toggle('font-semibold',i===idx);b.classList.toggle('text-gray-400',i!==idx);});
-document.querySelectorAll('[data-panel^="'+gid+'"]').forEach((p,i)=>{
-p.style.display=i===idx?'block':'none';});}
+                  <div class="flex hover:bg-gray-50/50 transition">
+                    <div class="w-[140px] shrink-0 px-4 py-3 border-r">
+                      <p class="text-[12px] font-semibold text-gray-700">
+                        ライン4
+                      </p>
+                      <p class="text-[10px] text-gray-400">組立 ASM-04</p>
+                    </div>
+                    <div class="flex-1 relative" style="height: 40px">
+                      <div
+                        class="gantt-bar"
+                        style="left: 2%; width: 20%; background: #b45309"
+                      >
+                        AS-E503 / 120個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 22.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 25%; width: 25%; background: #7c2d12"
+                      >
+                        AS-A201 / 200個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 50.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 53%; width: 22%; background: #78350f"
+                      >
+                        AS-C405 / 180個
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="
+                          left: 75.5%;
+                          width: 2%;
+                          background: #ea580c;
+                          font-size: 9px;
+                        "
+                      >
+                        段取
+                      </div>
+                      <div
+                        class="gantt-bar"
+                        style="left: 78%; width: 18%; background: #b45309"
+                      >
+                        AS-B302 / 90個
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
+            <div class="flex items-center gap-6 mt-4 text-[11px] text-gray-500">
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded" style="background: #7c2d12"></div>
+                品種グループA
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded" style="background: #b45309"></div>
+                品種グループB
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded" style="background: #92400e"></div>
+                品種グループC
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded" style="background: #78350f"></div>
+                品種グループD
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-3 h-3 rounded" style="background: #ea580c"></div>
+                段取り替え
+              </div>
+            </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [29, 66, 41, 48, 73, 60, 42, 45, 56, 28, 72, 82], "borderColor": "#7c2d12", "tension": 0.4, "pointRadius": 4, "pointBackgroundColor": "#7c2d12"}, {"label": "予測", "data": [29, 66, 41, 48, 73, 60, 42, 45, null, null, null, null], "borderColor": "#d1d5db", "borderDash": [5, 5], "tension": 0.4, "pointRadius": 0}, {"label": "目標", "data": [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60], "borderColor": "#f59e0b", "borderDash": [2, 4], "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+              <div class="card p-4 text-center">
+                <p class="text-[11px] text-gray-400">本日の段取り替え</p>
+                <p class="text-xl font-bold mt-1" style="color: #7c2d12">
+                  12 回
+                </p>
+              </div>
+              <div class="card p-4 text-center">
+                <p class="text-[11px] text-gray-400">段取りロス時間</p>
+                <p class="text-xl font-bold mt-1" style="color: #ea580c">
+                  4.8 時間
+                </p>
+              </div>
+              <div class="card p-4 text-center">
+                <p class="text-[11px] text-gray-400">生産品種数</p>
+                <p class="text-xl font-bold mt-1" style="color: #7c2d12">
+                  14 品種
+                </p>
+              </div>
+              <div class="card p-4 text-center">
+                <p class="text-[11px] text-gray-400">計画達成見込み</p>
+                <p class="text-xl font-bold mt-1" style="color: #16a34a">
+                  94.2%
+                </p>
+              </div>
+            </div>
+          </div>
 
-</script>
-</body></html>
+          <!-- ===== PAGE: CHANGEOVER ===== -->
+          <div id="page-changeover" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3">
+              <div class="flex items-center gap-3">
+                <select
+                  id="coLineFilter"
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-200"
+                >
+                  <option value="">全ライン</option>
+                  <option value="ライン1">ライン1(旋盤)</option>
+                  <option value="ライン2">ライン2(プレス)</option>
+                  <option value="ライン3">ライン3(射出成形)</option>
+                  <option value="ライン4">ライン4(組立)</option>
+                </select>
+                <select
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option>2026年3月</option>
+                  <option>2026年2月</option>
+                  <option>2026年1月</option>
+                </select>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>記録追加
+              </button>
+            </div>
+
+            <div class="card overflow-hidden mb-6">
+              <div class="overflow-x-auto">
+                <table id="coTable" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('coTable', 0)"
+                      >
+                        日時 <span class="text-gray-300">↕</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        設備名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        前品種→後品種
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('coTable', 3)"
+                      >
+                        計画(分) <span class="text-gray-300">↕</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('coTable', 4)"
+                      >
+                        実績(分) <span class="text-gray-300">↕</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('coTable', 5)"
+                      >
+                        差異 <span class="text-gray-300">↕</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        担当者
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        要因メモ
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン1"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/10 08:30
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1(旋盤)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        SH-A102→SH-B205
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">18</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">16</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-green-600"
+                      >
+                        -2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">佐藤</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        SMED改善後、治具交換手順最適化
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン2"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/10 10:15
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン2(プレス)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        PR-C301→PR-A108
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">32</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">38</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-red-600"
+                      >
+                        +6
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">田中</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型温度調整に時間要す
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン3"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/09 14:00
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン3(射出成形)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        IM-D412→IM-B107
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">45</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">42</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-green-600"
+                      >
+                        -3
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">鈴木</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        並行作業化で短縮
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン4"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/09 16:00
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン4(組立)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        AS-E503→AS-A201
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">22</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">20</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-green-600"
+                      >
+                        -2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">高橋</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        標準手順通り完了
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン1"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/09 09:00
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン1(旋盤)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        SH-C310→SH-A102
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">20</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">25</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-red-600"
+                      >
+                        +5
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">佐藤</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        チャック交換に手間取り
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン2"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/08 11:30
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン2(プレス)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        PR-B215→PR-C301
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">30</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">28</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-green-600"
+                      >
+                        -2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">山田</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        事前準備徹底
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン3"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/08 08:00
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン3(射出成形)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        IM-A203→IM-D412
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">40</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">52</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-red-600"
+                      >
+                        +12
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">鈴木</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        樹脂色替え、パージに時間
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-line="ライン4"
+                    >
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        03/08 15:00
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ライン4(組立)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        AS-B302→AS-E503
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">25</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">23</td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-green-600"
+                      >
+                        -2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">高橋</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        治具セット手順改善
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="trending-down"
+                  class="w-4 h-4"
+                  style="color: #16a34a"
+                ></i
+                >SMED改善推移 — 平均段取り時間(分)
+              </h3>
+              <div style="height: 280px"><canvas id="smedChart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE: PRODUCTS ===== -->
+          <div id="page-products" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="prodSearch"
+                    type="text"
+                    placeholder="品番・品名で検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+                  />
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select
+                  id="prodGroupFilter"
+                  class="px-3 py-2 text-[13px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option value="">全グループ</option>
+                  <option value="シャフト系">シャフト系</option>
+                  <option value="プレス部品">プレス部品</option>
+                  <option value="射出成形品">射出成形品</option>
+                  <option value="組立品">組立品</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>品種追加
+                </button>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden mb-6">
+              <div class="overflow-x-auto">
+                <table id="prodTable" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        品番
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        品種グループ
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        標準CT(秒)
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        月間需要(個)
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        金型/治具
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        段取り区分
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="SH-A102 駆動シャフトA シャフト系"
+                      data-group="シャフト系"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        SH-A102
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        駆動シャフトA
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
+                          >シャフト系</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">45</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">2,400</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        チャックJG-01
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #16a34a"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="SH-B205 伝動シャフトB シャフト系"
+                      data-group="シャフト系"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        SH-B205
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        伝動シャフトB
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
+                          >シャフト系</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">52</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">1,800</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        チャックJG-01
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #16a34a"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="SH-C310 偏心シャフトC シャフト系"
+                      data-group="シャフト系"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        SH-C310
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        偏心シャフトC
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
+                          >シャフト系</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">68</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">900</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        チャックJG-02
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #ea580c"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="PR-A108 ブラケットA プレス部品"
+                      data-group="プレス部品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        PR-A108
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ブラケットA
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium"
+                          >プレス部品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">12</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">5,500</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型M-108
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #ea580c"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="PR-B215 フレームB プレス部品"
+                      data-group="プレス部品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        PR-B215
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        フレームB
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium"
+                          >プレス部品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">15</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">3,200</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型M-215
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #dc2626"
+                          >C</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="PR-C301 パネルC プレス部品"
+                      data-group="プレス部品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        PR-C301
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        パネルC
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium"
+                          >プレス部品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">18</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">4,100</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型M-301
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #dc2626"
+                          >C</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="IM-A203 ハウジングA 射出成形品"
+                      data-group="射出成形品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        IM-A203
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ハウジングA
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium"
+                          >射出成形品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">35</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">3,800</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型IM-203
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #ea580c"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="IM-B107 カバーB 射出成形品"
+                      data-group="射出成形品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        IM-B107
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        カバーB
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium"
+                          >射出成形品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">28</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">4,500</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型IM-107
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #ea580c"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="IM-D412 コネクタD 射出成形品"
+                      data-group="射出成形品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        IM-D412
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        コネクタD
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium"
+                          >射出成形品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">22</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">6,200</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        金型IM-412
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #16a34a"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="AS-A201 ユニットA 組立品"
+                      data-group="組立品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        AS-A201
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        ユニットA
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium"
+                          >組立品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">120</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">1,200</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        治具AS-J01
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #16a34a"
+                          >A</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="AS-B302 モジュールB 組立品"
+                      data-group="組立品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        AS-B302
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        モジュールB
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium"
+                          >組立品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">95</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">800</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        治具AS-J02
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #ea580c"
+                          >B</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="AS-C405 アセンブリC 組立品"
+                      data-group="組立品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        AS-C405
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        アセンブリC
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium"
+                          >組立品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">150</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">600</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        治具AS-J03
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #dc2626"
+                          >C</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      data-search="AS-E503 精密ユニットE 組立品"
+                      data-group="組立品"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium"
+                        style="color: #7c2d12"
+                      >
+                        AS-E503
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        精密ユニットE
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="text-[11px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium"
+                          >組立品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">180</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">400</td>
+                      <td class="px-4 py-3 text-[11px] text-gray-500">
+                        治具AS-J04
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[11px] font-bold text-white"
+                          style="background: #dc2626"
+                          >C</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="grid-3x3"
+                  class="w-4 h-4"
+                  style="color: #7c2d12"
+                ></i
+                >品種グループ 段取り共有マトリクス
+              </h3>
+              <p class="text-[11px] text-gray-400 mb-4">
+                同一治具・金型で段取り不要(◎)、軽微な段取り(○)、要段取り(△)、不可(×)
+              </p>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      ></th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        SH-A102
+                      </th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        SH-B205
+                      </th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        SH-C310
+                      </th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        PR-A108
+                      </th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        PR-B215
+                      </th>
+                      <th
+                        class="px-3 py-2 text-[11px] font-semibold text-gray-500"
+                      >
+                        PR-C301
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50">
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        SH-A102
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        SH-B205
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        SH-C310
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        PR-A108
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #ffedd5"
+                      >
+                        △
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #ffedd5"
+                      >
+                        △
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        PR-B215
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #ffedd5"
+                      >
+                        △
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="px-3 py-2 text-[12px] font-medium text-gray-700"
+                      >
+                        PR-C301
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef2f2"
+                      >
+                        ×
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #ffedd5"
+                      >
+                        △
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #fef9c3"
+                      >
+                        ○
+                      </td>
+                      <td
+                        class="px-3 py-2 text-center text-[13px]"
+                        style="background: #dcfce7"
+                      >
+                        ◎
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE: EQUIPMENT ===== -->
+          <div id="page-equipment" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card eq-card eq-running p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-700">
+                      ライン1 — CNC旋盤 CNC-L01
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      現在の品種: SH-B205 伝動シャフトB
+                    </p>
+                  </div>
+                  <span
+                    class="status-running text-[11px] px-3 py-1 rounded-full font-medium"
+                    >稼働中</span
+                  >
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #7c2d12">
+                      142
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >/ 150</span
+                      >
+                    </p>
+                    <p class="text-[10px] text-gray-400">生産数/目標</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold text-green-600">82.5%</p>
+                    <p class="text-[10px] text-gray-400">本日稼働率</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #ea580c">
+                      94.7%
+                    </p>
+                    <p class="text-[10px] text-gray-400">進捗率</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-medium text-gray-500 mb-2">
+                    OEE内訳
+                  </p>
+                  <div class="flex gap-2 text-[10px]">
+                    <div class="flex-1 bg-green-50 rounded p-2 text-center">
+                      <p class="font-bold text-green-700">88.2%</p>
+                      <p class="text-gray-400">可用性</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-blue-50 rounded p-2 text-center">
+                      <p class="font-bold text-blue-700">92.1%</p>
+                      <p class="text-gray-400">性能</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-purple-50 rounded p-2 text-center">
+                      <p class="font-bold text-purple-700">98.5%</p>
+                      <p class="text-gray-400">品質</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">=</div>
+                    <div class="flex-1 bg-orange-50 rounded p-2 text-center">
+                      <p class="font-bold" style="color: #7c2d12">80.0%</p>
+                      <p class="text-gray-400">OEE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card eq-card eq-setup p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-700">
+                      ライン2 — プレス機 PRS-02
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      段取り替え中: PR-C301 → PR-A108
+                    </p>
+                  </div>
+                  <span
+                    class="status-setup text-[11px] px-3 py-1 rounded-full font-medium"
+                    >段取り中</span
+                  >
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #7c2d12">
+                      480
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >/ 500</span
+                      >
+                    </p>
+                    <p class="text-[10px] text-gray-400">生産数/目標</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold text-orange-600">71.3%</p>
+                    <p class="text-[10px] text-gray-400">本日稼働率</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #ea580c">
+                      96.0%
+                    </p>
+                    <p class="text-[10px] text-gray-400">進捗率</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-medium text-gray-500 mb-2">
+                    OEE内訳
+                  </p>
+                  <div class="flex gap-2 text-[10px]">
+                    <div class="flex-1 bg-green-50 rounded p-2 text-center">
+                      <p class="font-bold text-green-700">76.5%</p>
+                      <p class="text-gray-400">可用性</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-blue-50 rounded p-2 text-center">
+                      <p class="font-bold text-blue-700">89.3%</p>
+                      <p class="text-gray-400">性能</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-purple-50 rounded p-2 text-center">
+                      <p class="font-bold text-purple-700">97.8%</p>
+                      <p class="text-gray-400">品質</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">=</div>
+                    <div class="flex-1 bg-orange-50 rounded p-2 text-center">
+                      <p class="font-bold" style="color: #7c2d12">66.8%</p>
+                      <p class="text-gray-400">OEE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card eq-card eq-running p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-700">
+                      ライン3 — 射出成形機 INJ-03
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      現在の品種: IM-D412 コネクタD
+                    </p>
+                  </div>
+                  <span
+                    class="status-running text-[11px] px-3 py-1 rounded-full font-medium"
+                    >稼働中</span
+                  >
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #7c2d12">
+                      620
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >/ 800</span
+                      >
+                    </p>
+                    <p class="text-[10px] text-gray-400">生産数/目標</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold text-green-600">79.8%</p>
+                    <p class="text-[10px] text-gray-400">本日稼働率</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #ea580c">
+                      77.5%
+                    </p>
+                    <p class="text-[10px] text-gray-400">進捗率</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-medium text-gray-500 mb-2">
+                    OEE内訳
+                  </p>
+                  <div class="flex gap-2 text-[10px]">
+                    <div class="flex-1 bg-green-50 rounded p-2 text-center">
+                      <p class="font-bold text-green-700">85.0%</p>
+                      <p class="text-gray-400">可用性</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-blue-50 rounded p-2 text-center">
+                      <p class="font-bold text-blue-700">90.5%</p>
+                      <p class="text-gray-400">性能</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-purple-50 rounded p-2 text-center">
+                      <p class="font-bold text-purple-700">96.2%</p>
+                      <p class="text-gray-400">品質</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">=</div>
+                    <div class="flex-1 bg-orange-50 rounded p-2 text-center">
+                      <p class="font-bold" style="color: #7c2d12">74.0%</p>
+                      <p class="text-gray-400">OEE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card eq-card eq-stopped p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-[14px] font-semibold text-gray-700">
+                      ライン4 — 組立ライン ASM-04
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      直前の品種: AS-E503 精密ユニットE
+                    </p>
+                  </div>
+                  <span
+                    class="status-stopped text-[11px] px-3 py-1 rounded-full font-medium"
+                    >昼休止</span
+                  >
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #7c2d12">
+                      98
+                      <span class="text-[11px] font-normal text-gray-400"
+                        >/ 120</span
+                      >
+                    </p>
+                    <p class="text-[10px] text-gray-400">生産数/目標</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold text-gray-500">68.4%</p>
+                    <p class="text-[10px] text-gray-400">本日稼働率</p>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <p class="text-lg font-bold" style="color: #ea580c">
+                      81.7%
+                    </p>
+                    <p class="text-[10px] text-gray-400">進捗率</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-medium text-gray-500 mb-2">
+                    OEE内訳
+                  </p>
+                  <div class="flex gap-2 text-[10px]">
+                    <div class="flex-1 bg-green-50 rounded p-2 text-center">
+                      <p class="font-bold text-green-700">73.2%</p>
+                      <p class="text-gray-400">可用性</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-blue-50 rounded p-2 text-center">
+                      <p class="font-bold text-blue-700">88.7%</p>
+                      <p class="text-gray-400">性能</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">x</div>
+                    <div class="flex-1 bg-purple-50 rounded p-2 text-center">
+                      <p class="font-bold text-purple-700">99.1%</p>
+                      <p class="text-gray-400">品質</p>
+                    </div>
+                    <div class="text-gray-300 flex items-center">=</div>
+                    <div class="flex-1 bg-orange-50 rounded p-2 text-center">
+                      <p class="font-bold" style="color: #7c2d12">64.3%</p>
+                      <p class="text-gray-400">OEE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE: ANALYTICS ===== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #16a34a"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i
+                    data-lucide="check-circle"
+                    class="w-4 h-4 text-green-600"
+                  ></i>
+                  <p class="text-[12px] font-semibold text-green-700">
+                    改善効果
+                  </p>
+                </div>
+                <p class="text-[13px] text-gray-700">
+                  SMED活動により平均段取り時間が<span
+                    class="font-bold"
+                    style="color: #7c2d12"
+                    >前年比18%削減</span
+                  >。年間約320時間の生産時間を回復
+                </p>
+              </div>
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #ea580c"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-4 h-4 text-orange-600"
+                  ></i>
+                  <p class="text-[12px] font-semibold text-orange-700">
+                    注意事項
+                  </p>
+                </div>
+                <p class="text-[13px] text-gray-700">
+                  ライン3(射出成形)の色替え段取りが<span
+                    class="font-bold"
+                    style="color: #ea580c"
+                    >目標比+35%超過</span
+                  >。パージ工程の改善が急務
+                </p>
+              </div>
+              <div
+                class="card p-5 border-l-4"
+                style="border-left-color: #2563eb"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <i data-lucide="lightbulb" class="w-4 h-4 text-blue-600"></i>
+                  <p class="text-[12px] font-semibold text-blue-700">提案</p>
+                </div>
+                <p class="text-[13px] text-gray-700">
+                  品種グルーピングの最適化で、段取り替え回数を<span
+                    class="font-bold text-blue-700"
+                    >月15回削減</span
+                  >可能。週次で同系品種をまとめて投入推奨
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  品種別生産量 パレート分析
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="analyticsPareto"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  設備別 平均段取り時間
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="analyticsChangeover"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  効率ロス内訳
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="analyticsLoss"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次 生産実績 vs 計画
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="analyticsPlan"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== PAGE: SETTINGS ===== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="server"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >設備マスタ管理
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン1 — CNC旋盤 CNC-L01
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        標準段取り時間: 18分 / 最大回転数: 4000rpm
+                      </p>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン2 — プレス機 PRS-02
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        標準段取り時間: 30分 / 加圧力: 200t
+                      </p>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン3 — 射出成形機 INJ-03
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        標準段取り時間: 40分 / 型締力: 350t
+                      </p>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ライン4 — 組立ライン ASM-04
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        標準段取り時間: 22分 / 作業者: 4名
+                      </p>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="layers"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >品種グループ設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #b45309"
+                      ></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        シャフト系
+                      </p>
+                      <span class="text-[11px] text-gray-400">3品種</span>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #2563eb"
+                      ></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        プレス部品
+                      </p>
+                      <span class="text-[11px] text-gray-400">3品種</span>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #7c3aed"
+                      ></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        射出成形品
+                      </p>
+                      <span class="text-[11px] text-gray-400">3品種</span>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #16a34a"
+                      ></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        組立品
+                      </p>
+                      <span class="text-[11px] text-gray-400">4品種</span>
+                    </div>
+                    <button
+                      class="text-[12px] px-3 py-1 rounded border hover:bg-white transition"
+                      style="color: #7c2d12; border-color: #7c2d12"
+                    >
+                      編集
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="target"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >SMED目標設定
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >月次段取り時間削減目標(%)</label
+                    >
+                    <input
+                      type="number"
+                      value="5"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >目標OEE(%)</label
+                    >
+                    <input
+                      type="number"
+                      value="80"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >段取り時間上限(分) — 旋盤</label
+                    >
+                    <input
+                      type="number"
+                      value="20"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >段取り時間上限(分) — プレス</label
+                    >
+                    <input
+                      type="number"
+                      value="30"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >段取り時間上限(分) — 射出成形</label
+                    >
+                    <input
+                      type="number"
+                      value="40"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >段取り時間上限(分) — 組立</label
+                    >
+                    <input
+                      type="number"
+                      value="25"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >アラート閾値
+                </h3>
+                <div class="divide-y">
+                  <div
+                    class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        段取り時間超過アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        計画時間を超過した場合に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-100 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        稼働率低下アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        稼働率が70%を下回った場合に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-100 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        設備故障アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        設備異常検出時に即座に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-100 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        日次サマリーメール
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        毎日18:00に本日の実績サマリーを送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-orange-100 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "段取り替え最適化の概要",
+        },
+        {
+          id: "schedule",
+          title: "生産スケジュール",
+          desc: "本日の生産計画・ガントチャート",
+        },
+        {
+          id: "changeover",
+          title: "段取り替え管理",
+          desc: "段取り記録・SMED改善",
+        },
+        {
+          id: "products",
+          title: "品種マスタ",
+          desc: "製品カタログ・段取り共有マトリクス",
+        },
+        {
+          id: "equipment",
+          title: "設備モニター",
+          desc: "リアルタイム設備状況",
+        },
+        { id: "analytics", title: "分析レポート", desc: "生産効率・ロス分析" },
+        { id: "settings", title: "設定", desc: "マスタ管理・目標設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) {
+          el.classList.add("active");
+        }
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(b.querySelectorAll("tr"));
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.\-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.\-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => b.appendChild(r));
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        // === DASHBOARD CHARTS ===
+        charts.push(
+          new Chart(document.getElementById("dashChangeoverChart"), {
+            type: "bar",
+            data: {
+              labels: [
+                "3/1",
+                "3/2",
+                "3/3",
+                "3/4",
+                "3/5",
+                "3/6",
+                "3/7",
+                "3/8",
+                "3/9",
+                "3/10",
+              ],
+              datasets: [
+                {
+                  label: "段取り替え回数",
+                  data: [8, 10, 7, 12, 9, 11, 6, 10, 8, 4],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("dashOeeChart"), {
+            type: "line",
+            data: {
+              labels: [
+                "2025/10",
+                "2025/11",
+                "2025/12",
+                "2026/01",
+                "2026/02",
+                "2026/03",
+              ],
+              datasets: [
+                {
+                  label: "OEE",
+                  data: [64.2, 66.8, 68.5, 69.3, 70.8, 72.1],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1220",
+                  tension: 0.3,
+                  fill: true,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#7c2d12",
+                },
+                {
+                  label: "目標",
+                  data: [70, 70, 70, 72, 72, 75],
+                  borderColor: "#ea580c",
+                  borderDash: [5, 5],
+                  tension: 0,
+                  pointRadius: 0,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 55,
+                  max: 85,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // === CHANGEOVER: SMED Chart ===
+        charts.push(
+          new Chart(document.getElementById("smedChart"), {
+            type: "line",
+            data: {
+              labels: [
+                "2025/10",
+                "2025/11",
+                "2025/12",
+                "2026/01",
+                "2026/02",
+                "2026/03",
+              ],
+              datasets: [
+                {
+                  label: "ライン1(旋盤)",
+                  data: [28, 26, 24, 22, 20, 18],
+                  borderColor: "#7c2d12",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#7c2d12",
+                },
+                {
+                  label: "ライン2(プレス)",
+                  data: [42, 40, 38, 36, 34, 32],
+                  borderColor: "#ea580c",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#ea580c",
+                },
+                {
+                  label: "ライン3(射出成形)",
+                  data: [55, 52, 50, 48, 46, 43],
+                  borderColor: "#b45309",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#b45309",
+                },
+                {
+                  label: "ライン4(組立)",
+                  data: [30, 28, 27, 26, 24, 22],
+                  borderColor: "#78350f",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#78350f",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // === ANALYTICS CHARTS ===
+        charts.push(
+          new Chart(document.getElementById("analyticsPareto"), {
+            type: "bar",
+            data: {
+              labels: [
+                "IM-D412",
+                "PR-A108",
+                "IM-B107",
+                "PR-C301",
+                "IM-A203",
+                "PR-B215",
+                "SH-A102",
+                "SH-B205",
+                "AS-A201",
+                "SH-C310",
+                "AS-B302",
+                "AS-C405",
+                "AS-E503",
+              ],
+              datasets: [
+                {
+                  label: "月間生産量",
+                  data: [
+                    6200, 5500, 4500, 4100, 3800, 3200, 2400, 1800, 1200, 900,
+                    800, 600, 400,
+                  ],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                  order: 2,
+                },
+                {
+                  label: "累積比率(%)",
+                  data: [
+                    17.6, 33.2, 46.0, 57.7, 68.5, 77.6, 84.4, 89.5, 93.0, 95.5,
+                    97.8, 99.5, 100,
+                  ],
+                  type: "line",
+                  borderColor: "#ea580c",
+                  pointRadius: 3,
+                  pointBackgroundColor: "#ea580c",
+                  yAxisID: "y1",
+                  order: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                y1: {
+                  position: "right",
+                  min: 0,
+                  max: 100,
+                  grid: { display: false },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, maxRotation: 45 },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("analyticsChangeover"), {
+            type: "bar",
+            data: {
+              labels: [
+                "ライン3(射出成形)",
+                "ライン2(プレス)",
+                "ライン4(組立)",
+                "ライン1(旋盤)",
+              ],
+              datasets: [
+                {
+                  label: "平均段取り時間(分)",
+                  data: [43, 32, 22, 18],
+                  backgroundColor: ["#b45309", "#ea580c", "#78350f", "#7c2d12"],
+                  borderRadius: 4,
+                },
+                {
+                  label: "目標(分)",
+                  data: [40, 30, 25, 20],
+                  backgroundColor: ["#fed7aa", "#fed7aa", "#fed7aa", "#fed7aa"],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("analyticsLoss"), {
+            type: "doughnut",
+            data: {
+              labels: ["段取りロス", "速度ロス", "不良ロス", "計画停止"],
+              datasets: [
+                {
+                  data: [38, 25, 12, 25],
+                  backgroundColor: ["#7c2d12", "#ea580c", "#dc2626", "#9ca3af"],
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        charts.push(
+          new Chart(document.getElementById("analyticsPlan"), {
+            type: "bar",
+            data: {
+              labels: [
+                "2025/10",
+                "2025/11",
+                "2025/12",
+                "2026/01",
+                "2026/02",
+                "2026/03",
+              ],
+              datasets: [
+                {
+                  label: "計画",
+                  data: [32000, 34000, 30000, 35000, 33000, 36000],
+                  backgroundColor: "#fed7aa",
+                  borderRadius: 4,
+                },
+                {
+                  label: "実績",
+                  data: [28500, 31200, 28800, 33100, 31500, 34200],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: (v) => v / 1000 + "k",
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // === SEARCH/FILTER HANDLERS ===
+        document
+          .getElementById("prodSearch")
+          .addEventListener("input", function () {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll("#prodTable tbody tr").forEach((el) => {
+              const s = el.dataset.search || "";
+              const g = document.getElementById("prodGroupFilter").value;
+              const matchSearch = s.toLowerCase().includes(q);
+              const matchGroup = !g || el.dataset.group === g;
+              el.style.display = matchSearch && matchGroup ? "" : "none";
+            });
+          });
+
+        document
+          .getElementById("prodGroupFilter")
+          .addEventListener("change", function () {
+            const g = this.value;
+            const q = (
+              document.getElementById("prodSearch").value || ""
+            ).toLowerCase();
+            document.querySelectorAll("#prodTable tbody tr").forEach((el) => {
+              const s = el.dataset.search || "";
+              const matchSearch = s.toLowerCase().includes(q);
+              const matchGroup = !g || el.dataset.group === g;
+              el.style.display = matchSearch && matchGroup ? "" : "none";
+            });
+          });
+
+        document
+          .getElementById("coLineFilter")
+          .addEventListener("change", function () {
+            const v = this.value;
+            document.querySelectorAll("#coTable tbody tr").forEach((el) => {
+              el.style.display = !v || el.dataset.line === v ? "" : "none";
+            });
+          });
+      });
+    </script>
+  </body>
+</html>

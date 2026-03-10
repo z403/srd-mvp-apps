@@ -1,122 +1,2890 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>点呼記録のアナログ管理 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>RollCall — デジタル点呼・運行管理システム | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge-ok {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-ng {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .status-ok {
+        background: #10b981;
+      }
+      .status-warn {
+        background: #f59e0b;
+      }
+      .status-ng {
+        background: #ef4444;
+      }
+      .toggle-track {
+        width: 40px;
+        height: 20px;
+        border-radius: 10px;
+        background: #d1d5db;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .toggle-track.on {
+        background: #065f46;
+      }
+      .toggle-knob {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: left 0.2s;
+      }
+      .toggle-track.on .toggle-knob {
+        left: 22px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[240px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #0c4a6e"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0"
+            >
+              RC
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">RollCall</p>
+              <p class="text-[11px] opacity-50 truncate">
+                デジタル点呼・運行管理
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="rollcall"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('rollcall')"
+            ><i
+              data-lucide="clipboard-check"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">点呼実施</span></a
+          >
+          <a
+            data-page="records"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('records')"
+            ><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">点呼記録一覧</span></a
+          >
+          <a
+            data-page="alcohol"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('alcohol')"
+            ><i data-lucide="wine" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">アルコール検知</span></a
+          >
+          <a
+            data-page="drivers"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('drivers')"
+            ><i data-lucide="users" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">ドライバー状態</span></a
+          >
+          <a
+            data-page="legal"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('legal')"
+            ><i data-lucide="file-text" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">法定帳票</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              鈴
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">鈴木 運行管理者</p>
+              <p class="text-[10px] opacity-40">suzuki@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">点呼記録のアナログ管理</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="calendar" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">スケジュール</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="eye" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              本日の点呼状況
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-gray-400" id="currentTime"></span>
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #d1fae5; color: #065f46"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">統計サマリー</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#065f4615"><i data-lucide="calendar" class="w-7 h-7" style="color:#065f46"></i></div><div><div class="text-3xl font-bold" style="color:#065f46">22件</div><div class="text-[13px] text-gray-500 mt-1">今月予定</div><div class="text-[11px] text-gray-400 mt-0.5">+2</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="activity" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">93%</div><div class="text-[13px] text-gray-500 mt-1">稼働率</div><div class="text-[11px] text-gray-400 mt-0.5">+7pt</div></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">点呼記録のアナログ種別構成</h3><div style="height:240px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次点呼記録のアナログ推移</h3><div style="height:240px"><canvas id="dC2"></canvas></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="lg:col-span-2 card p-5"><div class="flex items-center justify-between mb-4"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="chevron-left" class="w-4 h-4"></i>前月</button><h3 class="font-semibold text-[15px]">2026年3月</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="chevron-right" class="w-4 h-4"></i>翌月</button></div><div class="grid grid-cols-7 gap-1 mb-2"><div class="text-center text-[11px] font-semibold text-gray-400 py-1">月</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">火</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">水</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">木</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">金</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">土</div><div class="text-center text-[11px] font-semibold text-gray-400 py-1">日</div></div><div class="grid grid-cols-7 gap-1"><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">1</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">2</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">3</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">4</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">5</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">6</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">7</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">8</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer ring-2 ring-offset-1 font-bold" style="ring-color:#065f46"><span class="text-[12px] text-gray-600">9</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">10</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">11</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">12</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">13</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">14</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">15</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">16</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">17</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">18</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">19</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">20</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">21</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">22</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">23</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">24</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">25</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">26</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">27</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">28</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">29</span></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">30</span><div class="w-1.5 h-1.5 rounded-full mx-auto mt-0.5" style="background:#065f46"></div></div><div class="p-1.5 text-center rounded-lg hover:bg-gray-50 cursor-pointer " style=""><span class="text-[12px] text-gray-600">31</span></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">今日の予定</h3><div class="space-y-2"><div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><div class="w-1 h-10 rounded-full" style="background:#065f46"></div><div><p class="text-[13px] font-medium text-gray-700">予定1 — 田中太郎</p><p class="text-[11px] text-gray-400">15:30 〜 16:00</p></div></div><div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><div class="w-1 h-10 rounded-full" style="background:#10b981"></div><div><p class="text-[13px] font-medium text-gray-700">予定2 — 鈴木花子</p><p class="text-[11px] text-gray-400">17:30 〜 18:00</p></div></div><div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><div class="w-1 h-10 rounded-full" style="background:#065f46"></div><div><p class="text-[13px] font-medium text-gray-700">予定3 — 佐藤一郎</p><p class="text-[11px] text-gray-400">16:30 〜 17:00</p></div></div><div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><div class="w-1 h-10 rounded-full" style="background:#10b981"></div><div><p class="text-[13px] font-medium text-gray-700">予定4 — 田中太郎</p><p class="text-[11px] text-gray-400">10:00 〜 11:00</p></div></div><div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"><div class="w-1 h-10 rounded-full" style="background:#065f46"></div><div><p class="text-[13px] font-medium text-gray-700">予定5 — 鈴木花子</p><p class="text-[11px] text-gray-400">10:30 〜 11:00</p></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="dataSearch" type="text" placeholder="データを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div class="flex items-center gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="filter" class="w-4 h-4"></i>フィルタ</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="dataTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',0)">予定ID <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',1)">件名 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',2)">日時 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',3)">場所 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',4)">参加者 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',5)">状況 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3434</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤配車担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送2課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/10</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥355万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2765</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中ドライバー</td><td class="px-4 py-3 text-[13px]  text-gray-700">管理課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥824万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5120</td><td class="px-4 py-3 text-[13px]  text-gray-700">鈴木運行管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">営業課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/01</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥546万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5461</td><td class="px-4 py-3 text-[13px]  text-gray-700">山田倉庫管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">倉庫課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/12</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥914万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9082</td><td class="px-4 py-3 text-[13px]  text-gray-700">高橋経理</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送2課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-red-50 text-red-600">遅延</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/05</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥83万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3015</td><td class="px-4 py-3 text-[13px]  text-gray-700">伊藤営業</td><td class="px-4 py-3 text-[13px]  text-gray-700">管理課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/03</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥906万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#7151</td><td class="px-4 py-3 text-[13px]  text-gray-700">渡辺整備管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-red-50 text-red-600">遅延</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/21</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥197万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4867</td><td class="px-4 py-3 text-[13px]  text-gray-700">中村安全管理者</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送2課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/14</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥964万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2747</td><td class="px-4 py-3 text-[13px]  text-gray-700">小林荷役担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">倉庫課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/09</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥12万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#1441</td><td class="px-4 py-3 text-[13px]  text-gray-700">加藤事務</td><td class="px-4 py-3 text-[13px]  text-gray-700">営業課</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/18</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥206万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#1454</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤配車担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">配送1課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-red-50 text-red-600">遅延</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/17</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥741万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3993</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中ドライバー</td><td class="px-4 py-3 text-[13px]  text-gray-700">管理課</td><td class="px-4 py-3 text-[13px]  text-gray-700">待機中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/16</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥715万</td></tr></tbody></table></div></div><div class="flex items-center justify-between mt-4"><span class="text-[12px] text-gray-400">12件</span><div class="flex gap-1"><button class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer transition-colors" style=background:#065f46>1</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >2</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >3</button></div></div></div>
-<div id="page-detail" class="page"><div class="card p-5"><div class="flex gap-0 border-b mb-4"><button class="tab-btn px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer" style="border-b-2;border-color:#065f46" data-tab="dtlTab-0" onclick="switchTab('dtlTab',0,'#065f46')">基本情報</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-1" onclick="switchTab('dtlTab',1,'#065f46')">履歴</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-2" onclick="switchTab('dtlTab',2,'#065f46')">添付ファイル</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-3" onclick="switchTab('dtlTab',3,'#065f46')">コメント</button></div><div data-panel="dtlTab-0" style="display:block"><div class="grid grid-cols-2 gap-4"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">ID</span><span class="text-[14px] font-medium">#3434</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">担当</span><span class="text-[14px] font-medium">佐藤配車担当</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">状態</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">金額</span><span class="text-[14px] font-bold" style="color:#065f46">¥355万</span></div></div></div><div data-panel="dtlTab-1" style="display:none"><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> の点呼記録のアナログを承認</p><p class="text-[11px] text-gray-400">10時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> の点呼記録のアナログを承認</p><p class="text-[11px] text-gray-400">12時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> に点呼記録のアナログを報告</p><p class="text-[11px] text-gray-400">37時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> の点呼記録のアナログを更新</p><p class="text-[11px] text-gray-400">5時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋経理</span> の点呼記録のアナログを作成</p><p class="text-[11px] text-gray-400">27時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤営業</span> の点呼記録のアナログを完了</p><p class="text-[11px] text-gray-400">14時間前</p></div></div></div></div><div data-panel="dtlTab-2" style="display:none"><div class="text-center py-16"><i data-lucide="paperclip" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i><p class="text-[13px] text-gray-400">添付ファイルはありません</p></div></div><div data-panel="dtlTab-3" style="display:none"><div class="space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px]" style="background:#065f46">管</div><div class="flex-1 card p-3"><p class="text-[13px] text-gray-700">問題ありません。承認します。</p><p class="text-[11px] text-gray-400 mt-1">2時間前</p></div></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">コメント追加</label><textarea name="コメント追加" rows="3" placeholder="コメントを入力..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次点呼記録のアナログ推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">8</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥911</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥528</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥383</td><td class="px-4 py-3 text-[13px]  text-gray-700">42.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">9</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥788</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥465</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥323</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">25</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥320</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥147</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥173</td><td class="px-4 py-3 text-[13px]  text-gray-700">54.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">8</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥181</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥125</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥56</td><td class="px-4 py-3 text-[13px]  text-gray-700">30.9%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">13</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥376</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥259</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥117</td><td class="px-4 py-3 text-[13px]  text-gray-700">31.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">24</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥725</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥420</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥305</td><td class="px-4 py-3 text-[13px]  text-gray-700">42.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">87</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥3,301</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,944</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,357</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.1%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次点呼記録のアナログ推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ========== PAGE 1: Dashboard ========== -->
+          <div id="page-dashboard" class="page active">
+            <!-- KPIs -->
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+            >
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #065f4615"
+                >
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-6 h-6"
+                    style="color: #065f46"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold" style="color: #065f46">
+                    87.5%
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">
+                    本日点呼完了率
+                  </div>
+                  <div class="text-[11px] text-green-600 mt-0.5">
+                    +2.3% vs 昨日
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #f59e0b15"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-6 h-6"
+                    style="color: #f59e0b"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-amber-600">3</div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">
+                    未実施点呼数
+                  </div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">
+                    乗務後: 2 / 中間: 1
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #ef444415"
+                >
+                  <i
+                    data-lucide="shield-alert"
+                    class="w-6 h-6"
+                    style="color: #ef4444"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">2</div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">
+                    異常検知件数
+                  </div>
+                  <div class="text-[11px] text-red-500 mt-0.5">要確認</div>
+                </div>
+              </div>
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #10b98115"
+                >
+                  <i
+                    data-lucide="bar-chart-3"
+                    class="w-6 h-6"
+                    style="color: #10b981"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold" style="color: #10b981">
+                    482
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">
+                    月間点呼総数
+                  </div>
+                  <div class="text-[11px] text-gray-400 mt-0.5">3月実績</div>
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "統計サマリー"}, {"id": "feature", "title": "スケジュール", "desc": "予定管理"}, {"id": "data", "title": "データ一覧", "desc": "検索・並べ替え"}, {"id": "detail", "title": "詳細", "desc": "タブ切替表示"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  点呼完了率推移（過去30日）
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  時間帯別点呼件数（本日）
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "doughnut", "data": {"labels": ["燃料費", "高速代", "人件費", "車両費", "その他"], "datasets": [{"data": [32, 40, 11, 17, 16], "backgroundColor": ["#065f46", "#10b981", "#065f4680", "#10b98180", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "実績", "data": [40, 72, 80, 31, 52, 87], "backgroundColor": "#065f46", "borderRadius": 6}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Today's Alerts -->
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i data-lucide="bell" class="w-4 h-4" style="color: #ef4444"></i
+                >本日のアラート
+              </h3>
+              <div class="space-y-2">
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-100"
+                >
+                  <span class="status-dot status-ng"></span>
+                  <div class="flex-1">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      山田太郎 — アルコール検知値 0.08mg/L（基準超過）
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      06:15 乗務前点呼 / 執行者: 鈴木
+                    </p>
+                  </div>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-ng"
+                    >乗務不可</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100"
+                >
+                  <span class="status-dot status-warn"></span>
+                  <div class="flex-1">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      佐藤健一 — 体調「やや不調」申告、睡眠4時間
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      06:30 乗務前点呼 / 執行者: 鈴木
+                    </p>
+                  </div>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-warn"
+                    >条件付き可</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100"
+                >
+                  <span class="status-dot status-warn"></span>
+                  <div class="flex-1">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      田中次郎 — 乗務後点呼が未実施（予定時刻超過）
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      予定: 17:00 / 現在未実施
+                    </p>
+                  </div>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-warn"
+                    >要対応</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100"
+                >
+                  <span class="status-dot" style="background: #3b82f6"></span>
+                  <div class="flex-1">
+                    <p class="text-[13px] font-medium text-gray-700">
+                      中村三郎 — 中間点呼の時間です
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      長距離運行中 / 次回点呼予定: 14:00
+                    </p>
+                  </div>
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-info"
+                    >リマインド</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
 
-// data
+          <!-- ========== PAGE 2: Roll Call (点呼実施) ========== -->
+          <div id="page-rollcall" class="page">
+            <div class="max-w-3xl mx-auto">
+              <div class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                  <h3
+                    class="font-semibold text-[15px] text-gray-800 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="clipboard-check"
+                      class="w-5 h-5"
+                      style="color: #065f46"
+                    ></i
+                    >点呼実施フォーム
+                  </h3>
+                  <div class="text-right">
+                    <div
+                      class="text-[13px] font-medium text-gray-700"
+                      id="rollcallDateTime"
+                    ></div>
+                    <div class="text-[11px] text-gray-400">自動取得</div>
+                  </div>
+                </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+                <!-- Basic info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >点呼種別 <span class="text-red-400">*</span></label
+                    >
+                    <select
+                      id="rcType"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                      style="focus:ring-color:#065f46"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="乗務前">乗務前点呼</option>
+                      <option value="乗務後">乗務後点呼</option>
+                      <option value="中間">中間点呼</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >ドライバー <span class="text-red-400">*</span></label
+                    >
+                    <select
+                      id="rcDriver"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="yamada">山田 太郎</option>
+                      <option value="sato">佐藤 健一</option>
+                      <option value="tanaka">田中 次郎</option>
+                      <option value="nakamura">中村 三郎</option>
+                      <option value="takahashi">高橋 四郎</option>
+                      <option value="ito">伊藤 五郎</option>
+                      <option value="watanabe">渡辺 六郎</option>
+                      <option value="kobayashi">小林 七郎</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >点呼執行者 <span class="text-red-400">*</span></label
+                    >
+                    <select
+                      id="rcExecutor"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="suzuki" selected>鈴木 運行管理者</option>
+                      <option value="kato">加藤 副管理者</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >点呼方法</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="対面">対面</option>
+                      <option value="電話">電話</option>
+                      <option value="IT機器">IT機器（遠隔）</option>
+                    </select>
+                  </div>
+                </div>
 
+                <!-- Divider -->
+                <div class="border-t pt-6 mb-4">
+                  <h4
+                    class="text-[13px] font-semibold text-gray-700 mb-4 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="stethoscope"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i
+                    >健康チェック項目
+                  </h4>
+                </div>
 
-// detail
+                <!-- Health checklist -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >アルコール検知値 (mg/L)
+                      <span class="text-red-400">*</span></label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        id="rcAlcohol"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                        placeholder="0.00"
+                        class="flex-1 px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <span
+                        id="rcAlcoholBadge"
+                        class="px-2 py-1 rounded-full text-[11px] font-medium badge-ok"
+                        >正常</span
+                      >
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >体調確認 <span class="text-red-400">*</span></label
+                    >
+                    <select
+                      id="rcHealth"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="良好">良好</option>
+                      <option value="やや不調">やや不調</option>
+                      <option value="不調">不調</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >疲労度 <span class="text-red-400">*</span></label
+                    >
+                    <select
+                      id="rcFatigue"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="なし">なし</option>
+                      <option value="軽度">軽度</option>
+                      <option value="中度">中度</option>
+                      <option value="重度">重度</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >睡眠時間 <span class="text-red-400">*</span></label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        id="rcSleep"
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="24"
+                        placeholder="7.0"
+                        class="flex-1 px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <span class="text-[12px] text-gray-500">時間</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >服薬有無</label
+                    >
+                    <select
+                      id="rcMedicine"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2"
+                    >
+                      <option value="なし">なし</option>
+                      <option value="あり（運転に支障なし）">
+                        あり（運転に支障なし）
+                      </option>
+                      <option value="あり（要確認）">あり（要確認）</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >血圧（任意）</label
+                    >
+                    <div class="flex items-center gap-1">
+                      <input
+                        type="number"
+                        placeholder="上"
+                        class="w-20 px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <span class="text-gray-400">/</span>
+                      <input
+                        type="number"
+                        placeholder="下"
+                        class="w-20 px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <span class="text-[12px] text-gray-500 ml-1">mmHg</span>
+                    </div>
+                  </div>
+                </div>
 
-function switchTab(gid,idx,color){
-document.querySelectorAll('[data-tab^="'+gid+'"]').forEach((b,i)=>{
-b.style.borderColor=i===idx?color:'transparent';
-b.classList.toggle('font-semibold',i===idx);b.classList.toggle('text-gray-400',i!==idx);});
-document.querySelectorAll('[data-panel^="'+gid+'"]').forEach((p,i)=>{
-p.style.display=i===idx?'block':'none';});}
+                <!-- Memo -->
+                <div class="mb-6">
+                  <label
+                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                    >指示事項メモ</label
+                  >
+                  <textarea
+                    id="rcMemo"
+                    rows="3"
+                    placeholder="特記事項、運行上の注意点など..."
+                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                  ></textarea>
+                </div>
 
+                <!-- Judgment -->
+                <div class="border-t pt-6 mb-6">
+                  <h4
+                    class="text-[13px] font-semibold text-gray-700 mb-4 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="shield-check"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i
+                    >判定結果
+                  </h4>
+                  <div class="flex gap-3" id="rcJudgment">
+                    <label class="flex-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="judgment"
+                        value="乗務可"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="p-4 rounded-xl border-2 border-gray-200 text-center transition-all peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300"
+                      >
+                        <div
+                          class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2"
+                        >
+                          <i
+                            data-lucide="check"
+                            class="w-5 h-5 text-green-600"
+                          ></i>
+                        </div>
+                        <p class="text-[13px] font-semibold text-gray-700">
+                          乗務可
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">問題なし</p>
+                      </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="judgment"
+                        value="条件付き可"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="p-4 rounded-xl border-2 border-gray-200 text-center transition-all peer-checked:border-amber-500 peer-checked:bg-amber-50 hover:border-amber-300"
+                      >
+                        <div
+                          class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-2"
+                        >
+                          <i
+                            data-lucide="alert-triangle"
+                            class="w-5 h-5 text-amber-600"
+                          ></i>
+                        </div>
+                        <p class="text-[13px] font-semibold text-gray-700">
+                          条件付き可
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                          注意事項あり
+                        </p>
+                      </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="judgment"
+                        value="乗務不可"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="p-4 rounded-xl border-2 border-gray-200 text-center transition-all peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-300"
+                      >
+                        <div
+                          class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-2"
+                        >
+                          <i data-lucide="x" class="w-5 h-5 text-red-600"></i>
+                        </div>
+                        <p class="text-[13px] font-semibold text-gray-700">
+                          乗務不可
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">乗務禁止</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
 
-// report
+                <!-- Submit -->
+                <div class="flex items-center justify-between">
+                  <p class="text-[11px] text-gray-400">
+                    <span class="text-red-400">*</span> は必須項目です
+                  </p>
+                  <div class="flex gap-2">
+                    <button
+                      onclick="clearRollCallForm()"
+                      class="inline-flex items-center gap-1.5 py-2.5 px-5 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer text-gray-600 border-gray-300"
+                    >
+                      <i data-lucide="rotate-ccw" class="w-4 h-4"></i>クリア
+                    </button>
+                    <button
+                      onclick="submitRollCall()"
+                      class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                      style="background: #065f46"
+                    >
+                      <i data-lucide="save" class="w-4 h-4"></i>点呼記録を保存
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ========== PAGE 3: Records (点呼記録一覧) ========== -->
+          <div id="page-records" class="page">
+            <!-- Filters -->
+            <div class="flex flex-wrap items-center justify-between mb-5 gap-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="recordSearch"
+                    type="text"
+                    placeholder="ドライバー名で検索..."
+                    class="pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 w-56"
+                    oninput="filterRecords()"
+                  />
+                </div>
+                <select
+                  id="recordFilterType"
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none"
+                  onchange="filterRecords()"
+                >
+                  <option value="">全種別</option>
+                  <option value="乗務前">乗務前</option>
+                  <option value="乗務後">乗務後</option>
+                  <option value="中間">中間</option>
+                </select>
+                <select
+                  id="recordFilterJudge"
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none"
+                  onchange="filterRecords()"
+                >
+                  <option value="">全判定</option>
+                  <option value="乗務可">乗務可</option>
+                  <option value="条件付き可">条件付き可</option>
+                  <option value="乗務不可">乗務不可</option>
+                </select>
+                <input
+                  type="date"
+                  id="recordFilterDate"
+                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none"
+                  onchange="filterRecords()"
+                />
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                style="color: #065f46; border-color: #065f46"
+              >
+                <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+              </button>
+            </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [911, 788, 320, 181, 376, 725], "backgroundColor": "#065f46", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Table -->
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table id="recordsTbl" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 0)"
+                      >
+                        日時 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 1)"
+                      >
+                        ドライバー <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 2)"
+                      >
+                        種別 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 3)"
+                      >
+                        AL値 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 4)"
+                      >
+                        体調 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 5)"
+                      >
+                        判定 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('recordsTbl', 6)"
+                      >
+                        執行者 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        備考
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="recordsTbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span id="recordCount" class="text-[12px] text-gray-400"></span>
+            </div>
+          </div>
 
-</script>
-</body></html>
+          <!-- ========== PAGE 4: Alcohol (アルコール検知) ========== -->
+          <div id="page-alcohol" class="page">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #065f4615"
+                >
+                  <i
+                    data-lucide="percent"
+                    class="w-6 h-6"
+                    style="color: #065f46"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold" style="color: #065f46">
+                    98.2%
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">検査実施率</div>
+                </div>
+              </div>
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #ef444415"
+                >
+                  <i
+                    data-lucide="alert-octagon"
+                    class="w-6 h-6"
+                    style="color: #ef4444"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-red-600">0.4%</div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">異常検知率</div>
+                </div>
+              </div>
+              <div class="card p-5 flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style="background: #10b98115"
+                >
+                  <i
+                    data-lucide="trending-down"
+                    class="w-6 h-6"
+                    style="color: #10b981"
+                  ></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold" style="color: #10b981">
+                    0.00
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-0.5">
+                    平均値 (mg/L)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  ドライバー別 平均アルコール値
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="alcoChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  日別アルコール検知推移（過去14日）
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="alcoChart2"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Anomaly alerts -->
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-red-500"></i
+                >異常値アラート一覧（直近30日）
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        日時
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        ドライバー
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        検知値
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        基準値
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        対応
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 bg-red-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        2026/03/10 06:15
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田 太郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] font-bold text-red-600">
+                        0.08 mg/L
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        0.00 mg/L
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-ng"
+                          >乗務不可・報告済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 bg-red-50/50">
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        2026/03/05 05:50
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        高橋 四郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] font-bold text-red-600">
+                        0.05 mg/L
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        0.00 mg/L
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-ng"
+                          >乗務不可・報告済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        2026/02/22 06:30
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        渡辺 六郎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] font-bold text-red-600">
+                        0.03 mg/L
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        0.00 mg/L
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-ng"
+                          >乗務不可・報告済</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== PAGE 5: Drivers (ドライバー状態) ========== -->
+          <div id="page-drivers" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <h3
+                class="font-semibold text-[14px] text-gray-700 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="users"
+                  class="w-4 h-4"
+                  style="color: #065f46"
+                ></i
+                >ドライバー健康総覧
+              </h3>
+              <div class="flex items-center gap-2">
+                <span class="flex items-center gap-1 text-[11px] text-gray-500"
+                  ><span class="status-dot status-ok"></span>正常</span
+                >
+                <span class="flex items-center gap-1 text-[11px] text-gray-500"
+                  ><span class="status-dot status-warn"></span>注意</span
+                >
+                <span class="flex items-center gap-1 text-[11px] text-gray-500"
+                  ><span class="status-dot status-ng"></span>警告</span
+                >
+              </div>
+            </div>
+
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+              id="driverCards"
+            >
+              <!-- Driver cards rendered by JS -->
+            </div>
+          </div>
+
+          <!-- ========== PAGE 6: Legal (法定帳票) ========== -->
+          <div id="page-legal" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+              <!-- Compliance score -->
+              <div class="card p-5 text-center">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                  コンプライアンススコア
+                </h3>
+                <div class="relative w-32 h-32 mx-auto mb-3">
+                  <svg class="w-32 h-32 -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      stroke-width="3"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#065f46"
+                      stroke-width="3"
+                      stroke-dasharray="94, 100"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
+                    <span class="text-2xl font-bold" style="color: #065f46"
+                      >94%</span
+                    >
+                  </div>
+                </div>
+                <p class="text-[12px] text-gray-500">法令遵守率</p>
+              </div>
+
+              <!-- Record counts -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  期間別記録件数
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">今月</p>
+                      <p class="text-[11px] text-gray-400">2026年3月</p>
+                    </div>
+                    <span class="text-[15px] font-bold" style="color: #065f46"
+                      >482件</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        今年度累計
+                      </p>
+                      <p class="text-[11px] text-gray-400">2025年4月〜</p>
+                    </div>
+                    <span class="text-[15px] font-bold" style="color: #065f46"
+                      >5,847件</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        1年保存分
+                      </p>
+                      <p class="text-[11px] text-gray-400">〜2025年3月</p>
+                    </div>
+                    <span class="text-[15px] font-bold text-gray-600"
+                      >6,124件</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        3年保存分
+                      </p>
+                      <p class="text-[11px] text-gray-400">〜2023年3月</p>
+                    </div>
+                    <span class="text-[15px] font-bold text-gray-600"
+                      >18,392件</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Retention management -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  保存期間管理
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="p-3 rounded-lg border border-green-200 bg-green-50"
+                  >
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="status-dot status-ok"></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        点呼簿（1年保存）
+                      </p>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      期限: 2027/03/31 — 正常保存中
+                    </p>
+                    <div class="w-full h-1.5 bg-green-200 rounded-full mt-2">
+                      <div
+                        class="h-1.5 rounded-full"
+                        style="width: 25%; background: #065f46"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-3 rounded-lg border border-green-200 bg-green-50"
+                  >
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="status-dot status-ok"></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        運転日報（1年保存）
+                      </p>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      期限: 2027/03/31 — 正常保存中
+                    </p>
+                    <div class="w-full h-1.5 bg-green-200 rounded-full mt-2">
+                      <div
+                        class="h-1.5 rounded-full"
+                        style="width: 25%; background: #065f46"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-3 rounded-lg border border-amber-200 bg-amber-50"
+                  >
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="status-dot status-warn"></span>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        事故記録（3年保存）
+                      </p>
+                    </div>
+                    <p class="text-[11px] text-gray-500">
+                      期限: 2028/03/31 — 残り2年
+                    </p>
+                    <div class="w-full h-1.5 bg-amber-200 rounded-full mt-2">
+                      <div
+                        class="h-1.5 rounded-full"
+                        style="width: 66%; background: #f59e0b"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mock PDF preview -->
+            <div class="card p-5 mb-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="file-text"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >点呼簿プレビュー
+                </h3>
+                <div class="flex gap-2">
+                  <select
+                    id="legalMonth"
+                    class="px-3 py-2 text-[13px] border rounded-lg bg-white focus:outline-none"
+                  >
+                    <option>2026年3月</option>
+                    <option>2026年2月</option>
+                    <option>2026年1月</option>
+                  </select>
+                  <button
+                    class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="download" class="w-4 h-4"></i>PDF出力
+                  </button>
+                </div>
+              </div>
+              <div
+                class="border rounded-lg p-6 bg-white"
+                style="font-family: &quot;Noto Sans JP&quot;, serif"
+              >
+                <div class="text-center mb-4">
+                  <h2 class="text-[16px] font-bold">点 呼 記 録 簿</h2>
+                  <p class="text-[12px] text-gray-500 mt-1">
+                    令和8年3月 / 株式会社サンプル運送
+                  </p>
+                </div>
+                <table class="w-full border-collapse text-[11px]">
+                  <thead>
+                    <tr class="bg-gray-100">
+                      <th class="border border-gray-300 px-2 py-1.5">日付</th>
+                      <th class="border border-gray-300 px-2 py-1.5">時刻</th>
+                      <th class="border border-gray-300 px-2 py-1.5">種別</th>
+                      <th class="border border-gray-300 px-2 py-1.5">
+                        ドライバー
+                      </th>
+                      <th class="border border-gray-300 px-2 py-1.5">AL値</th>
+                      <th class="border border-gray-300 px-2 py-1.5">体調</th>
+                      <th class="border border-gray-300 px-2 py-1.5">睡眠</th>
+                      <th class="border border-gray-300 px-2 py-1.5">判定</th>
+                      <th class="border border-gray-300 px-2 py-1.5">執行者</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="border border-gray-300 px-2 py-1">3/1</td>
+                      <td class="border border-gray-300 px-2 py-1">06:00</td>
+                      <td class="border border-gray-300 px-2 py-1">乗務前</td>
+                      <td class="border border-gray-300 px-2 py-1">山田太郎</td>
+                      <td class="border border-gray-300 px-2 py-1">0.00</td>
+                      <td class="border border-gray-300 px-2 py-1">良好</td>
+                      <td class="border border-gray-300 px-2 py-1">7h</td>
+                      <td class="border border-gray-300 px-2 py-1">可</td>
+                      <td class="border border-gray-300 px-2 py-1">鈴木</td>
+                    </tr>
+                    <tr>
+                      <td class="border border-gray-300 px-2 py-1">3/1</td>
+                      <td class="border border-gray-300 px-2 py-1">06:15</td>
+                      <td class="border border-gray-300 px-2 py-1">乗務前</td>
+                      <td class="border border-gray-300 px-2 py-1">佐藤健一</td>
+                      <td class="border border-gray-300 px-2 py-1">0.00</td>
+                      <td class="border border-gray-300 px-2 py-1">良好</td>
+                      <td class="border border-gray-300 px-2 py-1">6h</td>
+                      <td class="border border-gray-300 px-2 py-1">可</td>
+                      <td class="border border-gray-300 px-2 py-1">鈴木</td>
+                    </tr>
+                    <tr>
+                      <td class="border border-gray-300 px-2 py-1">3/1</td>
+                      <td class="border border-gray-300 px-2 py-1">06:30</td>
+                      <td class="border border-gray-300 px-2 py-1">乗務前</td>
+                      <td class="border border-gray-300 px-2 py-1">田中次郎</td>
+                      <td class="border border-gray-300 px-2 py-1">0.00</td>
+                      <td class="border border-gray-300 px-2 py-1">良好</td>
+                      <td class="border border-gray-300 px-2 py-1">8h</td>
+                      <td class="border border-gray-300 px-2 py-1">可</td>
+                      <td class="border border-gray-300 px-2 py-1">加藤</td>
+                    </tr>
+                    <tr>
+                      <td class="border border-gray-300 px-2 py-1">3/1</td>
+                      <td class="border border-gray-300 px-2 py-1">17:30</td>
+                      <td class="border border-gray-300 px-2 py-1">乗務後</td>
+                      <td class="border border-gray-300 px-2 py-1">山田太郎</td>
+                      <td class="border border-gray-300 px-2 py-1">0.00</td>
+                      <td class="border border-gray-300 px-2 py-1">良好</td>
+                      <td class="border border-gray-300 px-2 py-1">-</td>
+                      <td class="border border-gray-300 px-2 py-1">可</td>
+                      <td class="border border-gray-300 px-2 py-1">鈴木</td>
+                    </tr>
+                    <tr>
+                      <td class="border border-gray-300 px-2 py-1">3/1</td>
+                      <td class="border border-gray-300 px-2 py-1">18:00</td>
+                      <td class="border border-gray-300 px-2 py-1">乗務後</td>
+                      <td class="border border-gray-300 px-2 py-1">佐藤健一</td>
+                      <td class="border border-gray-300 px-2 py-1">0.00</td>
+                      <td class="border border-gray-300 px-2 py-1">良好</td>
+                      <td class="border border-gray-300 px-2 py-1">-</td>
+                      <td class="border border-gray-300 px-2 py-1">可</td>
+                      <td class="border border-gray-300 px-2 py-1">鈴木</td>
+                    </tr>
+                    <tr class="text-gray-400">
+                      <td
+                        class="border border-gray-300 px-2 py-1 text-center"
+                        colspan="9"
+                      >
+                        ... 以下省略（全482件）
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div
+                  class="mt-4 flex justify-between text-[10px] text-gray-400"
+                >
+                  <span>出力日: 2026/03/10</span
+                  ><span>RollCall デジタル点呼管理システム</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audit checklist -->
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="shield-check"
+                  class="w-4 h-4"
+                  style="color: #065f46"
+                ></i
+                >監査対応チェックリスト
+              </h3>
+              <div class="space-y-2">
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      点呼簿の記載事項が法定要件を満たしている
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      旅客/貨物自動車運送事業輸送安全規則に準拠
+                    </p>
+                  </div>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      アルコール検知器による検査を全点呼で実施
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      2023年12月義務化対応
+                    </p>
+                  </div>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      点呼記録の保存期間（1年間）を遵守
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      電子データでの保存要件を満たしている
+                    </p>
+                  </div>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      運行管理者による点呼の実施割合が基準以上
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      補助者による実施は全体の2/3以下
+                    </p>
+                  </div>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      IT点呼の実施要件の確認
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      機器の正常性確認記録の整備
+                    </p>
+                  </div>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    class="w-4 h-4 rounded"
+                    style="accent-color: #065f46"
+                  />
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      異常時の対応手順書の最新版を整備
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      直近の更新: 2026/01/15
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== PAGE 7: Settings (設定) ========== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl">
+              <!-- Driver master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="users"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >ドライバーマスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-[13px]">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          氏名
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          社員番号
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          所属
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          免許種別
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ステータス
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        ></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">山田 太郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-001</td>
+                        <td class="px-3 py-2.5 text-gray-500">第1配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">大型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">佐藤 健一</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-002</td>
+                        <td class="px-3 py-2.5 text-gray-500">第1配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">大型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">田中 次郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-003</td>
+                        <td class="px-3 py-2.5 text-gray-500">第2配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">中型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">中村 三郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-004</td>
+                        <td class="px-3 py-2.5 text-gray-500">長距離課</td>
+                        <td class="px-3 py-2.5 text-gray-500">大型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">高橋 四郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-005</td>
+                        <td class="px-3 py-2.5 text-gray-500">第2配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">大型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-warn"
+                            >休暇中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">伊藤 五郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-006</td>
+                        <td class="px-3 py-2.5 text-gray-500">第1配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">中型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">渡辺 六郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-007</td>
+                        <td class="px-3 py-2.5 text-gray-500">長距離課</td>
+                        <td class="px-3 py-2.5 text-gray-500">大型</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5">小林 七郎</td>
+                        <td class="px-3 py-2.5 text-gray-500">D-008</td>
+                        <td class="px-3 py-2.5 text-gray-500">第2配送課</td>
+                        <td class="px-3 py-2.5 text-gray-500">普通</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >稼働中</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="mt-3">
+                  <button
+                    class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                    style="color: #065f46; border-color: #065f46"
+                  >
+                    <i data-lucide="plus" class="w-4 h-4"></i>ドライバー追加
+                  </button>
+                </div>
+              </div>
+
+              <!-- Executor master -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="user-check"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >点呼執行者マスタ
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-[13px]">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          氏名
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          資格
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          資格番号
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          有効期限
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        ></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5 font-medium">鈴木 運行管理者</td>
+                        <td class="px-3 py-2.5 text-gray-500">
+                          運行管理者（貨物）
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-500">K-2024-1234</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >2028/03/31</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-3 py-2.5 font-medium">加藤 副管理者</td>
+                        <td class="px-3 py-2.5 text-gray-500">
+                          運行管理者（貨物）
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-500">K-2024-5678</td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[11px] badge-ok"
+                            >2027/09/30</span
+                          >
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <button
+                            class="text-[11px] text-blue-500 hover:underline cursor-pointer"
+                          >
+                            編集
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Alcohol detector settings -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="wifi"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >アルコール検知器連携
+                </h3>
+                <div class="space-y-4">
+                  <div
+                    class="flex items-center justify-between p-4 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-white border flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="bluetooth"
+                          class="w-5 h-5 text-blue-500"
+                        ></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          AL-300 Bluetooth対応検知器
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          シリアル: ALC-2024-0001 / 最終校正: 2026/01/15
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-ok"
+                      >接続中</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-4 rounded-lg bg-gray-50"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 rounded-lg bg-white border flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="bluetooth"
+                          class="w-5 h-5 text-gray-400"
+                        ></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          AL-300 Bluetooth対応検知器（予備）
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          シリアル: ALC-2024-0002 / 最終校正: 2026/01/15
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500"
+                      >未接続</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Threshold settings -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="sliders"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >判定基準値設定
+                </h3>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >アルコール基準値 (mg/L)</label
+                      >
+                      <input
+                        type="number"
+                        value="0.00"
+                        step="0.01"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <p class="text-[11px] text-gray-400 mt-1">
+                        0.00以上で乗務不可判定
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >最低睡眠時間（時間）</label
+                      >
+                      <input
+                        type="number"
+                        value="5"
+                        step="0.5"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <p class="text-[11px] text-gray-400 mt-1">
+                        下回る場合に警告表示
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >連続勤務日数上限</label
+                      >
+                      <input
+                        type="number"
+                        value="13"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <p class="text-[11px] text-gray-400 mt-1">
+                        超過時にアラート
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >点呼未実施アラート（分）</label
+                      >
+                      <input
+                        type="number"
+                        value="30"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2"
+                      />
+                      <p class="text-[11px] text-gray-400 mt-1">
+                        予定時刻からの超過分数
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end pt-2">
+                    <button
+                      class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                      style="background: #065f46"
+                    >
+                      <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ==================== Data ====================
+      const drivers = [
+        {
+          id: "yamada",
+          name: "山田 太郎",
+          dept: "第1配送課",
+          license: "大型",
+          consecutiveDays: 8,
+          fatigueIndex: 42,
+          lastRollcall: {
+            type: "乗務前",
+            time: "06:15",
+            alcohol: 0.08,
+            health: "良好",
+            sleep: 7,
+            judgment: "乗務不可",
+          },
+          flag: "ng",
+        },
+        {
+          id: "sato",
+          name: "佐藤 健一",
+          dept: "第1配送課",
+          license: "大型",
+          consecutiveDays: 5,
+          fatigueIndex: 58,
+          lastRollcall: {
+            type: "乗務前",
+            time: "06:30",
+            alcohol: 0.0,
+            health: "やや不調",
+            sleep: 4,
+            judgment: "条件付き可",
+          },
+          flag: "warn",
+        },
+        {
+          id: "tanaka",
+          name: "田中 次郎",
+          dept: "第2配送課",
+          license: "中型",
+          consecutiveDays: 3,
+          fatigueIndex: 25,
+          lastRollcall: {
+            type: "乗務前",
+            time: "06:45",
+            alcohol: 0.0,
+            health: "良好",
+            sleep: 7.5,
+            judgment: "乗務可",
+          },
+          flag: "ok",
+        },
+        {
+          id: "nakamura",
+          name: "中村 三郎",
+          dept: "長距離課",
+          license: "大型",
+          consecutiveDays: 11,
+          fatigueIndex: 72,
+          lastRollcall: {
+            type: "中間",
+            time: "10:00",
+            alcohol: 0.0,
+            health: "良好",
+            sleep: 6,
+            judgment: "乗務可",
+          },
+          flag: "warn",
+        },
+        {
+          id: "takahashi",
+          name: "高橋 四郎",
+          dept: "第2配送課",
+          license: "大型",
+          consecutiveDays: 0,
+          fatigueIndex: 10,
+          lastRollcall: {
+            type: "-",
+            time: "-",
+            alcohol: "-",
+            health: "-",
+            sleep: "-",
+            judgment: "-",
+          },
+          flag: "ok",
+        },
+        {
+          id: "ito",
+          name: "伊藤 五郎",
+          dept: "第1配送課",
+          license: "中型",
+          consecutiveDays: 6,
+          fatigueIndex: 35,
+          lastRollcall: {
+            type: "乗務前",
+            time: "06:20",
+            alcohol: 0.0,
+            health: "良好",
+            sleep: 8,
+            judgment: "乗務可",
+          },
+          flag: "ok",
+        },
+        {
+          id: "watanabe",
+          name: "渡辺 六郎",
+          dept: "長距離課",
+          license: "大型",
+          consecutiveDays: 9,
+          fatigueIndex: 65,
+          lastRollcall: {
+            type: "乗務前",
+            time: "05:45",
+            alcohol: 0.0,
+            health: "良好",
+            sleep: 5.5,
+            judgment: "乗務可",
+          },
+          flag: "ok",
+        },
+        {
+          id: "kobayashi",
+          name: "小林 七郎",
+          dept: "第2配送課",
+          license: "普通",
+          consecutiveDays: 4,
+          fatigueIndex: 20,
+          lastRollcall: {
+            type: "乗務前",
+            time: "07:00",
+            alcohol: 0.0,
+            health: "良好",
+            sleep: 7,
+            judgment: "乗務可",
+          },
+          flag: "ok",
+        },
+      ];
+
+      const rollcallRecords = [
+        {
+          datetime: "2026/03/10 06:00",
+          driver: "山田 太郎",
+          type: "乗務前",
+          alcohol: 0.08,
+          health: "良好",
+          judgment: "乗務不可",
+          executor: "鈴木",
+          note: "アルコール検知 乗務停止指示",
+        },
+        {
+          datetime: "2026/03/10 06:15",
+          driver: "佐藤 健一",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "やや不調",
+          judgment: "条件付き可",
+          executor: "鈴木",
+          note: "睡眠4時間 短距離のみ許可",
+        },
+        {
+          datetime: "2026/03/10 06:20",
+          driver: "伊藤 五郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/10 06:30",
+          driver: "田中 次郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "加藤",
+          note: "",
+        },
+        {
+          datetime: "2026/03/10 05:45",
+          driver: "渡辺 六郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "長距離運行 中間点呼予定14:00",
+        },
+        {
+          datetime: "2026/03/10 07:00",
+          driver: "小林 七郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "加藤",
+          note: "",
+        },
+        {
+          datetime: "2026/03/10 10:00",
+          driver: "中村 三郎",
+          type: "中間",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "電話点呼 異常なし",
+        },
+        {
+          datetime: "2026/03/09 06:00",
+          driver: "山田 太郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/09 06:15",
+          driver: "佐藤 健一",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/09 06:30",
+          driver: "田中 次郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "加藤",
+          note: "",
+        },
+        {
+          datetime: "2026/03/09 17:00",
+          driver: "山田 太郎",
+          type: "乗務後",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/09 17:30",
+          driver: "佐藤 健一",
+          type: "乗務後",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/09 18:00",
+          driver: "田中 次郎",
+          type: "乗務後",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "加藤",
+          note: "",
+        },
+        {
+          datetime: "2026/03/08 06:00",
+          driver: "山田 太郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/08 06:15",
+          driver: "佐藤 健一",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "やや不調",
+          judgment: "条件付き可",
+          executor: "鈴木",
+          note: "頭痛あり 経過観察",
+        },
+        {
+          datetime: "2026/03/08 17:00",
+          driver: "山田 太郎",
+          type: "乗務後",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "加藤",
+          note: "",
+        },
+        {
+          datetime: "2026/03/07 06:00",
+          driver: "渡辺 六郎",
+          type: "乗務前",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/07 12:00",
+          driver: "渡辺 六郎",
+          type: "中間",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "電話点呼",
+        },
+        {
+          datetime: "2026/03/07 20:00",
+          driver: "渡辺 六郎",
+          type: "乗務後",
+          alcohol: 0.0,
+          health: "良好",
+          judgment: "乗務可",
+          executor: "鈴木",
+          note: "",
+        },
+        {
+          datetime: "2026/03/05 05:50",
+          driver: "高橋 四郎",
+          type: "乗務前",
+          alcohol: 0.05,
+          health: "良好",
+          judgment: "乗務不可",
+          executor: "鈴木",
+          note: "アルコール検知 乗務停止",
+        },
+      ];
+
+      // ==================== Navigation ====================
+      const charts = [];
+      const pageConfig = [
+        { id: "dashboard", title: "ダッシュボード", desc: "本日の点呼状況" },
+        { id: "rollcall", title: "点呼実施", desc: "デジタル点呼フォーム" },
+        { id: "records", title: "点呼記録一覧", desc: "検索・フィルター" },
+        { id: "alcohol", title: "アルコール検知", desc: "検査結果・統計" },
+        { id: "drivers", title: "ドライバー状態", desc: "健康総覧" },
+        { id: "legal", title: "法定帳票", desc: "帳票出力・監査対応" },
+        { id: "settings", title: "設定", desc: "マスタ・基準値管理" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      // ==================== Clock ====================
+      function updateClock() {
+        const now = new Date();
+        const str =
+          now.getFullYear() +
+          "/" +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          "/" +
+          String(now.getDate()).padStart(2, "0") +
+          " " +
+          String(now.getHours()).padStart(2, "0") +
+          ":" +
+          String(now.getMinutes()).padStart(2, "0") +
+          ":" +
+          String(now.getSeconds()).padStart(2, "0");
+        document.getElementById("currentTime").textContent = str;
+        const rcDt = document.getElementById("rollcallDateTime");
+        if (rcDt) rcDt.textContent = str;
+      }
+      setInterval(updateClock, 1000);
+
+      // ==================== Init ====================
+      document.addEventListener("DOMContentLoaded", () => {
+        updateClock();
+        navigate(location.hash.slice(1) || "dashboard");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        renderRecords();
+        renderDriverCards();
+        initCharts();
+        setupAlcoholInput();
+      });
+
+      // ==================== Charts ====================
+      function initCharts() {
+        // Dashboard chart 1: completion rate trend (line)
+        const dashLabels1 = [];
+        const dashData1 = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          dashLabels1.push(d.getMonth() + 1 + "/" + d.getDate());
+          dashData1.push(
+            Math.min(
+              100,
+              Math.max(
+                70,
+                85 + Math.sin(i * 0.5) * 8 + (Math.random() - 0.5) * 6,
+              ),
+            ),
+          );
+        }
+        charts.push(
+          new Chart(document.getElementById("dashChart1"), {
+            type: "line",
+            data: {
+              labels: dashLabels1,
+              datasets: [
+                {
+                  label: "完了率(%)",
+                  data: dashData1.map((v) => Math.round(v * 10) / 10),
+                  borderColor: "#065f46",
+                  backgroundColor: "#065f4620",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 0,
+                  pointHoverRadius: 4,
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  min: 60,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, maxTicksLimit: 10 },
+                },
+              },
+            },
+          }),
+        );
+
+        // Dashboard chart 2: hourly rollcall count (bar)
+        const hours = [
+          "05",
+          "06",
+          "07",
+          "08",
+          "09",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+        ];
+        const hourlyData = [1, 8, 3, 1, 0, 2, 0, 1, 0, 1, 0, 0, 5, 4, 1, 1];
+        charts.push(
+          new Chart(document.getElementById("dashChart2"), {
+            type: "bar",
+            data: {
+              labels: hours.map((h) => h + ":00"),
+              datasets: [
+                {
+                  label: "点呼件数",
+                  data: hourlyData,
+                  backgroundColor: hourlyData.map((v) =>
+                    v >= 5 ? "#065f46" : "#10b981",
+                  ),
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, stepSize: 2 },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+
+        // Alcohol chart 1: per driver average
+        charts.push(
+          new Chart(document.getElementById("alcoChart1"), {
+            type: "bar",
+            data: {
+              labels: drivers.map((d) => d.name.split(" ")[0]),
+              datasets: [
+                {
+                  label: "平均値(mg/L)",
+                  data: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0],
+                  backgroundColor: [0.01, 0, 0, 0, 0.01, 0, 0, 0].map((v) =>
+                    v > 0 ? "#ef4444" : "#10b981",
+                  ),
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              indexAxis: "y",
+              plugins: { legend: { display: false } },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  max: 0.1,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v.toFixed(2) },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Alcohol chart 2: daily trend
+        const alcoLabels = [];
+        const alcoMax = [];
+        const alcoAvg = [];
+        for (let i = 13; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          alcoLabels.push(d.getMonth() + 1 + "/" + d.getDate());
+          const hasAnomaly = i === 0 || i === 5;
+          alcoMax.push(hasAnomaly ? (i === 0 ? 0.08 : 0.05) : 0.0);
+          alcoAvg.push(hasAnomaly ? (i === 0 ? 0.01 : 0.007) : 0.0);
+        }
+        charts.push(
+          new Chart(document.getElementById("alcoChart2"), {
+            type: "line",
+            data: {
+              labels: alcoLabels,
+              datasets: [
+                {
+                  label: "最大値",
+                  data: alcoMax,
+                  borderColor: "#ef4444",
+                  backgroundColor: "#ef444420",
+                  pointRadius: 3,
+                  pointBackgroundColor: alcoMax.map((v) =>
+                    v > 0 ? "#ef4444" : "#10b981",
+                  ),
+                  borderWidth: 2,
+                  tension: 0.1,
+                },
+                {
+                  label: "平均値",
+                  data: alcoAvg,
+                  borderColor: "#10b981",
+                  borderDash: [4, 4],
+                  pointRadius: 2,
+                  borderWidth: 1.5,
+                  tension: 0.1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 0.1,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v.toFixed(2) },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+      }
+
+      // ==================== Records table ====================
+      function renderRecords(filteredData) {
+        const data = filteredData || rollcallRecords;
+        const tbody = document.getElementById("recordsTbody");
+        tbody.innerHTML = "";
+        data.forEach((r) => {
+          const judgeBadge =
+            r.judgment === "乗務可"
+              ? "badge-ok"
+              : r.judgment === "条件付き可"
+                ? "badge-warn"
+                : "badge-ng";
+          const healthBadge =
+            r.health === "良好"
+              ? "badge-ok"
+              : r.health === "やや不調"
+                ? "badge-warn"
+                : "badge-ng";
+          const rowBg =
+            r.judgment === "乗務不可"
+              ? "bg-red-50/50"
+              : r.judgment === "条件付き可"
+                ? "bg-amber-50/30"
+                : "";
+          const alcoholClass =
+            r.alcohol > 0 ? "font-bold text-red-600" : "text-gray-700";
+          const tr = document.createElement("tr");
+          tr.className =
+            "border-b border-gray-50 hover:bg-gray-50/50 transition-colors " +
+            rowBg;
+          tr.setAttribute("data-driver", r.driver);
+          tr.setAttribute("data-type", r.type);
+          tr.setAttribute("data-judgment", r.judgment);
+          tr.setAttribute("data-date", r.datetime.split(" ")[0]);
+          tr.innerHTML = `
+      <td class="px-4 py-3 text-[13px] text-gray-700 whitespace-nowrap">${r.datetime}</td>
+      <td class="px-4 py-3 text-[13px] font-medium text-gray-700">${r.driver}</td>
+      <td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium badge-info">${r.type}</span></td>
+      <td class="px-4 py-3 text-[13px] ${alcoholClass}">${typeof r.alcohol === "number" ? r.alcohol.toFixed(2) : r.alcohol}</td>
+      <td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${healthBadge}">${r.health}</span></td>
+      <td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${judgeBadge}">${r.judgment}</span></td>
+      <td class="px-4 py-3 text-[13px] text-gray-500">${r.executor}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-500 max-w-[200px] truncate" title="${r.note}">${r.note || "-"}</td>
+    `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById("recordCount").textContent =
+          data.length + "件表示";
+      }
+
+      function filterRecords() {
+        const search = document
+          .getElementById("recordSearch")
+          .value.toLowerCase();
+        const typeFilter = document.getElementById("recordFilterType").value;
+        const judgeFilter = document.getElementById("recordFilterJudge").value;
+        const dateFilter = document.getElementById("recordFilterDate").value;
+        const filtered = rollcallRecords.filter((r) => {
+          if (search && !r.driver.toLowerCase().includes(search)) return false;
+          if (typeFilter && r.type !== typeFilter) return false;
+          if (judgeFilter && r.judgment !== judgeFilter) return false;
+          if (dateFilter) {
+            const rDate = r.datetime.split(" ")[0].replace(/\//g, "-");
+            if (rDate !== dateFilter) return false;
+          }
+          return true;
+        });
+        renderRecords(filtered);
+      }
+
+      // ==================== Driver cards ====================
+      function renderDriverCards() {
+        const container = document.getElementById("driverCards");
+        container.innerHTML = "";
+        drivers.forEach((d) => {
+          const flagColor =
+            d.flag === "ok"
+              ? "status-ok"
+              : d.flag === "warn"
+                ? "status-warn"
+                : "status-ng";
+          const flagLabel =
+            d.flag === "ok" ? "正常" : d.flag === "warn" ? "注意" : "警告";
+          const flagBadge =
+            d.flag === "ok"
+              ? "badge-ok"
+              : d.flag === "warn"
+                ? "badge-warn"
+                : "badge-ng";
+          const fatigueColor =
+            d.fatigueIndex >= 70
+              ? "#ef4444"
+              : d.fatigueIndex >= 50
+                ? "#f59e0b"
+                : "#10b981";
+          const fatigueWidth = Math.min(100, d.fatigueIndex) + "%";
+          const consWarn = d.consecutiveDays >= 10;
+
+          const card = document.createElement("div");
+          card.className = "card p-5";
+          card.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-bold" style="background:#0c4a6e">${d.name.charAt(0)}</div>
+          <div>
+            <p class="text-[14px] font-semibold text-gray-800">${d.name}</p>
+            <p class="text-[11px] text-gray-400">${d.dept} / ${d.license}</p>
+          </div>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${flagBadge}">${flagLabel}</span>
+      </div>
+      <div class="space-y-2.5 text-[12px]">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">直近点呼</span>
+          <span class="text-gray-700">${d.lastRollcall.type} ${d.lastRollcall.time}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">AL値</span>
+          <span class="${d.lastRollcall.alcohol > 0 ? "font-bold text-red-600" : "text-gray-700"}">${typeof d.lastRollcall.alcohol === "number" ? d.lastRollcall.alcohol.toFixed(2) + " mg/L" : d.lastRollcall.alcohol}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">体調</span>
+          <span class="text-gray-700">${d.lastRollcall.health}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">睡眠</span>
+          <span class="${typeof d.lastRollcall.sleep === "number" && d.lastRollcall.sleep < 5 ? "font-medium text-amber-600" : "text-gray-700"}">${typeof d.lastRollcall.sleep === "number" ? d.lastRollcall.sleep + "h" : d.lastRollcall.sleep}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">連続勤務</span>
+          <span class="${consWarn ? "font-medium text-amber-600" : "text-gray-700"}">${d.consecutiveDays}日${consWarn ? " <span class='text-[10px] text-amber-500'>(上限注意)</span>" : ""}</span>
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-gray-500">累積疲労指数</span>
+            <span class="font-medium" style="color:${fatigueColor}">${d.fatigueIndex}/100</span>
+          </div>
+          <div class="w-full h-1.5 bg-gray-200 rounded-full"><div class="h-1.5 rounded-full transition-all" style="width:${fatigueWidth};background:${fatigueColor}"></div></div>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">判定</span>
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${d.lastRollcall.judgment === "乗務可" ? "badge-ok" : d.lastRollcall.judgment === "条件付き可" ? "badge-warn" : d.lastRollcall.judgment === "乗務不可" ? "badge-ng" : "bg-gray-100 text-gray-500"}">${d.lastRollcall.judgment}</span>
+        </div>
+      </div>
+    `;
+          container.appendChild(card);
+        });
+      }
+
+      // ==================== Roll call form ====================
+      function setupAlcoholInput() {
+        const input = document.getElementById("rcAlcohol");
+        const badge = document.getElementById("rcAlcoholBadge");
+        input.addEventListener("input", () => {
+          const val = parseFloat(input.value);
+          if (isNaN(val) || val <= 0) {
+            badge.className =
+              "px-2 py-1 rounded-full text-[11px] font-medium badge-ok";
+            badge.textContent = "正常";
+          } else {
+            badge.className =
+              "px-2 py-1 rounded-full text-[11px] font-medium badge-ng";
+            badge.textContent = "検知!";
+          }
+        });
+      }
+
+      function submitRollCall() {
+        const type = document.getElementById("rcType").value;
+        const driver = document.getElementById("rcDriver");
+        const driverName = driver.options[driver.selectedIndex]?.text || "";
+        const executor = document.getElementById("rcExecutor");
+        const executorName =
+          executor.options[executor.selectedIndex]?.text || "";
+        const alcohol =
+          parseFloat(document.getElementById("rcAlcohol").value) || 0;
+        const health = document.getElementById("rcHealth").value;
+        const fatigue = document.getElementById("rcFatigue").value;
+        const sleep = parseFloat(document.getElementById("rcSleep").value) || 0;
+        const judgment = document.querySelector(
+          'input[name="judgment"]:checked',
+        )?.value;
+
+        if (!type || !driver.value || !health || !fatigue || !judgment) {
+          showToast("必須項目を入力してください", "warn");
+          return;
+        }
+
+        const now = new Date();
+        const dt =
+          now.getFullYear() +
+          "/" +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          "/" +
+          String(now.getDate()).padStart(2, "0") +
+          " " +
+          String(now.getHours()).padStart(2, "0") +
+          ":" +
+          String(now.getMinutes()).padStart(2, "0");
+
+        rollcallRecords.unshift({
+          datetime: dt,
+          driver: driverName,
+          type: type,
+          alcohol: alcohol,
+          health: health,
+          judgment: judgment,
+          executor: executorName.split(" ")[0],
+          note: document.getElementById("rcMemo").value || "",
+        });
+
+        showToast("点呼記録を保存しました", "ok");
+        clearRollCallForm();
+      }
+
+      function clearRollCallForm() {
+        document.getElementById("rcType").value = "";
+        document.getElementById("rcDriver").value = "";
+        document.getElementById("rcAlcohol").value = "";
+        document.getElementById("rcHealth").value = "";
+        document.getElementById("rcFatigue").value = "";
+        document.getElementById("rcSleep").value = "";
+        document.getElementById("rcMemo").value = "";
+        document.getElementById("rcMedicine").value = "なし";
+        const checked = document.querySelector(
+          'input[name="judgment"]:checked',
+        );
+        if (checked) checked.checked = false;
+        const badge = document.getElementById("rcAlcoholBadge");
+        badge.className =
+          "px-2 py-1 rounded-full text-[11px] font-medium badge-ok";
+        badge.textContent = "正常";
+      }
+
+      // ==================== Toast ====================
+      function showToast(msg, type) {
+        const toast = document.createElement("div");
+        const bg =
+          type === "ok" ? "#065f46" : type === "warn" ? "#92400e" : "#991b1b";
+        toast.style.cssText = `position:fixed;bottom:24px;right:24px;background:${bg};color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;animation:fadeIn .25s ease-out;box-shadow:0 4px 12px rgba(0,0,0,.15)`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transition = "opacity .3s";
+          setTimeout(() => toast.remove(), 300);
+        }, 2500);
+      }
+
+      // ==================== Table sort ====================
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(b.querySelectorAll("tr"));
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => b.appendChild(r));
+      }
+    </script>
+  </body>
+</html>

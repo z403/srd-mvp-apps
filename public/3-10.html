@@ -1,98 +1,2964 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>荷主との受発注 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>
+      OrderLink — 荷主連携デジタル受発注システム | 運輸業・物流業 | SRD
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-received {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-confirmed {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-dispatched {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-completed {
+        background: #f0fdf4;
+        color: #166534;
+      }
+      .badge-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .dispatch-card {
+        border: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .dispatch-card:hover {
+        border-color: #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+      }
+      .dispatch-card.selected {
+        border-color: #065f46;
+        background: #f0fdf4;
+      }
+      .toggle-active {
+        background: #065f46 !important;
+        color: #fff !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #0c4a6e"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0"
+            >
+              OL
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">OrderLink</p>
+              <p class="text-[11px] opacity-50 truncate">
+                荷主連携デジタル受発注
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="orders"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('orders')"
+            ><i
+              data-lucide="clipboard-list"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">受注一覧</span></a
+          >
+          <a
+            data-page="entry"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('entry')"
+            ><i data-lucide="file-plus" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">受注入力</span></a
+          >
+          <a
+            data-page="shippers"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('shippers')"
+            ><i data-lucide="building-2" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">荷主管理</span></a
+          >
+          <a
+            data-page="dispatch"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dispatch')"
+            ><i data-lucide="truck" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">配車連携</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('analytics')"
+            ><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">実績・分析</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">荷主との受発注</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">在庫管理</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="git-compare" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              受発注状況の全体像
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #d1fae5; color: #065f46"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">進捗とカテゴリ分析</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#065f46"></div><div class="w-0.5 flex-1 mx-auto" style="background:#065f46"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">計画</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/24</p><p class="text-[12px] text-gray-500 mt-1">荷主との計画策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#065f46"></div><div class="w-0.5 flex-1 mx-auto" style="background:#065f46"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">準備</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/23</p><p class="text-[12px] text-gray-500 mt-1">必要な情報の収集</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#065f46"></div><div class="w-0.5 flex-1 mx-auto" style="background:#065f46"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">実行</p><p class="text-[11px] text-gray-400 mt-0.5">2026/04/14</p><p class="text-[12px] text-gray-500 mt-1">荷主との実施</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">確認</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/10</p><p class="text-[12px] text-gray-500 mt-1">結果の確認・検証</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別荷主と比較</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">管理品目数</span><i data-lucide="package" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">1178品</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">在庫金額</span><i data-lucide="database" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">1648万円</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">発注点割れ</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">5品</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">回転率</span><i data-lucide="refresh-cw" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">11回</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2</div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="invSearch" type="text" placeholder="品目を検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>入荷登録</button></div><div id="invGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-928"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-928</p></div><div class="text-2xl font-bold text-gray-800">99<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 24個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-576"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-576</p><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">低在庫</span></div><div class="text-2xl font-bold text-gray-800">26<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-red-500" style="width:18%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 48個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-162"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-162</p></div><div class="text-2xl font-bold text-gray-800">133<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:92%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 48個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-751"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-751</p></div><div class="text-2xl font-bold text-gray-800">77<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 20個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-831"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-831</p></div><div class="text-2xl font-bold text-gray-800">82<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:70%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 39個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-895"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-895</p></div><div class="text-2xl font-bold text-gray-800">186<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 27個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-162"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-162</p><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">低在庫</span></div><div class="text-2xl font-bold text-gray-800">29<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-red-500" style="width:20%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 49個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-351"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-351</p></div><div class="text-2xl font-bold text-gray-800">103<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 13個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-486"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-486</p></div><div class="text-2xl font-bold text-gray-800">47<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-amber-500" style="width:54%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 29個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-903"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-903</p></div><div class="text-2xl font-bold text-gray-800">86<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 27個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-346"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-346</p></div><div class="text-2xl font-bold text-gray-800">199<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 36個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-965"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-965</p></div><div class="text-2xl font-bold text-gray-800">114<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 24個</p></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤配車担当 管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5742</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400 mt-1">管理課 · 2026/01/10</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥389万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中ドライバー 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7662</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/02/11</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥62万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木運行管理者 整備課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6689</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">鈴木運行管理者</p><p class="text-[11px] text-gray-400 mt-1">整備課 · 2026/02/09</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥784万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田倉庫管理 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9178</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">山田倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/01/15</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥672万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋経理 営業課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2209</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">高橋経理</p><p class="text-[11px] text-gray-400 mt-1">営業課 · 2026/02/06</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥165万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤営業 管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3422</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">伊藤営業</p><p class="text-[11px] text-gray-400 mt-1">管理課 · 2026/01/23</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥956万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺整備管理 管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9016</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">渡辺整備管理</p><p class="text-[11px] text-gray-400 mt-1">管理課 · 2026/03/15</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥199万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村安全管理者 営業課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9923</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">待機中</span></div><p class="text-[13px] font-medium text-gray-700">中村安全管理者</p><p class="text-[11px] text-gray-400 mt-1">営業課 · 2026/03/11</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥937万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林荷役担当 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5438</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">配送中</span></div><p class="text-[13px] font-medium text-gray-700">小林荷役担当</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/02/07</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥385万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤事務 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#8854</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><p class="text-[13px] font-medium text-gray-700">加藤事務</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/03/12</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥613万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤配車担当 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6704</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/03/24</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥857万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中ドライバー 配送1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#7631</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400 mt-1">配送1課 · 2026/01/11</p><p class="text-[13px] font-bold mt-2" style="color:#065f46">¥811万</p></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#065f46"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#065f46"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#065f4615"><i data-lucide="trending-up" class="w-7 h-7" style="color:#065f46"></i></div><div><div class="text-3xl font-bold" style="color:#065f46">334</div><div class="text-[13px] text-gray-500 mt-1">今期合計</div><div class="text-[11px] text-gray-400 mt-0.5">前期比 +24.2%</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="calendar" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">269</div><div class="text-[13px] text-gray-500 mt-1">前期合計</div><div class="text-[11px] text-gray-400 mt-0.5"></div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="arrow-up-right" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">+65</div><div class="text-[13px] text-gray-500 mt-1">増減</div><div class="text-[11px] text-gray-400 mt-0.5">24.2%増</div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">期間比較</h3><div style="height:260px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">構成比変化</h3><div style="height:260px"><canvas id="rpC2"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== PAGE 1: DASHBOARD ==================== -->
+          <div id="page-dashboard" class="page active">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5 transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">本日受注件数</span>
+                  <i
+                    data-lucide="inbox"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  24件
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">+5 前日比</div>
+              </div>
+              <div class="card p-5 transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">未確認受注</span>
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-amber-600">7件</div>
+                <div class="text-[11px] mt-2 text-red-500">要対応</div>
+              </div>
+              <div class="card p-5 transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">配車済み率</span>
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  82.5%
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  +3.2% 前週比
+                </div>
+              </div>
+              <div class="card p-5 transition-shadow cursor-pointer">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">月間受注額</span>
+                  <i
+                    data-lucide="banknote"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  1,847万円
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  +12.8% 前月比
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "進捗とカテゴリ分析"}, {"id": "feature", "title": "在庫管理", "desc": "在庫状況・発注"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "期間比較"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+              <div class="card p-5 lg:col-span-2">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  日別受注件数推移
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  荷主別受注構成
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "bar", "data": {"labels": ["関東", "東海", "関西", "東北", "九州", "北海道"], "datasets": [{"label": "実績", "data": [55, 47, 35, 52, 16, 46], "backgroundColor": "#065f46", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}, "indexAxis": "y"}));
+            <div class="card p-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i data-lucide="bell" class="w-4 h-4" style="color: #065f46"></i
+                >未処理アラート
+              </h3>
+              <div class="space-y-3">
+                <div class="flex gap-3 items-start p-3 bg-red-50 rounded-lg">
+                  <div
+                    class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-4 h-4 text-red-600"
+                    ></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">丸和物産</span
+                      >からのFAX受注が未取込み（3件）
+                    </p>
+                    <p class="text-[11px] text-gray-400">15分前</p>
+                  </div>
+                  <button
+                    class="text-[11px] px-3 py-1 rounded-lg font-medium text-white shrink-0 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    対応
+                  </button>
+                </div>
+                <div class="flex gap-3 items-start p-3 bg-amber-50 rounded-lg">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">東海食品</span>の受注
+                      #ORD-2024-0312 が2時間未確認
+                    </p>
+                    <p class="text-[11px] text-gray-400">2時間前</p>
+                  </div>
+                  <button
+                    class="text-[11px] px-3 py-1 rounded-lg font-medium text-white shrink-0 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    確認
+                  </button>
+                </div>
+                <div class="flex gap-3 items-start p-3 bg-amber-50 rounded-lg">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="truck" class="w-4 h-4 text-amber-600"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      明日集荷分で<span class="font-medium">未配車が5件</span
+                      >残っています
+                    </p>
+                    <p class="text-[11px] text-gray-400">30分前</p>
+                  </div>
+                  <button
+                    onclick="navigate('dispatch')"
+                    class="text-[11px] px-3 py-1 rounded-lg font-medium text-white shrink-0 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    配車
+                  </button>
+                </div>
+                <div class="flex gap-3 items-start p-3 bg-blue-50 rounded-lg">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0"
+                  >
+                    <i data-lucide="mail" class="w-4 h-4 text-blue-600"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">三河運輸</span
+                      >からメール受注の自動取込み完了（2件）
+                    </p>
+                    <p class="text-[11px] text-gray-400">45分前</p>
+                  </div>
+                  <span
+                    class="text-[11px] px-3 py-1 rounded-lg font-medium bg-gray-100 text-gray-500 shrink-0"
+                    >情報</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
 
-// feature
-document.getElementById("invSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#invGrid [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+          <!-- ==================== PAGE 2: ORDERS ==================== -->
+          <div id="page-orders" class="page">
+            <div class="flex flex-wrap items-center justify-between mb-5 gap-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="orderSearch"
+                    type="text"
+                    placeholder="受注番号・荷主名で検索..."
+                    class="w-64 pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100 transition"
+                    oninput="filterOrders()"
+                  />
+                </div>
+                <select
+                  id="orderStatusFilter"
+                  class="px-3 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  onchange="filterOrders()"
+                >
+                  <option value="">全ステータス</option>
+                  <option value="受付">受付</option>
+                  <option value="確認済">確認済</option>
+                  <option value="配車済">配車済</option>
+                  <option value="完了">完了</option>
+                  <option value="キャンセル">キャンセル</option>
+                </select>
+                <select
+                  id="orderShipperFilter"
+                  class="px-3 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  onchange="filterOrders()"
+                >
+                  <option value="">全荷主</option>
+                  <option value="東海食品">東海食品</option>
+                  <option value="丸和物産">丸和物産</option>
+                  <option value="三河運輸">三河運輸</option>
+                  <option value="関東精機">関東精機</option>
+                  <option value="北陸水産">北陸水産</option>
+                  <option value="大阪商事">大阪商事</option>
+                </select>
+                <input
+                  type="date"
+                  id="orderDateFilter"
+                  class="px-3 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  onchange="filterOrders()"
+                />
+              </div>
+              <button
+                onclick="navigate('entry')"
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #065f46"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>新規受注
+              </button>
+            </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full" id="orderTable">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        受注番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        荷主名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        集荷日
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        集荷先
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        配送先
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        車種
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        重量
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        温度帯
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        ステータス
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        操作
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="orderTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span id="orderCount" class="text-[12px] text-gray-400">0件</span>
+              <div class="flex gap-1">
+                <button
+                  class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer"
+                  style="background: #065f46"
+                >
+                  1
+                </button>
+                <button
+                  class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer"
+                >
+                  2
+                </button>
+                <button
+                  class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer"
+                >
+                  3
+                </button>
+              </div>
+            </div>
+          </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["関東", "東海", "関西", "東北", "九州", "北海道"], "datasets": [{"label": "今期", "data": [44, 58, 80, 45, 70, 37], "backgroundColor": "#065f46", "borderRadius": 4}, {"label": "前期", "data": [42, 52, 77, 28, 53, 17], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["関東", "東海", "関西", "東北", "九州"], "datasets": [{"data": [44, 58, 80, 45, 70], "backgroundColor": ["#065f46", "#10b981", "#065f4680", "#10b98180", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
+          <!-- ==================== PAGE 3: ENTRY ==================== -->
+          <div id="page-entry" class="page">
+            <div class="max-w-4xl">
+              <div class="card p-6">
+                <div class="flex items-center gap-3 mb-6">
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="file-plus" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h2 class="text-[16px] font-bold text-gray-800">
+                      新規受注入力
+                    </h2>
+                    <p class="text-[12px] text-gray-400">
+                      荷主からの受注情報を登録します
+                    </p>
+                  </div>
+                </div>
 
-</script>
-</body></html>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="md:col-span-2">
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >荷主 <span class="text-red-500">*</span></label
+                    >
+                    <select
+                      id="entryShipper"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      onchange="autoFillShipper()"
+                    >
+                      <option value="">荷主を選択してください</option>
+                      <option value="東海食品">東海食品株式会社</option>
+                      <option value="丸和物産">丸和物産株式会社</option>
+                      <option value="三河運輸">三河運輸株式会社</option>
+                      <option value="関東精機">関東精機株式会社</option>
+                      <option value="北陸水産">北陸水産株式会社</option>
+                      <option value="大阪商事">大阪商事株式会社</option>
+                    </select>
+                  </div>
+                  <div id="shipperInfo" class="md:col-span-2 hidden">
+                    <div
+                      class="p-3 rounded-lg bg-emerald-50 text-[12px]"
+                      style="color: #065f46"
+                    >
+                      <span class="font-medium" id="shipperInfoText"></span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >集荷日 <span class="text-red-500">*</span></label
+                    >
+                    <input
+                      type="date"
+                      id="entryPickupDate"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >集荷時間</label
+                    >
+                    <input
+                      type="time"
+                      id="entryPickupTime"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >集荷先住所 <span class="text-red-500">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="entryPickupAddr"
+                      placeholder="例: 東京都港区芝浦3-1-21 東海ビル"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >配送先住所 <span class="text-red-500">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="entryDelivAddr"
+                      placeholder="例: 大阪府大阪市中央区本町2-5-7 本町センター"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >荷物種別 <span class="text-red-500">*</span></label
+                    >
+                    <select
+                      id="entryCargoType"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="食品">食品</option>
+                      <option value="雑貨">雑貨</option>
+                      <option value="精密機器">精密機器</option>
+                      <option value="建材">建材</option>
+                      <option value="冷凍食品">冷凍食品</option>
+                      <option value="冷蔵食品">冷蔵食品</option>
+                      <option value="化学品">化学品</option>
+                      <option value="その他">その他</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >重量 (t) <span class="text-red-500">*</span></label
+                    >
+                    <input
+                      type="number"
+                      id="entryWeight"
+                      step="0.1"
+                      min="0"
+                      placeholder="例: 3.5"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      oninput="calcEstimate()"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >容積 (m3)</label
+                    >
+                    <input
+                      type="number"
+                      id="entryVolume"
+                      step="0.1"
+                      min="0"
+                      placeholder="例: 12.0"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >車種指定 <span class="text-red-500">*</span></label
+                    >
+                    <select
+                      id="entryVehicle"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      onchange="calcEstimate()"
+                    >
+                      <option value="">選択してください</option>
+                      <option value="4t">4tトラック</option>
+                      <option value="10t">10tトラック</option>
+                      <option value="trailer">トレーラー</option>
+                      <option value="reefer">温度管理車</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >希望配送時間帯</label
+                    >
+                    <select
+                      id="entryTimeSlot"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
+                      <option value="">指定なし</option>
+                      <option value="午前">午前（8:00-12:00）</option>
+                      <option value="午後">午後（13:00-17:00）</option>
+                      <option value="夜間">夜間（18:00-22:00）</option>
+                      <option value="時間指定">時間指定</option>
+                    </select>
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >特記事項</label
+                    >
+                    <textarea
+                      id="entryNotes"
+                      rows="3"
+                      placeholder="荷扱い注意事項、納品先での注意点など"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100 resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div
+                  class="mt-5 p-4 rounded-lg bg-gray-50 border border-dashed border-gray-200"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-[12px] text-gray-500">
+                        見積金額（自動計算）
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        車種・重量に基づく概算
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p
+                        id="estimateAmount"
+                        class="text-2xl font-bold"
+                        style="color: #065f46"
+                      >
+                        ---
+                      </p>
+                      <p class="text-[11px] text-gray-400">税込</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 mt-6">
+                  <button
+                    onclick="clearEntryForm()"
+                    class="inline-flex items-center gap-1.5 py-2.5 px-5 rounded-lg text-[13px] font-medium border border-gray-300 text-gray-600 transition-all hover:bg-gray-50 cursor-pointer"
+                  >
+                    <i data-lucide="x" class="w-4 h-4"></i>クリア
+                  </button>
+                  <button
+                    onclick="submitOrder()"
+                    class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="send" class="w-4 h-4"></i>受注登録
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 4: SHIPPERS ==================== -->
+          <div id="page-shippers" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-2">
+                <button
+                  id="viewCard"
+                  onclick="toggleShipperView('card')"
+                  class="inline-flex items-center gap-1.5 py-2 px-3 rounded-lg text-[13px] font-medium border transition-all cursor-pointer toggle-active"
+                >
+                  <i data-lucide="layout-grid" class="w-4 h-4"></i>カード
+                </button>
+                <button
+                  id="viewTable"
+                  onclick="toggleShipperView('table')"
+                  class="inline-flex items-center gap-1.5 py-2 px-3 rounded-lg text-[13px] font-medium border transition-all cursor-pointer text-gray-600 hover:bg-gray-50"
+                >
+                  <i data-lucide="table-2" class="w-4 h-4"></i>テーブル
+                </button>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #065f46"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>荷主追加
+              </button>
+            </div>
+
+            <div
+              id="shipperCardView"
+              class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            ></div>
+
+            <div id="shipperTableView" class="hidden">
+              <div class="card overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          荷主名
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          担当者
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          連絡先
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          契約形態
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          月間平均
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          与信限度
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                        >
+                          支払サイト
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="shipperTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: DISPATCH ==================== -->
+          <div id="page-dispatch" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <h3 class="font-semibold text-[14px] text-gray-700">
+                  配車マッチング
+                </h3>
+                <span
+                  class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-700"
+                  id="undispatchedCount"
+                  >未配車: 5件</span
+                >
+              </div>
+              <button
+                onclick="autoMatch()"
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #065f46"
+              >
+                <i data-lucide="zap" class="w-4 h-4"></i>自動マッチング
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <i
+                    data-lucide="clipboard-list"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i>
+                  <h4 class="font-medium text-[13px] text-gray-700">
+                    未配車受注
+                  </h4>
+                </div>
+                <div class="space-y-3" id="undispatchedList"></div>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <i
+                    data-lucide="truck"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i>
+                  <h4 class="font-medium text-[13px] text-gray-700">
+                    配車可能車両
+                  </h4>
+                </div>
+                <div class="space-y-3" id="vehicleList"></div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <div class="card p-5">
+                <h4
+                  class="font-medium text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="check-circle"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >本日の配車状況
+                </h4>
+                <div class="grid grid-cols-4 gap-3 mb-4">
+                  <div class="text-center p-3 rounded-lg bg-gray-50">
+                    <div
+                      class="text-[16px] font-bold text-amber-600"
+                      id="statUndispatched"
+                    >
+                      5
+                    </div>
+                    <div class="text-[11px] text-gray-400">未配車</div>
+                  </div>
+                  <div class="text-center p-3 rounded-lg bg-gray-50">
+                    <div class="text-[16px] font-bold" style="color: #065f46">
+                      12
+                    </div>
+                    <div class="text-[11px] text-gray-400">配車済</div>
+                  </div>
+                  <div class="text-center p-3 rounded-lg bg-gray-50">
+                    <div class="text-[16px] font-bold text-blue-600">4</div>
+                    <div class="text-[11px] text-gray-400">出発済</div>
+                  </div>
+                  <div class="text-center p-3 rounded-lg bg-gray-50">
+                    <div class="text-[16px] font-bold text-gray-600">3</div>
+                    <div class="text-[11px] text-gray-400">完了</div>
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          受注番号
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          荷主
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          車両
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ドライバー
+                        </th>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ステータス
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td
+                          class="px-3 py-2.5 text-[12px] font-medium text-gray-700"
+                        >
+                          #ORD-0301
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          東海食品
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          品川100 あ 1234
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          佐藤 健一
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <span class="badge badge-completed">完了</span>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td
+                          class="px-3 py-2.5 text-[12px] font-medium text-gray-700"
+                        >
+                          #ORD-0302
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          丸和物産
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          横浜200 か 5678
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          田中 大輔
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="badge"
+                            style="background: #dbeafe; color: #1e40af"
+                            >出発</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td
+                          class="px-3 py-2.5 text-[12px] font-medium text-gray-700"
+                        >
+                          #ORD-0303
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          関東精機
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          足立300 さ 9012
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          鈴木 翔太
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <span class="badge badge-dispatched">配車済</span>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td
+                          class="px-3 py-2.5 text-[12px] font-medium text-gray-700"
+                        >
+                          #ORD-0304
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          北陸水産
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          練馬400 た 3456
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          山田 拓也
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <span class="badge badge-dispatched">配車済</span>
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td
+                          class="px-3 py-2.5 text-[12px] font-medium text-gray-700"
+                        >
+                          #ORD-0305
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          大阪商事
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          世田谷500 な 7890
+                        </td>
+                        <td class="px-3 py-2.5 text-[12px] text-gray-600">
+                          高橋 誠
+                        </td>
+                        <td class="px-3 py-2.5">
+                          <span
+                            class="badge"
+                            style="background: #dbeafe; color: #1e40af"
+                            >出発</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: ANALYTICS ==================== -->
+          <div id="page-analytics" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別受注推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="analyticsChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  荷主別売上
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="analyticsChart2"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  車種別稼働
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="analyticsChart3"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  曜日別受注パターン
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="analyticsChart4"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  荷主別月次実績
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1.5 py-1.5 px-3 text-[12px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                  style="color: #065f46; border-color: #065f46"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>エクスポート
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        荷主名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        1月
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        2月
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        3月
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        合計
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        前年比
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        東海食品
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        520万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        480万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        610万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        1,610万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +8.2%
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        丸和物産
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        380万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        410万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        450万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        1,240万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +15.1%
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        三河運輸
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        290万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        320万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        350万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        960万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +5.7%
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        関東精機
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        210万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        195万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        230万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        635万
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-red-500 text-right">
+                        -2.3%
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        北陸水産
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        180万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        200万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        220万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        600万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +22.4%
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        大阪商事
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        150万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        165万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-600 text-right"
+                      >
+                        175万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700 text-right"
+                      >
+                        490万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +9.8%
+                      </td>
+                    </tr>
+                    <tr class="bg-gray-50 font-medium">
+                      <td class="px-4 py-3 text-[13px] text-gray-800">合計</td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-800 text-right"
+                      >
+                        1,730万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-800 text-right"
+                      >
+                        1,770万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-800 text-right"
+                      >
+                        2,035万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-gray-800 text-right"
+                      >
+                        5,535万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-emerald-600 text-right"
+                      >
+                        +9.4%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: SETTINGS ==================== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-3xl space-y-5">
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="building-2"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >荷主マスタ設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        荷主マスタの自動同期
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        基幹システムから毎日自動取込み
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        与信限度超過アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        与信限度額の80%到達時に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        新規荷主の自動登録
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        初回受注時にマスタへ自動追加
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="calculator"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >運賃テーブル設定
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-3 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          車種
+                        </th>
+                        <th
+                          class="px-3 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          基本料金
+                        </th>
+                        <th
+                          class="px-3 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          km単価
+                        </th>
+                        <th
+                          class="px-3 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          重量加算(/t)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2.5 text-[13px] text-gray-700">
+                          4tトラック
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥25,000
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥120
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥3,000
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2.5 text-[13px] text-gray-700">
+                          10tトラック
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥45,000
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥180
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥2,500
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2.5 text-[13px] text-gray-700">
+                          トレーラー
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥65,000
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥220
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥2,000
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-3 py-2.5 text-[13px] text-gray-700">
+                          温度管理車
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥55,000
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥200
+                        </td>
+                        <td
+                          class="px-3 py-2.5 text-[13px] text-gray-600 text-right"
+                        >
+                          ¥4,000
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex justify-end mt-3">
+                  <button
+                    class="inline-flex items-center gap-1.5 py-1.5 px-3 text-[12px] rounded-lg font-medium border transition-all hover:bg-gray-50 cursor-pointer"
+                    style="color: #065f46; border-color: #065f46"
+                  >
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>編集
+                  </button>
+                </div>
+              </div>
+
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="radio"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >受注チャネル設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="globe"
+                          class="w-4 h-4 text-emerald-700"
+                        ></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          Web受注フォーム
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                          荷主ポータルからの直接入力
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700"
+                        >稼働中</span
+                      >
+                      <label
+                        class="relative inline-flex items-center cursor-pointer"
+                      >
+                        <input type="checkbox" checked class="sr-only peer" />
+                        <div
+                          class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                        ></div>
+                      </label>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="arrow-left-right"
+                          class="w-4 h-4 text-blue-700"
+                        ></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          EDI連携
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                          JX手順・全銀TCP/IP
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700"
+                        >稼働中</span
+                      >
+                      <label
+                        class="relative inline-flex items-center cursor-pointer"
+                      >
+                        <input type="checkbox" checked class="sr-only peer" />
+                        <div
+                          class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                        ></div>
+                      </label>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="scan-line"
+                          class="w-4 h-4 text-purple-700"
+                        ></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          FAX-OCR自動取込
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                          AI-OCRによるFAX受注の自動デジタル化
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700"
+                        >ベータ</span
+                      >
+                      <label
+                        class="relative inline-flex items-center cursor-pointer"
+                      >
+                        <input type="checkbox" checked class="sr-only peer" />
+                        <div
+                          class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                        ></div>
+                      </label>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center"
+                      >
+                        <i data-lucide="mail" class="w-4 h-4 text-gray-600"></i>
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          メール取込
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                          特定アドレスへの受注メールを自動パース
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"
+                        >停止中</span
+                      >
+                      <label
+                        class="relative inline-flex items-center cursor-pointer"
+                      >
+                        <input type="checkbox" class="sr-only peer" />
+                        <div
+                          class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                        ></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >通知設定
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        新規受注通知
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        新しい受注が登録された時に即時通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        未確認アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        受注後1時間未確認の場合にエスカレーション
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        配車完了通知（荷主向け）
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        配車確定時に荷主へ自動メール送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        Slack連携
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        重要アラートをSlackチャンネルに送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        日次レポート自動送信
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        毎日18:00に当日の受発注サマリーをメール配信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                    >
+                      <input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-emerald-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ==================== DATA ====================
+      const orders = [
+        {
+          id: "ORD-2024-0301",
+          shipper: "東海食品",
+          date: "2026-03-10",
+          pickup: "東京都港区芝浦3-1-21",
+          delivery: "大阪府大阪市中央区本町2-5-7",
+          vehicle: "10t",
+          weight: 8.5,
+          temp: "常温",
+          status: "完了",
+          channel: "Web",
+        },
+        {
+          id: "ORD-2024-0302",
+          shipper: "丸和物産",
+          date: "2026-03-10",
+          pickup: "埼玉県川口市栄町2-8-15",
+          delivery: "名古屋市中区栄1-3-10",
+          vehicle: "4t",
+          weight: 2.8,
+          temp: "常温",
+          status: "配車済",
+          channel: "FAX",
+        },
+        {
+          id: "ORD-2024-0303",
+          shipper: "関東精機",
+          date: "2026-03-10",
+          pickup: "神奈川県横浜市鶴見区大黒町12-1",
+          delivery: "静岡県浜松市中区板屋町111",
+          vehicle: "10t",
+          weight: 6.2,
+          temp: "常温",
+          status: "配車済",
+          channel: "EDI",
+        },
+        {
+          id: "ORD-2024-0304",
+          shipper: "北陸水産",
+          date: "2026-03-10",
+          pickup: "東京都中央区築地5-2-1",
+          delivery: "新潟県新潟市中央区万代1-6-1",
+          vehicle: "reefer",
+          weight: 3.5,
+          temp: "冷蔵",
+          status: "確認済",
+          channel: "電話",
+        },
+        {
+          id: "ORD-2024-0305",
+          shipper: "大阪商事",
+          date: "2026-03-10",
+          pickup: "千葉県市川市塩浜2-13-1",
+          delivery: "大阪府堺市堺区築港八幡町1-50",
+          vehicle: "trailer",
+          weight: 18.0,
+          temp: "常温",
+          status: "配車済",
+          channel: "Web",
+        },
+        {
+          id: "ORD-2024-0306",
+          shipper: "東海食品",
+          date: "2026-03-10",
+          pickup: "東京都港区芝浦3-1-21",
+          delivery: "福岡県福岡市博多区博多駅南3-1-10",
+          vehicle: "10t",
+          weight: 7.2,
+          temp: "冷凍",
+          status: "受付",
+          channel: "メール",
+        },
+        {
+          id: "ORD-2024-0307",
+          shipper: "丸和物産",
+          date: "2026-03-10",
+          pickup: "埼玉県川口市栄町2-8-15",
+          delivery: "仙台市青葉区中央1-3-1",
+          vehicle: "4t",
+          weight: 3.1,
+          temp: "常温",
+          status: "受付",
+          channel: "FAX",
+        },
+        {
+          id: "ORD-2024-0308",
+          shipper: "三河運輸",
+          date: "2026-03-11",
+          pickup: "愛知県豊橋市神野新田町1-3",
+          delivery: "東京都江東区有明3-11-1",
+          vehicle: "10t",
+          weight: 9.0,
+          temp: "常温",
+          status: "受付",
+          channel: "Web",
+        },
+        {
+          id: "ORD-2024-0309",
+          shipper: "関東精機",
+          date: "2026-03-11",
+          pickup: "神奈川県横浜市鶴見区大黒町12-1",
+          delivery: "長野県松本市渚1-7-1",
+          vehicle: "4t",
+          weight: 1.8,
+          temp: "常温",
+          status: "確認済",
+          channel: "EDI",
+        },
+        {
+          id: "ORD-2024-0310",
+          shipper: "東海食品",
+          date: "2026-03-11",
+          pickup: "東京都港区芝浦3-1-21",
+          delivery: "北海道札幌市白石区流通センター3",
+          vehicle: "reefer",
+          weight: 5.0,
+          temp: "冷蔵",
+          status: "受付",
+          channel: "Web",
+        },
+        {
+          id: "ORD-2024-0311",
+          shipper: "北陸水産",
+          date: "2026-03-11",
+          pickup: "東京都中央区築地5-2-1",
+          delivery: "金沢市西念4-24-2",
+          vehicle: "reefer",
+          weight: 2.5,
+          temp: "冷凍",
+          status: "受付",
+          channel: "電話",
+        },
+        {
+          id: "ORD-2024-0312",
+          shipper: "東海食品",
+          date: "2026-03-11",
+          pickup: "東京都港区芝浦3-1-21",
+          delivery: "広島県広島市南区皆実町1-6-29",
+          vehicle: "10t",
+          weight: 6.8,
+          temp: "常温",
+          status: "受付",
+          channel: "メール",
+        },
+        {
+          id: "ORD-2024-0313",
+          shipper: "大阪商事",
+          date: "2026-03-11",
+          pickup: "千葉県市川市塩浜2-13-1",
+          delivery: "岡山県岡山市北区厚生町2-4-6",
+          vehicle: "4t",
+          weight: 2.2,
+          temp: "常温",
+          status: "受付",
+          channel: "Web",
+        },
+        {
+          id: "ORD-2024-0314",
+          shipper: "丸和物産",
+          date: "2026-03-09",
+          pickup: "埼玉県川口市栄町2-8-15",
+          delivery: "京都府京都市南区吉祥院石原長田町11",
+          vehicle: "10t",
+          weight: 7.5,
+          temp: "常温",
+          status: "完了",
+          channel: "FAX",
+        },
+        {
+          id: "ORD-2024-0315",
+          shipper: "三河運輸",
+          date: "2026-03-09",
+          pickup: "愛知県豊橋市神野新田町1-3",
+          delivery: "東京都大田区平和島6-1-1",
+          vehicle: "trailer",
+          weight: 15.0,
+          temp: "常温",
+          status: "完了",
+          channel: "EDI",
+        },
+        {
+          id: "ORD-2024-0316",
+          shipper: "関東精機",
+          date: "2026-03-09",
+          pickup: "神奈川県横浜市鶴見区大黒町12-1",
+          delivery: "群馬県太田市新田木崎町231",
+          vehicle: "4t",
+          weight: 1.5,
+          temp: "常温",
+          status: "キャンセル",
+          channel: "電話",
+        },
+      ];
+
+      const shippers = [
+        {
+          name: "東海食品",
+          contact: "山田 太郎",
+          phone: "03-1234-5678",
+          email: "yamada@tokai-food.co.jp",
+          type: "定期",
+          monthly: 45,
+          credit: 3000,
+          paymentTerm: "月末締め翌月末払い",
+          color: "#065f46",
+        },
+        {
+          name: "丸和物産",
+          contact: "佐藤 花子",
+          phone: "048-234-5678",
+          email: "sato@maruwa.co.jp",
+          type: "定期",
+          monthly: 32,
+          credit: 2000,
+          paymentTerm: "月末締め翌月末払い",
+          color: "#0c4a6e",
+        },
+        {
+          name: "三河運輸",
+          contact: "鈴木 一郎",
+          phone: "0532-34-5678",
+          email: "suzuki@mikawa-trans.co.jp",
+          type: "定期",
+          monthly: 28,
+          credit: 1500,
+          paymentTerm: "20日締め翌月末払い",
+          color: "#7c2d12",
+        },
+        {
+          name: "関東精機",
+          contact: "高橋 健太",
+          phone: "045-345-6789",
+          email: "takahashi@kanto-seiki.co.jp",
+          type: "スポット",
+          monthly: 15,
+          credit: 800,
+          paymentTerm: "月末締め翌々月末払い",
+          color: "#581c87",
+        },
+        {
+          name: "北陸水産",
+          contact: "渡辺 美咲",
+          phone: "076-456-7890",
+          email: "watanabe@hokuriku-suisan.co.jp",
+          type: "定期",
+          monthly: 20,
+          credit: 1200,
+          paymentTerm: "月末締め翌月末払い",
+          color: "#155e75",
+        },
+        {
+          name: "大阪商事",
+          contact: "中村 隆",
+          phone: "06-567-8901",
+          email: "nakamura@osaka-shoji.co.jp",
+          type: "スポット",
+          monthly: 12,
+          credit: 600,
+          paymentTerm: "20日締め翌月末払い",
+          color: "#92400e",
+        },
+      ];
+
+      const vehiclesData = [
+        {
+          plate: "品川100 あ 1234",
+          type: "10t",
+          driver: "佐藤 健一",
+          status: "available",
+          location: "東京営業所",
+        },
+        {
+          plate: "横浜200 か 5678",
+          type: "4t",
+          driver: "田中 大輔",
+          status: "available",
+          location: "横浜営業所",
+        },
+        {
+          plate: "足立300 さ 9012",
+          type: "10t",
+          driver: "鈴木 翔太",
+          status: "available",
+          location: "埼玉営業所",
+        },
+        {
+          plate: "練馬400 た 3456",
+          type: "reefer",
+          driver: "山田 拓也",
+          status: "available",
+          location: "東京営業所",
+        },
+        {
+          plate: "世田谷500 な 7890",
+          type: "trailer",
+          driver: "高橋 誠",
+          status: "available",
+          location: "東京営業所",
+        },
+        {
+          plate: "川崎600 は 2345",
+          type: "4t",
+          driver: "伊藤 洋介",
+          status: "maintenance",
+          location: "横浜営業所",
+        },
+        {
+          plate: "八王子700 ま 6789",
+          type: "10t",
+          driver: "渡辺 剛",
+          status: "available",
+          location: "多摩営業所",
+        },
+        {
+          plate: "大宮800 や 0123",
+          type: "reefer",
+          driver: "中村 誠一",
+          status: "available",
+          location: "埼玉営業所",
+        },
+      ];
+
+      const vehicleTypeMap = {
+        "4t": "4tトラック",
+        "10t": "10tトラック",
+        trailer: "トレーラー",
+        reefer: "温度管理車",
+      };
+      const statusBadgeMap = {
+        受付: "badge-received",
+        確認済: "badge-confirmed",
+        配車済: "badge-dispatched",
+        完了: "badge-completed",
+        キャンセル: "badge-cancelled",
+      };
+
+      // ==================== NAVIGATION ====================
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "受発注状況の全体像",
+        },
+        { id: "orders", title: "受注一覧", desc: "受注の検索・管理" },
+        { id: "entry", title: "受注入力", desc: "新規受注の登録" },
+        { id: "shippers", title: "荷主管理", desc: "荷主マスタの管理" },
+        { id: "dispatch", title: "配車連携", desc: "受注と車両のマッチング" },
+        { id: "analytics", title: "実績・分析", desc: "受注・売上の分析" },
+        { id: "settings", title: "設定", desc: "システム設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      // ==================== ORDERS TABLE ====================
+      function renderOrders(filteredOrders) {
+        const tbody = document.getElementById("orderTableBody");
+        const data = filteredOrders || orders;
+        tbody.innerHTML = data
+          .map(
+            (o) => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+      <td class="px-4 py-3 text-[13px] font-medium" style="color:#065f46">#${o.id}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-700">${o.shipper}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${o.date}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600 max-w-[150px] truncate" title="${o.pickup}">${o.pickup}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600 max-w-[150px] truncate" title="${o.delivery}">${o.delivery}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${vehicleTypeMap[o.vehicle] || o.vehicle}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${o.weight}t</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${o.temp}</td>
+      <td class="px-4 py-3"><span class="badge ${statusBadgeMap[o.status]}">${o.status}</span></td>
+      <td class="px-4 py-3">
+        <div class="flex gap-1">
+          ${o.status === "受付" ? `<button onclick="confirmOrder('${o.id}')" class="text-[11px] px-2 py-1 rounded text-white cursor-pointer" style="background:#065f46">確認</button>` : ""}
+          ${o.status === "確認済" ? `<button onclick="navigate('dispatch')" class="text-[11px] px-2 py-1 rounded text-white cursor-pointer" style="background:#0c4a6e">配車</button>` : ""}
+          <button class="text-[11px] px-2 py-1 rounded border border-gray-200 text-gray-500 hover:bg-gray-50 cursor-pointer">詳細</button>
+        </div>
+      </td>
+    </tr>
+  `,
+          )
+          .join("");
+        document.getElementById("orderCount").textContent = data.length + "件";
+      }
+
+      function filterOrders() {
+        const search = document
+          .getElementById("orderSearch")
+          .value.toLowerCase();
+        const status = document.getElementById("orderStatusFilter").value;
+        const shipper = document.getElementById("orderShipperFilter").value;
+        const date = document.getElementById("orderDateFilter").value;
+        const filtered = orders.filter((o) => {
+          if (
+            search &&
+            !o.id.toLowerCase().includes(search) &&
+            !o.shipper.toLowerCase().includes(search)
+          )
+            return false;
+          if (status && o.status !== status) return false;
+          if (shipper && o.shipper !== shipper) return false;
+          if (date && o.date !== date) return false;
+          return true;
+        });
+        renderOrders(filtered);
+      }
+
+      function confirmOrder(id) {
+        const o = orders.find((x) => x.id === id);
+        if (o) {
+          o.status = "確認済";
+          filterOrders();
+        }
+      }
+
+      // ==================== ENTRY FORM ====================
+      const shipperDetails = {
+        東海食品: {
+          addr: "東京都港区芝浦3-1-21 東海ビル",
+          contact: "山田 太郎",
+          phone: "03-1234-5678",
+        },
+        丸和物産: {
+          addr: "埼玉県川口市栄町2-8-15 丸和ビル",
+          contact: "佐藤 花子",
+          phone: "048-234-5678",
+        },
+        三河運輸: {
+          addr: "愛知県豊橋市神野新田町1-3",
+          contact: "鈴木 一郎",
+          phone: "0532-34-5678",
+        },
+        関東精機: {
+          addr: "神奈川県横浜市鶴見区大黒町12-1",
+          contact: "高橋 健太",
+          phone: "045-345-6789",
+        },
+        北陸水産: {
+          addr: "東京都中央区築地5-2-1",
+          contact: "渡辺 美咲",
+          phone: "076-456-7890",
+        },
+        大阪商事: {
+          addr: "千葉県市川市塩浜2-13-1",
+          contact: "中村 隆",
+          phone: "06-567-8901",
+        },
+      };
+
+      function autoFillShipper() {
+        const v = document.getElementById("entryShipper").value;
+        const info = document.getElementById("shipperInfo");
+        const text = document.getElementById("shipperInfoText");
+        if (v && shipperDetails[v]) {
+          const d = shipperDetails[v];
+          text.textContent =
+            "担当: " + d.contact + " | TEL: " + d.phone + " | 所在: " + d.addr;
+          info.classList.remove("hidden");
+          document.getElementById("entryPickupAddr").value = d.addr;
+        } else {
+          info.classList.add("hidden");
+        }
+        calcEstimate();
+      }
+
+      function calcEstimate() {
+        const weight =
+          parseFloat(document.getElementById("entryWeight").value) || 0;
+        const vehicle = document.getElementById("entryVehicle").value;
+        const rates = {
+          "4t": { base: 25000, perT: 3000 },
+          "10t": { base: 45000, perT: 2500 },
+          trailer: { base: 65000, perT: 2000 },
+          reefer: { base: 55000, perT: 4000 },
+        };
+        const el = document.getElementById("estimateAmount");
+        if (vehicle && weight > 0 && rates[vehicle]) {
+          const r = rates[vehicle];
+          const base = r.base + weight * r.perT;
+          const amount = Math.round(base * 1.1);
+          el.textContent = "\u00a5" + amount.toLocaleString();
+        } else {
+          el.textContent = "---";
+        }
+      }
+
+      function submitOrder() {
+        const shipper = document.getElementById("entryShipper").value;
+        const pickupDate = document.getElementById("entryPickupDate").value;
+        const pickupAddr = document.getElementById("entryPickupAddr").value;
+        const delivAddr = document.getElementById("entryDelivAddr").value;
+        const vehicle = document.getElementById("entryVehicle").value;
+        const weight = document.getElementById("entryWeight").value;
+        if (
+          !shipper ||
+          !pickupDate ||
+          !pickupAddr ||
+          !delivAddr ||
+          !vehicle ||
+          !weight
+        ) {
+          alert("必須項目を全て入力してください");
+          return;
+        }
+        const newId =
+          "ORD-2024-" + String(orders.length + 301).padStart(4, "0");
+        orders.unshift({
+          id: newId,
+          shipper: shipper,
+          date: pickupDate,
+          pickup: pickupAddr,
+          delivery: delivAddr,
+          vehicle: vehicle,
+          weight: parseFloat(weight),
+          temp: "常温",
+          status: "受付",
+          channel: "Web",
+        });
+        alert("受注を登録しました: #" + newId);
+        clearEntryForm();
+        navigate("orders");
+      }
+
+      function clearEntryForm() {
+        [
+          "entryShipper",
+          "entryPickupDate",
+          "entryPickupTime",
+          "entryPickupAddr",
+          "entryDelivAddr",
+          "entryCargoType",
+          "entryWeight",
+          "entryVolume",
+          "entryVehicle",
+          "entryTimeSlot",
+          "entryNotes",
+        ].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        document.getElementById("shipperInfo").classList.add("hidden");
+        document.getElementById("estimateAmount").textContent = "---";
+      }
+
+      // ==================== SHIPPERS ====================
+      function renderShipperCards() {
+        document.getElementById("shipperCardView").innerHTML = shippers
+          .map(
+            (s) => `
+    <div class="card p-5 transition-shadow">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-[14px] font-bold" style="background:${s.color}">${s.name.charAt(0)}</div>
+        <div class="min-w-0">
+          <h4 class="text-[14px] font-bold text-gray-800 truncate">${s.name}</h4>
+          <span class="text-[11px] px-2 py-0.5 rounded-full ${s.type === "定期" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}">${s.type}契約</span>
+        </div>
+      </div>
+      <div class="space-y-2 text-[12px]">
+        <div class="flex justify-between"><span class="text-gray-400">担当者</span><span class="text-gray-700 font-medium">${s.contact}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">連絡先</span><span class="text-gray-700">${s.phone}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">メール</span><span class="text-gray-700 truncate ml-2">${s.email}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">月間平均</span><span class="text-gray-700 font-medium">${s.monthly}件/月</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">与信限度額</span><span class="text-gray-700 font-medium">${s.credit.toLocaleString()}万円</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">支払サイト</span><span class="text-gray-700">${s.paymentTerm}</span></div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button class="flex-1 text-[12px] py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors">編集</button>
+        <button class="flex-1 text-[12px] py-1.5 rounded-lg text-white cursor-pointer transition-colors hover:opacity-90" style="background:#065f46">受注履歴</button>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      function renderShipperTable() {
+        document.getElementById("shipperTableBody").innerHTML = shippers
+          .map(
+            (s) => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+      <td class="px-4 py-3 text-[13px] font-medium text-gray-700">${s.name}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${s.contact}</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${s.phone}</td>
+      <td class="px-4 py-3"><span class="badge ${s.type === "定期" ? "badge-dispatched" : "badge-received"}">${s.type}</span></td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${s.monthly}件/月</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${s.credit.toLocaleString()}万円</td>
+      <td class="px-4 py-3 text-[13px] text-gray-600">${s.paymentTerm}</td>
+    </tr>
+  `,
+          )
+          .join("");
+      }
+
+      function toggleShipperView(view) {
+        const cardBtn = document.getElementById("viewCard");
+        const tableBtn = document.getElementById("viewTable");
+        const cardView = document.getElementById("shipperCardView");
+        const tableView = document.getElementById("shipperTableView");
+        if (view === "card") {
+          cardView.classList.remove("hidden");
+          tableView.classList.add("hidden");
+          cardBtn.classList.add("toggle-active");
+          cardBtn.classList.remove("text-gray-600");
+          tableBtn.classList.remove("toggle-active");
+          tableBtn.classList.add("text-gray-600");
+        } else {
+          cardView.classList.add("hidden");
+          tableView.classList.remove("hidden");
+          tableBtn.classList.add("toggle-active");
+          tableBtn.classList.remove("text-gray-600");
+          cardBtn.classList.remove("toggle-active");
+          cardBtn.classList.add("text-gray-600");
+        }
+      }
+
+      // ==================== DISPATCH ====================
+      function renderDispatch() {
+        const undispatched = orders.filter(
+          (o) => o.status === "受付" || o.status === "確認済",
+        );
+        const available = vehiclesData.filter((v) => v.status === "available");
+        document.getElementById("undispatchedCount").textContent =
+          "未配車: " + undispatched.length + "件";
+        const statEl = document.getElementById("statUndispatched");
+        if (statEl) statEl.textContent = undispatched.length;
+
+        document.getElementById("undispatchedList").innerHTML =
+          undispatched.length === 0
+            ? '<div class="card p-6 text-center text-[13px] text-gray-400">全ての受注が配車済みです</div>'
+            : undispatched
+                .map(
+                  (o, i) => `
+    <div class="card p-4 dispatch-card cursor-pointer ${i === 0 ? "selected" : ""}" onclick="selectDispatchOrder(this)" data-order="${o.id}">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[12px] font-bold" style="color:#065f46">#${o.id}</span>
+        <span class="badge ${statusBadgeMap[o.status]}">${o.status}</span>
+      </div>
+      <div class="text-[12px] text-gray-700 font-medium mb-1">${o.shipper}</div>
+      <div class="text-[11px] text-gray-500 space-y-0.5">
+        <div class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i><span class="truncate">${o.pickup}</span></div>
+        <div class="flex items-center gap-1"><i data-lucide="navigation" class="w-3 h-3"></i><span class="truncate">${o.delivery}</span></div>
+      </div>
+      <div class="flex gap-2 mt-2 text-[11px] text-gray-500">
+        <span>${vehicleTypeMap[o.vehicle]}</span>
+        <span>${o.weight}t</span>
+        <span>${o.temp}</span>
+      </div>
+    </div>
+  `,
+                )
+                .join("");
+
+        document.getElementById("vehicleList").innerHTML = available
+          .map(
+            (v) => `
+    <div class="card p-4 dispatch-card cursor-pointer" onclick="assignVehicle('${v.plate}')" data-vehicle="${v.plate}">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[12px] font-bold text-gray-700">${v.plate}</span>
+        <span class="badge badge-dispatched">空車</span>
+      </div>
+      <div class="text-[12px] text-gray-600 mb-1">${vehicleTypeMap[v.type]}</div>
+      <div class="text-[11px] text-gray-500 space-y-0.5">
+        <div>ドライバー: ${v.driver}</div>
+        <div>現在地: ${v.location}</div>
+      </div>
+      <button onclick="event.stopPropagation();assignVehicle('${v.plate}')" class="mt-2 w-full text-[11px] py-1.5 rounded-lg text-white cursor-pointer transition-colors hover:opacity-90" style="background:#065f46">配車割当</button>
+    </div>
+  `,
+          )
+          .join("");
+        setTimeout(() => {
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 30);
+      }
+
+      function selectDispatchOrder(el) {
+        document
+          .querySelectorAll("#undispatchedList .dispatch-card")
+          .forEach((c) => c.classList.remove("selected"));
+        el.classList.add("selected");
+      }
+
+      function assignVehicle(plate) {
+        const selected = document.querySelector(
+          "#undispatchedList .dispatch-card.selected",
+        );
+        if (!selected) {
+          alert("左側から受注を選択してください");
+          return;
+        }
+        const orderId = selected.dataset.order;
+        const o = orders.find((x) => x.id === orderId);
+        if (o) {
+          o.status = "配車済";
+          alert("#" + orderId + " に " + plate + " を配車しました");
+          renderDispatch();
+          renderOrders();
+        }
+      }
+
+      function autoMatch() {
+        const undispatched = orders.filter(
+          (o) => o.status === "受付" || o.status === "確認済",
+        );
+        const available = vehiclesData.filter((v) => v.status === "available");
+        let matched = 0;
+        const limit = Math.min(undispatched.length, available.length);
+        undispatched.forEach((o) => {
+          if (matched < limit) {
+            o.status = "配車済";
+            matched++;
+          }
+        });
+        if (matched > 0) {
+          alert("自動マッチング完了: " + matched + "件を配車しました");
+        } else {
+          alert("配車対象の受注がありません");
+        }
+        renderDispatch();
+        renderOrders();
+      }
+
+      // ==================== CHARTS ====================
+      function initCharts() {
+        const P = "#065f46";
+        const S = "#10b981";
+
+        // Dashboard: Daily orders bar chart
+        const c1 = document.getElementById("dashChart1");
+        if (c1) {
+          charts.push(
+            new Chart(c1, {
+              type: "bar",
+              data: {
+                labels: [
+                  "3/1",
+                  "3/2",
+                  "3/3",
+                  "3/4",
+                  "3/5",
+                  "3/6",
+                  "3/7",
+                  "3/8",
+                  "3/9",
+                  "3/10",
+                ],
+                datasets: [
+                  {
+                    label: "受注件数",
+                    data: [18, 22, 15, 20, 25, 19, 8, 12, 24, 24],
+                    backgroundColor: S + "cc",
+                    borderColor: S,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: "#f1f5f9" },
+                    ticks: { font: { size: 11 } },
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } },
+                  },
+                },
+              },
+            }),
+          );
+        }
+
+        // Dashboard: Shipper doughnut
+        const c2 = document.getElementById("dashChart2");
+        if (c2) {
+          charts.push(
+            new Chart(c2, {
+              type: "doughnut",
+              data: {
+                labels: [
+                  "東海食品",
+                  "丸和物産",
+                  "三河運輸",
+                  "関東精機",
+                  "北陸水産",
+                  "大阪商事",
+                ],
+                datasets: [
+                  {
+                    data: [28, 22, 18, 14, 10, 8],
+                    backgroundColor: [
+                      P,
+                      "#0c4a6e",
+                      S,
+                      "#34d399",
+                      "#6ee7b7",
+                      "#a7f3d0",
+                    ],
+                    borderWidth: 2,
+                    borderColor: "#fff",
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: {
+                      font: { size: 11 },
+                      padding: 10,
+                      usePointStyle: true,
+                    },
+                  },
+                },
+              },
+            }),
+          );
+        }
+
+        // Analytics: Monthly trend line
+        const c3 = document.getElementById("analyticsChart1");
+        if (c3) {
+          charts.push(
+            new Chart(c3, {
+              type: "line",
+              data: {
+                labels: [
+                  "2025/10",
+                  "2025/11",
+                  "2025/12",
+                  "2026/1",
+                  "2026/2",
+                  "2026/3",
+                ],
+                datasets: [
+                  {
+                    label: "受注件数",
+                    data: [142, 158, 135, 168, 175, 190],
+                    borderColor: P,
+                    backgroundColor: P + "20",
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointBackgroundColor: P,
+                  },
+                  {
+                    label: "前年同月",
+                    data: [125, 140, 128, 155, 160, 170],
+                    borderColor: "#94a3b8",
+                    backgroundColor: "transparent",
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "top",
+                    labels: { font: { size: 11 }, usePointStyle: true },
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    grid: { color: "#f1f5f9" },
+                    ticks: { font: { size: 11 } },
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } },
+                  },
+                },
+              },
+            }),
+          );
+        }
+
+        // Analytics: Shipper revenue horizontal bar
+        const c4 = document.getElementById("analyticsChart2");
+        if (c4) {
+          charts.push(
+            new Chart(c4, {
+              type: "bar",
+              data: {
+                labels: [
+                  "東海食品",
+                  "丸和物産",
+                  "三河運輸",
+                  "関東精機",
+                  "北陸水産",
+                  "大阪商事",
+                ],
+                datasets: [
+                  {
+                    label: "売上（万円）",
+                    data: [1610, 1240, 960, 635, 600, 490],
+                    backgroundColor: [
+                      P,
+                      "#0c4a6e",
+                      S,
+                      "#34d399",
+                      "#6ee7b7",
+                      "#a7f3d0",
+                    ],
+                    borderRadius: 4,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: "y",
+                plugins: { legend: { display: false } },
+                scales: {
+                  x: {
+                    beginAtZero: true,
+                    grid: { color: "#f1f5f9" },
+                    ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+                  },
+                  y: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } },
+                  },
+                },
+              },
+            }),
+          );
+        }
+
+        // Analytics: Vehicle utilization pie
+        const c5 = document.getElementById("analyticsChart3");
+        if (c5) {
+          charts.push(
+            new Chart(c5, {
+              type: "pie",
+              data: {
+                labels: [
+                  "4tトラック",
+                  "10tトラック",
+                  "トレーラー",
+                  "温度管理車",
+                ],
+                datasets: [
+                  {
+                    data: [35, 32, 18, 15],
+                    backgroundColor: [P, "#0c4a6e", S, "#34d399"],
+                    borderWidth: 2,
+                    borderColor: "#fff",
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: {
+                      font: { size: 11 },
+                      padding: 10,
+                      usePointStyle: true,
+                    },
+                  },
+                },
+              },
+            }),
+          );
+        }
+
+        // Analytics: Day of week pattern
+        const c6 = document.getElementById("analyticsChart4");
+        if (c6) {
+          charts.push(
+            new Chart(c6, {
+              type: "bar",
+              data: {
+                labels: ["月", "火", "水", "木", "金", "土", "日"],
+                datasets: [
+                  {
+                    label: "平均受注件数",
+                    data: [32, 28, 30, 35, 38, 15, 5],
+                    backgroundColor: [P, P, P, P, P, S, "#a7f3d0"],
+                    borderRadius: 4,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: "#f1f5f9" },
+                    ticks: { font: { size: 11 } },
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } },
+                  },
+                },
+              },
+            }),
+          );
+        }
+      }
+
+      // ==================== INIT ====================
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        renderOrders();
+        renderShipperCards();
+        renderShipperTable();
+        renderDispatch();
+        initCharts();
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>

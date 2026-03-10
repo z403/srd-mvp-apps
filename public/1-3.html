@@ -1,94 +1,2926 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>工事原価管理の遅延 | 建設業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>工事原価リアルタイム管理 | 建設業 | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1E40AF",
+              "primary-light": "#3B82F6",
+              "primary-dark": "#1E3A8A",
+              accent: "#F59E0B",
+              danger: "#DC2626",
+              warning: "#F97316",
+              success: "#059669",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      * {
+        font-family:
+          "Inter", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .badge-danger {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+      .badge-warning {
+        background: #fff7ed;
+        color: #ea580c;
+      }
+      .badge-success {
+        background: #ecfdf5;
+        color: #059669;
+      }
+      .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+      .metric-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .metric-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 0 12px 0 60px;
+        opacity: 0.06;
+      }
+      .metric-card.blue::after {
+        background: #1e40af;
+      }
+      .metric-card.red::after {
+        background: #dc2626;
+      }
+      .metric-card.amber::after {
+        background: #f59e0b;
+      }
+      .metric-card.green::after {
+        background: #059669;
+      }
+      .progress-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.6s ease;
+      }
+      .alert-pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+      .table-row:hover {
+        background: #f8fafc;
+      }
+      .tab-btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        color: #6b7280;
+      }
+      .tab-btn.active {
+        background: #1e40af;
+        color: #fff;
+      }
+      .tab-btn:not(.active):hover {
+        background: #f1f5f9;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[240px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%)"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+            >
+              <i data-lucide="hard-hat" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">工事原価管理</p>
+              <p class="text-[11px] opacity-50 truncate">
+                リアルタイム原価把握
+              </p>
+            </div>
+          </div>
+        </div>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#1e3a5f">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">1</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">工事原価管理の遅延</p>
-<p class="text-[11px] opacity-50 truncate">建設業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="git-commit" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">タイムライン</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="projects"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('projects')"
+            ><i data-lucide="building-2" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">工事台帳</span></a
+          >
+          <a
+            data-page="cost-entry"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('cost-entry')"
+            ><i data-lucide="receipt" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">原価入力</span></a
+          >
+          <a
+            data-page="budget-actual"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('budget-actual')"
+            ><i data-lucide="git-compare" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">予実管理</span></a
+          >
+          <a
+            data-page="progress"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('progress')"
+            ><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">出来高・請求</span></a
+          >
+          <a
+            data-page="report"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('report')"
+            ><i
+              data-lucide="file-bar-chart"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">分析レポート</span></a
+          >
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">進捗とカテゴリ分析</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#dbeafe;color:#1e3a5f">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">実行予算作成</p><p class="text-[11px] text-gray-400 mt-0.5">2026/02/06</p><p class="text-[12px] text-gray-500 mt-1">工事予算の策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">月次原価集計</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/12</p><p class="text-[12px] text-gray-500 mt-1">材料・外注・労務集計</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">出来高査定</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/27</p><p class="text-[12px] text-gray-500 mt-1">進捗に応じた出来高</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">差異分析</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/02</p><p class="text-[12px] text-gray-500 mt-1">予算vs実績の分析</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">工事別粗利比較</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">工事粗利率</span><i data-lucide="trending-up" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">32%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +4pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">赤字工事</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">5件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">原価消化率</span><i data-lucide="percent" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">84%</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">未請求額</span><i data-lucide="wallet" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">2568万円</div><div class="text-[11px] mt-2 text-red-500">↓ -125%</div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進捗タイムライン</h3><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">実行予算作成</p><p class="text-[11px] text-gray-400 mt-0.5">2026/02/06</p><p class="text-[12px] text-gray-500 mt-1">工事予算の策定</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">月次原価集計</p><p class="text-[11px] text-gray-400 mt-0.5">2026/03/12</p><p class="text-[12px] text-gray-500 mt-1">材料・外注・労務集計</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">出来高査定</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/27</p><p class="text-[12px] text-gray-500 mt-1">進捗に応じた出来高</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">差異分析</p><p class="text-[11px] text-gray-400 mt-0.5">2026/05/02</p><p class="text-[12px] text-gray-500 mt-1">予算vs実績の分析</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#1e3a5f"></div><div class="w-0.5 flex-1 mx-auto" style="background:#1e3a5f"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">利益予測</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/20</p><p class="text-[12px] text-gray-500 mt-1">完工時利益の予測</p></div></div><div class="flex gap-4"><div class="flex flex-col items-center"><div class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:#d1d5db"></div><div class="flex-1"></div></div><div class="pb-6"><p class="text-[13px] font-medium text-gray-700">完工精算</p><p class="text-[11px] text-gray-400 mt-0.5">2026/06/28</p><p class="text-[12px] text-gray-500 mt-1">最終原価確定</p></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">ガントチャート</h3><div class="space-y-3"><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程1</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:29%;width:31%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">28日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程2</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:14%;width:33%;background:#3b82f6"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">15日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程3</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:22%;width:18%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">14日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程4</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:39%;width:36%;background:#3b82f6"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">27日</span></div><div class="flex items-center gap-3 group"><span class="text-[11px] text-gray-400 w-20 shrink-0">工程5</span><div class="flex-1 h-7 bg-gray-50 rounded relative"><div class="absolute h-full rounded group-hover:opacity-80 transition-opacity" style="left:18%;width:31%;background:#1e3a5f"></div></div><span class="text-[11px] text-gray-400 w-16 text-right">7日</span></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤経理部長 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4712</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">要注意</span></div><p class="text-[13px] font-medium text-gray-700">佐藤経理部長</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/01/12</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥7,299万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中原価管理 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4580</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">田中原価管理</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/02/23</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥3,818万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木工事担当 仮設費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4535</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">鈴木工事担当</p><p class="text-[11px] text-gray-400 mt-1">仮設費 · 2026/03/07</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥5,109万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田現場所長 材料費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5857</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">山田現場所長</p><p class="text-[11px] text-gray-400 mt-1">材料費 · 2026/01/05</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥9,076万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋経理 労務費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9401</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">予算内</span></div><p class="text-[13px] font-medium text-gray-700">高橋経理</p><p class="text-[11px] text-gray-400 mt-1">労務費 · 2026/02/12</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥7,383万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤購買 労務費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2475</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">伊藤購買</p><p class="text-[11px] text-gray-400 mt-1">労務費 · 2026/03/04</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥2,084万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺工事部長 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2561</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">渡辺工事部長</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/02/01</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥9,729万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村会計 仮設費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#8820</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">中村会計</p><p class="text-[11px] text-gray-400 mt-1">仮設費 · 2026/02/27</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥9,510万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林予算管理 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#5289</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">予算内</span></div><p class="text-[13px] font-medium text-gray-700">小林予算管理</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/01/15</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥7,777万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤資金繰り 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6320</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">赤字</span></div><p class="text-[13px] font-medium text-gray-700">加藤資金繰り</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/01/18</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥1,228万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤経理部長 仮設費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4895</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">要注意</span></div><p class="text-[13px] font-medium text-gray-700">佐藤経理部長</p><p class="text-[11px] text-gray-400 mt-1">仮設費 · 2026/01/13</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥4,426万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中原価管理 経費"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2382</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">完工</span></div><p class="text-[13px] font-medium text-gray-700">田中原価管理</p><p class="text-[11px] text-gray-400 mt-1">経費 · 2026/01/16</p><p class="text-[13px] font-bold mt-2" style="color:#1e3a5f">¥3,024万</p></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#1e3a5f"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#1e3a5f"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#1e3a5f;border-color:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">工事粗利率</span><i data-lucide="trending-up" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">32%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +4pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">赤字工事</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">5件</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">原価消化率</span><i data-lucide="percent" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">84%</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">未請求額</span><i data-lucide="wallet" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#1e3a5f">2568万円</div><div class="text-[11px] mt-2 text-red-500">↓ -125%</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">工事粗利率トレンド分析</h3><div style="height:320px"><canvas id="rpC1"></canvas></div></div><div class="card p-5 mt-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-3">分析サマリー</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">工事粗利率が前月比改善</p></div><div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">赤字工事が変動傾向</p></div><div class="p-3 rounded-lg" style="background:#dbeafe"><p class="text-[11px] font-medium mb-1" style="color:#1e3a5f">予測</p><p class="text-[13px]" style="color:#1e3a5f">Q2目標達成見込み</p></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#1e3a5f"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#1e3a5f"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#1e3a5f"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#1e3a5f"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+          <div class="pt-3 mt-3 border-t border-white/10">
+            <p
+              class="px-3 text-[10px] uppercase tracking-wider opacity-40 mb-2"
+            >
+              管理
+            </p>
+            <a
+              data-page="alerts"
+              class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+              onclick="navigate('alerts')"
+              ><i data-lucide="bell-ring" class="w-[18px] h-[18px] shrink-0"></i
+              ><span class="truncate">アラート</span
+              ><span
+                class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                >3</span
+              ></a
+            >
+            <a
+              data-page="settings"
+              class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+              onclick="navigate('settings')"
+              ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+              ><span class="truncate">設定</span></a
+            >
+          </div>
+        </nav>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "進捗とカテゴリ分析"}, {"id": "feature", "title": "タイムライン", "desc": "進捗・工程管理"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "トレンド分析"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "bar", "data": {"labels": ["A工事", "B工事", "C工事", "D工事", "E工事", "F工事"], "datasets": [{"label": "実績", "data": [54, 18, 48, 43, 28, 21], "backgroundColor": "#1e3a5f", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}, "indexAxis": "y"}));
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              全工事のリアルタイム原価状況
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-gray-400"
+              >最終更新: 2026/03/10 14:32</span
+            >
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-blue-50 text-primary"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ============================================================ -->
+          <!-- PAGE: Dashboard -->
+          <!-- ============================================================ -->
+          <div id="page-dashboard" class="page active">
+            <!-- Alert Banner -->
+            <div
+              class="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-3"
+            >
+              <div
+                class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 alert-pulse"
+              >
+                <i
+                  data-lucide="alert-triangle"
+                  class="w-4 h-4 text-red-600"
+                ></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-medium text-red-800">
+                  緊急アラート: 2件の工事で赤字転落リスク
+                </p>
+                <p class="text-[11px] text-red-600 mt-0.5">
+                  横浜駅前ビル新築工事 (CPI: 0.82)、川崎倉庫改修工事 (CPI: 0.78)
+                </p>
+              </div>
+              <button
+                class="text-[12px] text-red-600 font-medium hover:underline cursor-pointer whitespace-nowrap"
+                onclick="navigate('alerts')"
+              >
+                詳細を確認
+              </button>
+            </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [68, 79, 63, 35, 82, 30, 36, 48, 23, 25, 48, 33], "borderColor": "#1e3a5f", "tension": 0.4, "pointRadius": 4, "pointBackgroundColor": "#1e3a5f"}, {"label": "予測", "data": [68, 79, 63, 35, 82, 30, 36, 48, null, null, null, null], "borderColor": "#d1d5db", "borderDash": [5, 5], "tension": 0.4, "pointRadius": 0}, {"label": "目標", "data": [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60], "borderColor": "#f59e0b", "borderDash": [2, 4], "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card metric-card blue p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500 font-medium"
+                    >施工中工事</span
+                  >
+                  <i data-lucide="building-2" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <div class="text-2xl font-bold text-primary-dark">12件</div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  請負総額
+                  <span class="font-semibold text-gray-600">48.2億円</span>
+                </div>
+              </div>
+              <div class="card metric-card green p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500 font-medium"
+                    >全体粗利率</span
+                  >
+                  <i
+                    data-lucide="trending-up"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-success">28.4%</div>
+                <div class="flex items-center gap-1 mt-2">
+                  <span class="text-[11px] text-success font-medium"
+                    >+2.1pt</span
+                  ><span class="text-[11px] text-gray-400">前月比</span>
+                </div>
+              </div>
+              <div class="card metric-card red p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500 font-medium"
+                    >赤字リスク工事</span
+                  >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-danger">2件</div>
+                <div class="flex items-center gap-1 mt-2">
+                  <span class="text-[11px] text-danger font-medium">+1件</span
+                  ><span class="text-[11px] text-gray-400">前月比</span>
+                </div>
+              </div>
+              <div class="card metric-card amber p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500 font-medium"
+                    >未計上コミットメント</span
+                  >
+                  <i
+                    data-lucide="file-warning"
+                    class="w-4 h-4 text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-warning">1.84億</div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  発注済・未検収の外注費
+                </div>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+              <!-- Project Health Map -->
+              <div class="card p-5 lg:col-span-2">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    工事別 原価健全性マップ
+                  </h3>
+                  <div class="flex gap-3 text-[10px] text-gray-400">
+                    <span class="flex items-center gap-1"
+                      ><span class="w-2 h-2 rounded-full bg-success"></span>健全
+                      (CPI≥1.0)</span
+                    >
+                    <span class="flex items-center gap-1"
+                      ><span class="w-2 h-2 rounded-full bg-amber-400"></span
+                      >注意 (0.90-0.99)</span
+                    >
+                    <span class="flex items-center gap-1"
+                      ><span class="w-2 h-2 rounded-full bg-danger"></span>危険
+                      (＜0.90)</span
+                    >
+                  </div>
+                </div>
+                <div class="space-y-2.5" id="healthMap">
+                  <!-- JS generates -->
+                </div>
+              </div>
+
+              <!-- Cost Breakdown -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  原価科目構成（全工事合計）
+                </h3>
+                <div style="height: 220px">
+                  <canvas id="costBreakdownChart"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <span
+                      class="w-3 h-3 rounded"
+                      style="background: #1e40af"
+                    ></span
+                    ><span class="text-gray-600">外注費 62%</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <span
+                      class="w-3 h-3 rounded"
+                      style="background: #3b82f6"
+                    ></span
+                    ><span class="text-gray-600">材料費 15%</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <span
+                      class="w-3 h-3 rounded"
+                      style="background: #60a5fa"
+                    ></span
+                    ><span class="text-gray-600">労務費 8%</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px]">
+                    <span
+                      class="w-3 h-3 rounded"
+                      style="background: #93c5fd"
+                    ></span
+                    ><span class="text-gray-600">経費 15%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <!-- Monthly Trend -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次原価推移（予算 vs 実績）
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="monthlyTrendChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Recent Cost Entries -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    直近の原価計上
+                  </h3>
+                  <span
+                    class="text-[11px] text-primary cursor-pointer hover:underline"
+                    onclick="navigate('cost-entry')"
+                    >すべて表示</span
+                  >
+                </div>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                    >
+                      <i data-lucide="truck" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700 truncate">
+                        鉄筋工事（3F-5F）
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        外注費 · 新宿タワー · 03/10
+                      </p>
+                    </div>
+                    <p class="text-[12px] font-bold text-gray-700">¥2,840万</p>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                    >
+                      <i data-lucide="package" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700 truncate">
+                        コンクリート 320m³
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        材料費 · 品川マンション · 03/09
+                      </p>
+                    </div>
+                    <p class="text-[12px] font-bold text-gray-700">¥576万</p>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                    >
+                      <i data-lucide="users" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700 truncate">
+                        型枠工 12人×5日
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        労務費 · 横浜駅前ビル · 03/08
+                      </p>
+                    </div>
+                    <p class="text-[12px] font-bold text-gray-700">¥432万</p>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0"
+                    >
+                      <i data-lucide="crane" class="w-4 h-4 text-amber-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700 truncate">
+                        タワークレーン リース（3月分）
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        経費 · 新宿タワー · 03/07
+                      </p>
+                    </div>
+                    <p class="text-[12px] font-bold text-gray-700">¥380万</p>
+                  </div>
+                  <div
+                    class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div
+                      class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                    >
+                      <i data-lucide="zap" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12px] font-medium text-gray-700 truncate">
+                        電気設備工事（B1F-2F）
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        外注費 · 品川マンション · 03/07
+                      </p>
+                    </div>
+                    <p class="text-[12px] font-bold text-gray-700">¥1,560万</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Projects (工事台帳) -->
+          <!-- ============================================================ -->
+          <div id="page-projects" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="projectSearch"
+                    type="text"
+                    placeholder="工事番号・工事名で検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
+                  />
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select
+                  class="text-[13px] border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">全ステータス</option>
+                  <option value="active">施工中</option>
+                  <option value="completed">完工</option>
+                  <option value="warning">要注意</option>
+                </select>
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer bg-primary"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>新規工事
+                </button>
+              </div>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        工事番号
+                      </th>
+                      <th
+                        class="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        工事名
+                      </th>
+                      <th
+                        class="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        発注者
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        請負金額
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        実績原価
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        粗利率
+                      </th>
+                      <th
+                        class="text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        CPI
+                      </th>
+                      <th
+                        class="text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        進捗
+                      </th>
+                      <th
+                        class="text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3"
+                      >
+                        状態
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="projectTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Cost Entry (原価入力) -->
+          <!-- ============================================================ -->
+          <div id="page-cost-entry" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              <!-- Entry Form -->
+              <div class="lg:col-span-1">
+                <div class="card p-6">
+                  <h3
+                    class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="plus-circle"
+                      class="w-4 h-4 text-primary"
+                    ></i
+                    >原価計上
+                  </h3>
+                  <div class="space-y-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >工事 <span class="text-red-400">*</span></label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      >
+                        <option value="">工事を選択</option>
+                        <option>K-2024-001 新宿タワー新築</option>
+                        <option>K-2024-003 品川マンション新築</option>
+                        <option>K-2024-005 横浜駅前ビル新築</option>
+                        <option>K-2024-007 川崎倉庫改修</option>
+                        <option>K-2024-009 渋谷オフィスビル</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >原価科目（大分類）
+                        <span class="text-red-400">*</span></label
+                      >
+                      <select
+                        id="costCategory"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        onchange="updateSubCategory()"
+                      >
+                        <option value="">選択してください</option>
+                        <option value="material">材料費</option>
+                        <option value="labor">労務費</option>
+                        <option value="subcontract">外注費</option>
+                        <option value="expense">経費</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >原価科目（中分類）</label
+                      >
+                      <select
+                        id="costSubCategory"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      >
+                        <option value="">大分類を先に選択</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >取引先</label
+                      >
+                      <input
+                        type="text"
+                        placeholder="業者名を入力"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label
+                          class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                          >発生日 <span class="text-red-400">*</span></label
+                        >
+                        <input
+                          type="date"
+                          value="2026-03-10"
+                          class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                          >金額（税抜）
+                          <span class="text-red-400">*</span></label
+                        >
+                        <input
+                          type="text"
+                          placeholder="¥0"
+                          class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >計上ステータス</label
+                      >
+                      <select
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      >
+                        <option>発注済（コミットメント）</option>
+                        <option>納品済</option>
+                        <option>検収済</option>
+                        <option>支払済</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >摘要</label
+                      >
+                      <textarea
+                        rows="2"
+                        placeholder="詳細メモ"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      ></textarea>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                      <button
+                        class="flex-1 py-2.5 text-[13px] rounded-lg border text-gray-600 font-medium hover:bg-gray-50 cursor-pointer transition-all"
+                      >
+                        下書き
+                      </button>
+                      <button
+                        class="flex-1 py-2.5 text-[13px] rounded-lg text-white font-medium bg-primary hover:opacity-90 cursor-pointer transition-all"
+                      >
+                        計上する
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Entries Table -->
+              <div class="lg:col-span-2">
+                <div class="card overflow-hidden">
+                  <div class="p-4 border-b flex items-center justify-between">
+                    <h3 class="font-semibold text-[13px] text-gray-700">
+                      原価明細一覧
+                    </h3>
+                    <div class="flex gap-2">
+                      <div class="flex rounded-lg border overflow-hidden">
+                        <button class="tab-btn active text-[11px] px-3 py-1.5">
+                          全て
+                        </button>
+                        <button class="tab-btn text-[11px] px-3 py-1.5">
+                          発注済
+                        </button>
+                        <button class="tab-btn text-[11px] px-3 py-1.5">
+                          検収済
+                        </button>
+                        <button class="tab-btn text-[11px] px-3 py-1.5">
+                          支払済
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="bg-gray-50 border-b">
+                          <th
+                            class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            日付
+                          </th>
+                          <th
+                            class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            工事
+                          </th>
+                          <th
+                            class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            科目
+                          </th>
+                          <th
+                            class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            取引先
+                          </th>
+                          <th
+                            class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            摘要
+                          </th>
+                          <th
+                            class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            金額
+                          </th>
+                          <th
+                            class="text-center text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                          >
+                            ステータス
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/10
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            新宿タワー
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">外注費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            大和鉄筋工業
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            鉄筋工事（3F-5F）
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥28,400,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-success">検収済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/09
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            品川マンション
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">材料費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            東京生コン
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            コンクリート 320m³
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥5,760,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-success">検収済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/08
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            横浜駅前ビル
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">労務費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            （自社施工）
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            型枠工 12人×5日
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥4,320,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-gray">支払済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/07
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            新宿タワー
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">経費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            日本クレーンリース
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            タワークレーン 3月分
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥3,800,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-warning">納品済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/07
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            品川マンション
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">外注費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            関東電設工業
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            電気設備工事（B1F-2F）
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥15,600,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-success">検収済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/06
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            渋谷オフィス
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">外注費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            三和塗装工業
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            外壁塗装（南面）
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥8,200,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-danger">発注済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/05
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            横浜駅前ビル
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">材料費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            JFEスチール
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            H鋼 SS400 82t
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥12,300,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-success">検収済</span>
+                          </td>
+                        </tr>
+                        <tr
+                          class="table-row border-b transition-colors cursor-pointer"
+                        >
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            03/04
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                          >
+                            川崎倉庫
+                          </td>
+                          <td class="px-4 py-3">
+                            <span class="badge badge-info">経費</span>
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-600">
+                            東京電力EP
+                          </td>
+                          <td class="px-4 py-3 text-[12px] text-gray-500">
+                            仮設電気 2月分
+                          </td>
+                          <td
+                            class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                          >
+                            ¥420,000
+                          </td>
+                          <td class="px-4 py-3 text-center">
+                            <span class="badge badge-gray">支払済</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Budget vs Actual (予実管理) -->
+          <!-- ============================================================ -->
+          <div id="page-budget-actual" class="page">
+            <!-- Project Selector -->
+            <div class="flex items-center gap-3 mb-5">
+              <select
+                id="baProjectSelect"
+                class="text-[13px] border rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 font-medium"
+                onchange="updateBudgetActual()"
+              >
+                <option value="shinjuku">K-2024-001 新宿タワー新築工事</option>
+                <option value="yokohama">
+                  K-2024-005 横浜駅前ビル新築工事
+                </option>
+                <option value="shinagawa">
+                  K-2024-003 品川マンション新築工事
+                </option>
+                <option value="kawasaki">K-2024-007 川崎倉庫改修工事</option>
+              </select>
+              <span class="badge badge-success" id="baStatus">施工中</span>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+              <div class="card p-4">
+                <p class="text-[11px] text-gray-500 mb-1">請負金額</p>
+                <p
+                  class="text-[16px] font-bold text-primary-dark"
+                  id="baContract"
+                >
+                  12.8億円
+                </p>
+              </div>
+              <div class="card p-4">
+                <p class="text-[11px] text-gray-500 mb-1">実行予算</p>
+                <p class="text-[16px] font-bold text-gray-700" id="baBudget">
+                  9.60億円
+                </p>
+              </div>
+              <div class="card p-4">
+                <p class="text-[11px] text-gray-500 mb-1">実績原価</p>
+                <p class="text-[16px] font-bold text-gray-700" id="baActual">
+                  5.28億円
+                </p>
+              </div>
+              <div class="card p-4">
+                <p class="text-[11px] text-gray-500 mb-1">
+                  完工時予測原価 (EAC)
+                </p>
+                <p class="text-[16px] font-bold text-success" id="baEAC">
+                  9.23億円
+                </p>
+              </div>
+              <div class="card p-4">
+                <p class="text-[11px] text-gray-500 mb-1">完工時予測利益</p>
+                <p class="text-[16px] font-bold text-success" id="baProfit">
+                  +3.57億円
+                </p>
+                <p class="text-[10px] mt-1" id="baProfitRate">
+                  <span class="text-success">粗利率 27.9%</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- EVM Indicators -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card p-4 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <span class="text-[13px] font-bold text-primary">CPI</span>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-success" id="baCPI">
+                    1.04
+                  </p>
+                  <p class="text-[10px] text-gray-400">コスト効率</p>
+                </div>
+              </div>
+              <div class="card p-4 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <span class="text-[13px] font-bold text-primary">SPI</span>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-success" id="baSPI">
+                    0.98
+                  </p>
+                  <p class="text-[10px] text-gray-400">工程効率</p>
+                </div>
+              </div>
+              <div class="card p-4 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <span class="text-[11px] font-bold text-primary">消化率</span>
+                </div>
+                <div>
+                  <p
+                    class="text-[18px] font-bold text-gray-700"
+                    id="baBurnRate"
+                  >
+                    55.0%
+                  </p>
+                  <p class="text-[10px] text-gray-400">予算消化率</p>
+                </div>
+              </div>
+              <div class="card p-4 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"
+                >
+                  <span class="text-[11px] font-bold text-primary">出来高</span>
+                </div>
+                <div>
+                  <p
+                    class="text-[18px] font-bold text-gray-700"
+                    id="baProgress"
+                  >
+                    57.2%
+                  </p>
+                  <p class="text-[10px] text-gray-400">工事進捗率</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Budget vs Actual by Category -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  科目別 予算 vs 実績
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="baCategoryChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  科目別 消化率
+                </h3>
+                <div class="space-y-4 mt-2">
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] text-gray-600 font-medium"
+                        >外注費</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-gray-400"
+                          >3.12億 / 5.95億</span
+                        >
+                        <span class="text-[12px] font-semibold text-gray-700"
+                          >52.4%</span
+                        >
+                      </div>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-primary"
+                        style="width: 52.4%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] text-gray-600 font-medium"
+                        >材料費</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-gray-400"
+                          >0.89億 / 1.44億</span
+                        >
+                        <span class="text-[12px] font-semibold text-gray-700"
+                          >61.8%</span
+                        >
+                      </div>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-primary-light"
+                        style="width: 61.8%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] text-gray-600 font-medium"
+                        >労務費</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-gray-400"
+                          >0.42億 / 0.77億</span
+                        >
+                        <span class="text-[12px] font-semibold text-gray-700"
+                          >54.5%</span
+                        >
+                      </div>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill"
+                        style="width: 54.5%; background: #60a5fa"
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-[12px] text-gray-600 font-medium"
+                        >経費</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-gray-400"
+                          >0.85億 / 1.44億</span
+                        >
+                        <span class="text-[12px] font-semibold text-warning"
+                          >59.0%</span
+                        >
+                      </div>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-bar-fill bg-warning"
+                        style="width: 59%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Commitment Warning -->
+                <div
+                  class="mt-5 p-3 rounded-lg bg-amber-50 border border-amber-200"
+                >
+                  <div class="flex items-center gap-2 mb-1">
+                    <i
+                      data-lucide="info"
+                      class="w-3.5 h-3.5 text-amber-600"
+                    ></i>
+                    <span class="text-[12px] font-medium text-amber-800"
+                      >コミットメント残（発注済・未検収）</span
+                    >
+                  </div>
+                  <p class="text-[11px] text-amber-700">
+                    外注費: ¥4,200万 / 経費: ¥380万 → 合計
+                    <span class="font-bold">¥4,580万</span>
+                  </p>
+                  <p class="text-[10px] text-amber-600 mt-1">
+                    見込原価に含めて予算残を算出しています
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Progress & Billing (出来高・請求) -->
+          <!-- ============================================================ -->
+          <div id="page-progress" class="page">
+            <div class="flex items-center gap-3 mb-5">
+              <select
+                class="text-[13px] border rounded-lg px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 font-medium"
+              >
+                <option>K-2024-001 新宿タワー新築工事</option>
+                <option>K-2024-003 品川マンション新築工事</option>
+                <option>K-2024-005 横浜駅前ビル新築工事</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <!-- Progress Chart -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  出来高推移（累計）
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="progressChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Billing Summary -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  請求・入金状況
+                </h3>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <div class="p-3 rounded-lg bg-blue-50">
+                    <p class="text-[11px] text-primary font-medium">
+                      請求済累計
+                    </p>
+                    <p class="text-[18px] font-bold text-primary-dark mt-1">
+                      6.40億
+                    </p>
+                  </div>
+                  <div class="p-3 rounded-lg bg-green-50">
+                    <p class="text-[11px] text-success font-medium">
+                      入金済累計
+                    </p>
+                    <p class="text-[18px] font-bold text-success mt-1">
+                      5.76億
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        未請求出来高
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        請求可能だが未請求の出来高
+                      </p>
+                    </div>
+                    <p class="text-[14px] font-bold text-amber-600">¥9,280万</p>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50"
+                  >
+                    <div>
+                      <p class="text-[12px] font-medium text-gray-700">
+                        売掛金（完成工事未収入金）
+                      </p>
+                      <p class="text-[10px] text-gray-400">請求済・未入金</p>
+                    </div>
+                    <p class="text-[14px] font-bold text-primary">¥6,400万</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Monthly Progress Table -->
+            <div class="card overflow-hidden">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  月次出来高・請求一覧
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gray-50 border-b">
+                      <th
+                        class="text-left text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        対象月
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        当月出来高
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        累計出来高
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        出来高率
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        当月原価
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        当月粗利
+                      </th>
+                      <th
+                        class="text-right text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        請求額
+                      </th>
+                      <th
+                        class="text-center text-[11px] font-semibold text-gray-500 px-4 py-2.5"
+                      >
+                        入金
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2026/03
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥9,280万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥73,280万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        57.2%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥7,120万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥2,160万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-400 text-right"
+                      >
+                        -
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-gray">未請求</span>
+                      </td>
+                    </tr>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2026/02
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥11,520万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥64,000万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        50.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥8,960万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥2,560万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥11,520万
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-warning">未入金</span>
+                      </td>
+                    </tr>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2026/01
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥10,240万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥52,480万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        41.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥8,200万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥2,040万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥10,240万
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-success">入金済</span>
+                      </td>
+                    </tr>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2025/12
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥12,800万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥42,240万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        33.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥10,100万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥2,700万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥12,800万
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-success">入金済</span>
+                      </td>
+                    </tr>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2025/11
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥8,960万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥29,440万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        23.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥7,400万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥1,560万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥8,960万
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-success">入金済</span>
+                      </td>
+                    </tr>
+                    <tr class="table-row border-b transition-colors">
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-medium"
+                      >
+                        2025/10
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥7,680万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥20,480万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-700 font-semibold text-right"
+                      >
+                        16.0%
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥6,500万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-success font-semibold text-right"
+                      >
+                        ¥1,180万
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-gray-600 text-right"
+                      >
+                        ¥7,680万
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        <span class="badge badge-success">入金済</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Report (分析レポート) -->
+          <!-- ============================================================ -->
+          <div id="page-report" class="page">
+            <!-- Summary KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500">全工事平均CPI</span>
+                  <i data-lucide="activity" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <div class="text-2xl font-bold text-primary-dark">0.97</div>
+                <div class="text-[11px] mt-2 text-gray-400">目標: 1.00以上</div>
+              </div>
+              <div class="card p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500">平均粗利率</span>
+                  <i data-lucide="percent" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <div class="text-2xl font-bold text-success">28.4%</div>
+                <div class="text-[11px] mt-2 text-success">
+                  業界平均25%を上回る
+                </div>
+              </div>
+              <div class="card p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500"
+                    >完工時予測利益合計</span
+                  >
+                  <i data-lucide="wallet" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <div class="text-2xl font-bold text-primary-dark">13.7億</div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  全施工中工事の合計
+                </div>
+              </div>
+              <div class="card p-5 cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[12px] text-gray-500"
+                    >コミットメント残</span
+                  >
+                  <i data-lucide="clock" class="w-4 h-4 text-gray-300"></i>
+                </div>
+                <div class="text-2xl font-bold text-warning">1.84億</div>
+                <div class="text-[11px] mt-2 text-amber-600">
+                  7件の未検収外注あり
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <!-- CPI Trend -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  CPI推移（主要工事）
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="cpiTrendChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Profit Margin by Project -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  工事別 完工時予測粗利率
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="profitByProjectChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Analysis Summary -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                分析サマリー
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-4 rounded-lg bg-red-50 border border-red-100">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i
+                      data-lucide="alert-circle"
+                      class="w-4 h-4 text-red-600"
+                    ></i>
+                    <p class="text-[12px] text-red-700 font-semibold">要対策</p>
+                  </div>
+                  <p class="text-[12px] text-red-700">
+                    横浜駅前ビル:
+                    鉄骨工事の追加により外注費が予算を14%超過。設計変更に伴う請負金額の増額交渉が必要。
+                  </p>
+                </div>
+                <div class="p-4 rounded-lg bg-amber-50 border border-amber-100">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-4 h-4 text-amber-600"
+                    ></i>
+                    <p class="text-[12px] text-amber-700 font-semibold">注意</p>
+                  </div>
+                  <p class="text-[12px] text-amber-700">
+                    川崎倉庫:
+                    工期延長（+2ヶ月）に伴う仮設費・現場管理費の追加予算が未反映。早急に実行予算の改訂が必要。
+                  </p>
+                </div>
+                <div class="p-4 rounded-lg bg-green-50 border border-green-100">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i
+                      data-lucide="check-circle"
+                      class="w-4 h-4 text-success"
+                    ></i>
+                    <p class="text-[12px] text-success font-semibold">好調</p>
+                  </div>
+                  <p class="text-[12px] text-green-700">
+                    新宿タワー: CPI
+                    1.04で推移。外注費の競争入札が奏功し、当初計画より約3,700万円の原価削減を実現。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Alerts -->
+          <!-- ============================================================ -->
+          <div id="page-alerts" class="page">
+            <div class="space-y-3">
+              <!-- Critical -->
+              <div class="card p-5 border-l-4 border-l-red-500">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-4 h-4 text-red-600"
+                    ></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-danger">危険</span>
+                      <span class="text-[11px] text-gray-400"
+                        >2026/03/10 09:15</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-800">
+                      完工時予測赤字: 川崎倉庫改修工事 (K-2024-007)
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      CPI: 0.78 / EAC: 4.10億 > 請負金額: 3.80億 → 予測損失:
+                      <span class="font-bold text-red-600">-3,000万円</span>
+                    </p>
+                    <p class="text-[11px] text-gray-500 mt-1">
+                      原因: 工期延長(+2ヶ月)に伴う仮設費増 +
+                      追加外注費の予算未反映
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 border-l-4 border-l-red-500">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-4 h-4 text-red-600"
+                    ></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-danger">危険</span>
+                      <span class="text-[11px] text-gray-400"
+                        >2026/03/09 14:30</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-800">
+                      CPI急落: 横浜駅前ビル新築工事 (K-2024-005)
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      CPI: 0.82 (前月 0.91) →
+                      鉄骨追加工事の検収により外注費が急増
+                    </p>
+                    <p class="text-[11px] text-gray-500 mt-1">
+                      対策:
+                      設計変更に伴う請負金額増額交渉を工事部長が発注者と協議中
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 border-l-4 border-l-amber-400">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    <i data-lucide="info" class="w-4 h-4 text-amber-600"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-warning">警告</span>
+                      <span class="text-[11px] text-gray-400"
+                        >2026/03/08 11:00</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-800">
+                      設計変更後の予算未修正: 横浜駅前ビル新築工事
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      設計変更指示書(第3回)を受領済みだが、実行予算(版数2)が未改訂。予算差異が正確に算出できません。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 border-l-4 border-l-amber-400">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-warning">注意</span>
+                      <span class="text-[11px] text-gray-400"
+                        >2026/03/07 16:45</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-800">
+                      発注済・未検収の外注費が高額: 品川マンション新築工事
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      コミットメント残:
+                      ¥6,200万（外注3件）。検収待ち期間が30日超の発注が2件あり。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 border-l-4 border-l-blue-400">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    <i data-lucide="file-text" class="w-4 h-4 text-primary"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="badge badge-info">情報</span>
+                      <span class="text-[11px] text-gray-400"
+                        >2026/03/07 10:00</span
+                      >
+                    </div>
+                    <p class="text-[13px] font-medium text-gray-800">
+                      出来高請求漏れ: 渋谷オフィスビル改修工事
+                    </p>
+                    <p class="text-[12px] text-gray-600 mt-1">
+                      2月分の出来高請求(¥3,840万)が未作成。請求遅延により資金繰りに影響する可能性があります。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PAGE: Settings -->
+          <!-- ============================================================ -->
+          <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i data-lucide="bell" class="w-4 h-4 text-primary"></i
+                  >アラート設定
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >CPI警告閾値</label
+                    >
+                    <div class="grid grid-cols-3 gap-3">
+                      <div>
+                        <label class="text-[11px] text-gray-400"
+                          >注意（黄）</label
+                        ><input
+                          type="number"
+                          value="0.95"
+                          step="0.01"
+                          class="w-full px-3 py-2 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                      <div>
+                        <label class="text-[11px] text-gray-400"
+                          >警告（橙）</label
+                        ><input
+                          type="number"
+                          value="0.90"
+                          step="0.01"
+                          class="w-full px-3 py-2 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                      <div>
+                        <label class="text-[11px] text-gray-400"
+                          >危険（赤）</label
+                        ><input
+                          type="number"
+                          value="0.85"
+                          step="0.01"
+                          class="w-full px-3 py-2 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >目標粗利率</label
+                    >
+                    <input
+                      type="number"
+                      value="25"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      placeholder="25"
+                    />
+                    <p class="text-[10px] text-gray-400 mt-1">業界平均: 25%</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i data-lucide="mail" class="w-4 h-4 text-primary"></i
+                  >通知設定
+                </h3>
+                <div class="divide-y">
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        メール通知
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        危険アラート発生時に即時通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        Slack連携
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        原価計上時にチャンネル通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        日次サマリーレポート
+                      </p>
+                      <p class="text-[11px] text-gray-400">
+                        毎朝9:00に前日の原価動向を配信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i data-lucide="database" class="w-4 h-4 text-primary"></i
+                  >原価科目設定
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >外注費の計上方式</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option>発注ベース（コミットメント計上）</option>
+                      <option>検収ベース（実績主義）</option>
+                    </select>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                      発注ベースを推奨:
+                      発注時点で見込原価に含めることでリアルタイム把握が可能
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >間接費配賦基準</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option>直接原価比例配賦</option>
+                      <option>出来高比例配賦</option>
+                      <option>工期比例配賦</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2.5 px-5 text-[13px] rounded-lg text-white font-medium bg-primary hover:opacity-90 cursor-pointer transition-all"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ============================================================
+      // Data
+      // ============================================================
+      const projects = [
+        {
+          id: "K-2024-001",
+          name: "新宿タワー新築工事",
+          client: "新宿開発(株)",
+          contract: 1280000,
+          budget: 960000,
+          actual: 528000,
+          ev: 549120,
+          progress: 57.2,
+          cpi: 1.04,
+          spi: 0.98,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-003",
+          name: "品川マンション新築工事",
+          client: "品川不動産(株)",
+          contract: 850000,
+          budget: 637500,
+          actual: 382500,
+          ev: 395000,
+          progress: 48.6,
+          cpi: 1.03,
+          spi: 1.02,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-005",
+          name: "横浜駅前ビル新築工事",
+          client: "横浜都市開発(株)",
+          contract: 1560000,
+          budget: 1170000,
+          actual: 702000,
+          ev: 575640,
+          progress: 45.2,
+          cpi: 0.82,
+          spi: 0.88,
+          status: "要注意",
+          type: "建築",
+        },
+        {
+          id: "K-2024-007",
+          name: "川崎倉庫改修工事",
+          client: "川崎物流(株)",
+          contract: 380000,
+          budget: 285000,
+          actual: 222300,
+          ev: 173430,
+          progress: 62.0,
+          cpi: 0.78,
+          spi: 0.91,
+          status: "要注意",
+          type: "建築",
+        },
+        {
+          id: "K-2024-009",
+          name: "渋谷オフィスビル改修工事",
+          client: "渋谷リアルティ(株)",
+          contract: 420000,
+          budget: 315000,
+          actual: 189000,
+          ev: 194040,
+          progress: 55.3,
+          cpi: 1.03,
+          spi: 1.01,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-011",
+          name: "目黒駅前再開発(A棟)",
+          client: "目黒まちづくり(株)",
+          contract: 2100000,
+          budget: 1575000,
+          actual: 472500,
+          ev: 488250,
+          progress: 28.4,
+          cpi: 1.03,
+          spi: 0.97,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-013",
+          name: "大田区立体育館改修",
+          client: "大田区役所",
+          contract: 180000,
+          budget: 144000,
+          actual: 115200,
+          ev: 117360,
+          progress: 78.5,
+          cpi: 1.02,
+          spi: 1.04,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-015",
+          name: "世田谷マンション新築",
+          client: "世田谷住宅(株)",
+          contract: 620000,
+          budget: 465000,
+          actual: 139500,
+          ev: 143385,
+          progress: 22.1,
+          cpi: 1.03,
+          spi: 0.95,
+          status: "施工中",
+          type: "建築",
+        },
+        {
+          id: "K-2024-017",
+          name: "多摩川橋梁補修工事",
+          client: "国土交通省関東",
+          contract: 95000,
+          budget: 76000,
+          actual: 53200,
+          ev: 54720,
+          progress: 68.0,
+          cpi: 1.03,
+          spi: 1.0,
+          status: "施工中",
+          type: "土木",
+        },
+        {
+          id: "K-2024-019",
+          name: "練馬区道路整備工事",
+          client: "練馬区役所",
+          contract: 68000,
+          budget: 54400,
+          actual: 38080,
+          ev: 37264,
+          progress: 65.2,
+          cpi: 0.98,
+          spi: 0.96,
+          status: "施工中",
+          type: "土木",
+        },
+        {
+          id: "K-2023-042",
+          name: "中央区オフィス新築",
+          client: "中央地所(株)",
+          contract: 720000,
+          budget: 540000,
+          actual: 524000,
+          ev: 529200,
+          progress: 98.0,
+          cpi: 1.01,
+          spi: 1.0,
+          status: "完工",
+          type: "建築",
+        },
+        {
+          id: "K-2023-048",
+          name: "港区マンション新築",
+          client: "港南開発(株)",
+          contract: 960000,
+          budget: 720000,
+          actual: 698000,
+          ev: 705600,
+          progress: 98.0,
+          cpi: 1.01,
+          spi: 1.0,
+          status: "完工",
+          type: "建築",
+        },
+      ];
+
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "全工事のリアルタイム原価状況",
+        },
+        {
+          id: "projects",
+          title: "工事台帳",
+          desc: "全工事の一覧・ステータス管理",
+        },
+        { id: "cost-entry", title: "原価入力", desc: "原価明細の計上・管理" },
+        {
+          id: "budget-actual",
+          title: "予実管理",
+          desc: "工事別の予算 vs 実績分析",
+        },
+        {
+          id: "progress",
+          title: "出来高・請求",
+          desc: "出来高管理と請求・入金",
+        },
+        { id: "report", title: "分析レポート", desc: "全社横断のトレンド分析" },
+        { id: "alerts", title: "アラート", desc: "原価超過・リスクの通知管理" },
+        { id: "settings", title: "設定", desc: "システム設定・閾値管理" },
+      ];
+
+      // ============================================================
+      // Navigation
+      // ============================================================
+      const charts = [];
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      // ============================================================
+      // Init
+      // ============================================================
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || "dashboard");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        renderHealthMap();
+        renderProjectTable();
+        initCharts();
+      });
+
+      // ============================================================
+      // Health Map
+      // ============================================================
+      function renderHealthMap() {
+        const container = document.getElementById("healthMap");
+        const active = projects.filter((p) => p.status !== "完工");
+        container.innerHTML = active
+          .map((p) => {
+            const pct = p.progress;
+            let barColor = "#059669";
+            let cpiColor = "text-success";
+            if (p.cpi < 0.9) {
+              barColor = "#DC2626";
+              cpiColor = "text-danger";
+            } else if (p.cpi < 1.0) {
+              barColor = "#F59E0B";
+              cpiColor = "text-amber-600";
+            }
+            const profitRate = (
+              ((p.contract - p.budget / p.cpi) / p.contract) *
+              100
+            ).toFixed(1);
+            const profitColor =
+              profitRate < 0
+                ? "text-danger font-bold"
+                : profitRate < 20
+                  ? "text-amber-600"
+                  : "text-success";
+            return `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+      <div class="w-[140px] shrink-0"><p class="text-[11px] font-medium text-gray-700 truncate">${p.name.replace("工事", "")}</p><p class="text-[10px] text-gray-400">${p.id}</p></div>
+      <div class="flex-1"><div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%;background:${barColor}"></div></div></div>
+      <span class="text-[11px] text-gray-500 w-10 text-right">${pct}%</span>
+      <span class="text-[11px] font-semibold w-10 text-right ${cpiColor}">${p.cpi.toFixed(2)}</span>
+      <span class="text-[11px] w-14 text-right ${profitColor}">${profitRate}%</span>
+    </div>`;
+          })
+          .join("");
+      }
+
+      // ============================================================
+      // Project Table
+      // ============================================================
+      function renderProjectTable() {
+        const tbody = document.getElementById("projectTableBody");
+        tbody.innerHTML = projects
+          .map((p) => {
+            let statusBadge = "badge-success";
+            if (p.status === "要注意") statusBadge = "badge-danger";
+            else if (p.status === "完工") statusBadge = "badge-gray";
+
+            let cpiColor = "text-success";
+            if (p.cpi < 0.9) cpiColor = "text-danger font-bold";
+            else if (p.cpi < 1.0) cpiColor = "text-amber-600";
+
+            const margin = (
+              ((p.contract - p.actual) / p.contract) *
+              100
+            ).toFixed(1);
+            const marginColor = margin < 20 ? "text-amber-600" : "text-success";
+
+            const fmt = (v) => (v / 10000).toFixed(0) + "万";
+
+            return `<tr class="table-row border-b transition-colors cursor-pointer" data-search="${p.id} ${p.name} ${p.client}">
+      <td class="px-4 py-3 text-[12px] text-primary font-medium">${p.id}</td>
+      <td class="px-4 py-3 text-[12px] text-gray-700 font-medium">${p.name}</td>
+      <td class="px-4 py-3 text-[12px] text-gray-500">${p.client}</td>
+      <td class="px-4 py-3 text-[12px] text-gray-700 text-right font-semibold">¥${fmt(p.contract)}</td>
+      <td class="px-4 py-3 text-[12px] text-gray-600 text-right">¥${fmt(p.actual)}</td>
+      <td class="px-4 py-3 text-[12px] ${marginColor} text-right font-semibold">${margin}%</td>
+      <td class="px-4 py-3 text-center"><span class="text-[12px] font-bold ${cpiColor}">${p.cpi.toFixed(2)}</span></td>
+      <td class="px-4 py-3 text-center">
+        <div class="flex items-center gap-2 justify-center"><div class="w-16 progress-bar"><div class="progress-bar-fill bg-primary" style="width:${p.progress}%"></div></div><span class="text-[11px] text-gray-500">${p.progress}%</span></div>
+      </td>
+      <td class="px-4 py-3 text-center"><span class="badge ${statusBadge}">${p.status}</span></td>
+    </tr>`;
+          })
+          .join("");
+
+        // Search
+        document
+          .getElementById("projectSearch")
+          ?.addEventListener("input", function () {
+            const q = this.value.toLowerCase();
+            document
+              .querySelectorAll("#projectTableBody tr[data-search]")
+              .forEach((el) => {
+                el.style.display = el.dataset.search.toLowerCase().includes(q)
+                  ? ""
+                  : "none";
+              });
+          });
+      }
+
+      // ============================================================
+      // Sub-category selection
+      // ============================================================
+      function updateSubCategory() {
+        const cat = document.getElementById("costCategory").value;
+        const sub = document.getElementById("costSubCategory");
+        const opts = {
+          material: ["直接材料費（主体材料）", "間接材料費（消耗資材）"],
+          labor: ["直接労務費", "労務外注費"],
+          subcontract: ["躯体工事", "仕上工事", "設備工事", "その他外注"],
+          expense: [
+            "仮設費",
+            "機械等経費",
+            "動力用水光熱費",
+            "安全衛生費",
+            "設計費",
+            "運搬費",
+            "現場管理費",
+            "その他経費",
+          ],
+        };
+        sub.innerHTML = cat
+          ? (opts[cat] || []).map((o) => `<option>${o}</option>`).join("")
+          : "<option>大分類を先に選択</option>";
+      }
+
+      // ============================================================
+      // Charts
+      // ============================================================
+      function initCharts() {
+        // Cost Breakdown (Doughnut)
+        charts.push(
+          new Chart(document.getElementById("costBreakdownChart"), {
+            type: "doughnut",
+            data: {
+              labels: ["外注費", "材料費", "労務費", "経費"],
+              datasets: [
+                {
+                  data: [62, 15, 8, 15],
+                  backgroundColor: ["#1E40AF", "#3B82F6", "#60A5FA", "#93C5FD"],
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "65%",
+              plugins: { legend: { display: false } },
+            },
+          }),
+        );
+
+        // Monthly Trend
+        charts.push(
+          new Chart(document.getElementById("monthlyTrendChart"), {
+            type: "bar",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "予算（計画原価）",
+                  data: [38000, 42000, 48000, 46000, 50000, 52000],
+                  backgroundColor: "#DBEAFE",
+                  borderRadius: 4,
+                  order: 2,
+                },
+                {
+                  label: "実績原価",
+                  data: [35000, 40000, 47000, 44000, 49000, 51000],
+                  backgroundColor: "#1E40AF",
+                  borderRadius: 4,
+                  order: 1,
+                },
+                {
+                  label: "コミットメント残",
+                  data: [2000, 3000, 2500, 4000, 3500, 4200],
+                  backgroundColor: "#F59E0B",
+                  borderRadius: 4,
+                  order: 3,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: (v) => (v / 10000).toFixed(0) + "億",
+                  },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Budget vs Actual by Category (Horizontal Bar)
+        charts.push(
+          new Chart(document.getElementById("baCategoryChart"), {
+            type: "bar",
+            data: {
+              labels: ["外注費", "材料費", "労務費", "経費"],
+              datasets: [
+                {
+                  label: "実行予算",
+                  data: [59500, 14400, 7700, 14400],
+                  backgroundColor: "#DBEAFE",
+                  borderRadius: 4,
+                },
+                {
+                  label: "実績原価",
+                  data: [31200, 8900, 4200, 8500],
+                  backgroundColor: "#1E40AF",
+                  borderRadius: 4,
+                },
+                {
+                  label: "コミットメント残",
+                  data: [4200, 0, 0, 380],
+                  backgroundColor: "#F59E0B",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  grid: { color: "#f3f4f6" },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: (v) => (v / 10000).toFixed(1) + "億",
+                  },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Progress Chart (Line)
+        charts.push(
+          new Chart(document.getElementById("progressChart"), {
+            type: "line",
+            data: {
+              labels: [
+                "8月",
+                "9月",
+                "10月",
+                "11月",
+                "12月",
+                "1月",
+                "2月",
+                "3月",
+                "4月",
+                "5月",
+              ],
+              datasets: [
+                {
+                  label: "計画出来高",
+                  data: [5, 10, 16, 23, 33, 41, 50, 58, 72, 85],
+                  borderColor: "#D1D5DB",
+                  borderDash: [5, 5],
+                  tension: 0.3,
+                  pointRadius: 0,
+                },
+                {
+                  label: "実績出来高",
+                  data: [4, 9, 16, 23, 33, 41, 50, 57.2, null, null],
+                  borderColor: "#1E40AF",
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#1E40AF",
+                },
+                {
+                  label: "実績原価率",
+                  data: [4.5, 9.8, 16.5, 22, 32, 40, 48, 55, null, null],
+                  borderColor: "#F59E0B",
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointBackgroundColor: "#F59E0B",
+                  borderDash: [3, 3],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // CPI Trend
+        charts.push(
+          new Chart(document.getElementById("cpiTrendChart"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "新宿タワー",
+                  data: [1.02, 1.03, 1.05, 1.04, 1.03, 1.04],
+                  borderColor: "#1E40AF",
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointBackgroundColor: "#1E40AF",
+                },
+                {
+                  label: "横浜駅前ビル",
+                  data: [0.98, 0.96, 0.94, 0.93, 0.91, 0.82],
+                  borderColor: "#DC2626",
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointBackgroundColor: "#DC2626",
+                },
+                {
+                  label: "川崎倉庫",
+                  data: [1.01, 0.98, 0.95, 0.9, 0.84, 0.78],
+                  borderColor: "#F97316",
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointBackgroundColor: "#F97316",
+                },
+                {
+                  label: "危険ライン",
+                  data: [0.85, 0.85, 0.85, 0.85, 0.85, 0.85],
+                  borderColor: "#FCA5A5",
+                  borderDash: [4, 4],
+                  pointRadius: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 0.7,
+                  max: 1.15,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 } },
+                },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              },
+            },
+          }),
+        );
+
+        // Profit by Project (Horizontal Bar)
+        const activeProjects = projects.filter((p) => p.status !== "完工");
+        const profitRates = activeProjects.map((p) => {
+          const eac = p.budget / p.cpi;
+          return (((p.contract - eac) / p.contract) * 100).toFixed(1);
+        });
+        const barColors = profitRates.map((r) =>
+          r < 0 ? "#DC2626" : r < 20 ? "#F59E0B" : "#1E40AF",
+        );
+
+        charts.push(
+          new Chart(document.getElementById("profitByProjectChart"), {
+            type: "bar",
+            data: {
+              labels: activeProjects.map((p) => p.name.replace("工事", "")),
+              datasets: [
+                {
+                  label: "完工時予測粗利率",
+                  data: profitRates,
+                  backgroundColor: barColors,
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                annotation: {
+                  annotations: {
+                    line1: {
+                      type: "line",
+                      xMin: 25,
+                      xMax: 25,
+                      borderColor: "#059669",
+                      borderWidth: 1,
+                      borderDash: [4, 4],
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+                y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              },
+            },
+          }),
+        );
+      }
+    </script>
+  </body>
+</html>

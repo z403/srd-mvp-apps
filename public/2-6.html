@@ -1,106 +1,3126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>技術伝承の困難 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>SkillBridge — 製造技術伝承・ナレッジ管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .sb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .skill-expert {
+        background: #7c2d12;
+        color: #fff;
+      }
+      .skill-competent {
+        background: #ea580c;
+        color: #fff;
+      }
+      .skill-learning {
+        background: #fed7aa;
+        color: #9a3412;
+      }
+      .skill-none {
+        background: #f3f4f6;
+        color: #9ca3af;
+      }
+      .tab-btn {
+        cursor: pointer;
+        transition: all 0.15s;
+        padding: 8px 16px;
+        font-size: 13px;
+        border-bottom: 2px solid transparent;
+        color: #9ca3af;
+      }
+      .tab-btn.active {
+        border-bottom-color: #7c2d12;
+        color: #7c2d12;
+        font-weight: 600;
+      }
+      .tab-btn:hover {
+        color: #7c2d12;
+      }
+      .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: #f3f4f6;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+      .star {
+        color: #fbbf24;
+      }
+      .star-empty {
+        color: #d1d5db;
+      }
+      .video-thumb {
+        aspect-ratio: 16/9;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #1c1917"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style="background: #7c2d12"
+            >
+              <i data-lucide="git-branch" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">SkillBridge</p>
+              <p class="text-[11px] opacity-50 truncate">
+                技術伝承・ナレッジ管理
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="skillmap"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('skillmap')"
+            ><i data-lucide="grid-3x3" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">スキルマップ</span></a
+          >
+          <a
+            data-page="knowledge"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('knowledge')"
+            ><i data-lucide="book-open" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">ナレッジベース</span></a
+          >
+          <a
+            data-page="videos"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('videos')"
+            ><i data-lucide="video" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">動画ライブラリ</span></a
+          >
+          <a
+            data-page="mentors"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('mentors')"
+            ><i data-lucide="users" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">メンター管理</span></a
+          >
+          <a
+            data-page="assessment"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('assessment')"
+            ><i
+              data-lucide="clipboard-check"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">評価・テスト</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">技術伝承の困難</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="users" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">人材管理</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="layout-grid" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              技術伝承の全体概要
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #ffedd5; color: #7c2d12"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">パフォーマンス概要</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6"><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="51.3" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">76%</div><div class="text-[11px] text-gray-400">定着率</div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="57.7" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">73%</div><div class="text-[11px] text-gray-400">効率</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#7c2d12" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="117.5" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#7c2d12">45%</div><div class="text-[11px] text-gray-400">遵守</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="42.7" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#ea580c">80%</div><div class="text-[11px] text-gray-400">満足度</div></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">技術伝承管理指標</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">技術伝承の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> に技術伝承をコメント</p><p class="text-[11px] text-gray-400">19時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の技術伝承を更新</p><p class="text-[11px] text-gray-400">43時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の技術伝承を更新</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の技術伝承を更新</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に技術伝承を報告</p><p class="text-[11px] text-gray-400">42時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="hrSearch" type="text" placeholder="メンバーを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="user-plus" class="w-4 h-4"></i>メンバー追加</button></div><div id="hrGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中太郎 マーケ"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">田</div><div><p class="text-[13px] font-semibold text-gray-700">田中太郎</p><p class="text-[11px] text-gray-400">マーケ</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:63%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">63%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木花子 エンジニア"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">鈴</div><div><p class="text-[13px] font-semibold text-gray-700">鈴木花子</p><p class="text-[11px] text-gray-400">エンジニア</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:70%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">70%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤一郎 エンジニア"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">佐</div><div><p class="text-[13px] font-semibold text-gray-700">佐藤一郎</p><p class="text-[11px] text-gray-400">エンジニア</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:80%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">80%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田優子 マネージャー"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">山</div><div><p class="text-[13px] font-semibold text-gray-700">山田優子</p><p class="text-[11px] text-gray-400">マネージャー</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:61%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">61%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋健太 CS"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">高</div><div><p class="text-[13px] font-semibold text-gray-700">高橋健太</p><p class="text-[11px] text-gray-400">CS</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:89%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">89%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤美咲 営業"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">伊</div><div><p class="text-[13px] font-semibold text-gray-700">伊藤美咲</p><p class="text-[11px] text-gray-400">営業</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:92%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">92%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺誠 経理"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">渡</div><div><p class="text-[13px] font-semibold text-gray-700">渡辺誠</p><p class="text-[11px] text-gray-400">経理</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:96%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">96%</span></div></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村明子 経理"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-medium" style="background:#7c2d12">中</div><div><p class="text-[13px] font-semibold text-gray-700">中村明子</p><p class="text-[11px] text-gray-400">経理</p></div></div><div class="flex items-center gap-2"><div class="flex-1 bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:60%;background:#7c2d12"></div></div><span class="text-[11px] text-gray-500">60%</span></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="gridSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2650</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/03/15</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥334万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2553</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/03/17</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥203万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="鈴木品質管理 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2543</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/01/02</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥847万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="山田生産管理 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#6856</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/01/23</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥167万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="高橋設備保全 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#3841</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/01/02</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥897万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="伊藤購買担当 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2783</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/01/06</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥89万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="渡辺設計者 保全課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9780</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400 mt-1">保全課 · 2026/02/02</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥617万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="中村品質検査員 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#2844</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">生産中</span></div><p class="text-[13px] font-medium text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/01/18</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥777万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="小林ライン長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#8369</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><p class="text-[13px] font-medium text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/02/28</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥488万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="加藤倉庫管理 品質管理課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#9808</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">検査中</span></div><p class="text-[13px] font-medium text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400 mt-1">品質管理課 · 2026/01/12</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥676万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="佐藤工場長 購買課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#4199</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400 mt-1">購買課 · 2026/03/24</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥779万</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="田中製造課長 製造1課"><div class="flex items-center justify-between mb-3"><span class="text-[11px] text-gray-400">#1663</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">停止中</span></div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400 mt-1">製造1課 · 2026/02/15</p><p class="text-[13px] font-bold mt-2" style="color:#7c2d12">¥650万</p></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#7c2d12"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#7c2d12"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次技術伝承推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">18</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥170</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥104</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥66</td><td class="px-4 py-3 text-[13px]  text-gray-700">38.8%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥877</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥395</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥482</td><td class="px-4 py-3 text-[13px]  text-gray-700">55.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">12</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥724</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥456</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥268</td><td class="px-4 py-3 text-[13px]  text-gray-700">37.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">25</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥936</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥431</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥505</td><td class="px-4 py-3 text-[13px]  text-gray-700">54.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">5</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥906</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥453</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥453</td><td class="px-4 py-3 text-[13px]  text-gray-700">50.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥545</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥332</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥213</td><td class="px-4 py-3 text-[13px]  text-gray-700">39.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">98</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥4,158</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥2,171</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,987</td><td class="px-4 py-3 text-[13px]  text-gray-700">47.8%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次技術伝承推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== PAGE 1: Dashboard ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="book-open"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600"
+                    >+12%</span
+                  >
+                </div>
+                <p class="text-2xl font-bold text-gray-800">247</p>
+                <p class="text-[11px] text-gray-400 mt-1">登録ナレッジ数</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="check-circle"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600"
+                    >+5.2pt</span
+                  >
+                </div>
+                <p class="text-2xl font-bold text-gray-800">
+                  68.4<span class="text-sm text-gray-400">%</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">伝承完了率</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fef2f2"
+                  >
+                    <i
+                      data-lucide="alert-triangle"
+                      class="w-5 h-5"
+                      style="color: #dc2626"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600"
+                    >要対応</span
+                  >
+                </div>
+                <p class="text-2xl font-bold text-gray-800">23</p>
+                <p class="text-[11px] text-gray-400 mt-1">未伝承スキル数</p>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="heart-handshake"
+                      class="w-5 h-5"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <span
+                    class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600"
+                    >良好</span
+                  >
+                </div>
+                <p class="text-2xl font-bold text-gray-800">
+                  82.1<span class="text-sm text-gray-400">%</span>
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">メンター稼働率</p>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "パフォーマンス概要"}, {"id": "feature", "title": "人材管理", "desc": "メンバー・スキル"}, {"id": "data", "title": "データ一覧", "desc": "カード表示"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  部門別スキル伝承進捗
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="chartDeptProgress"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  ナレッジカテゴリ分布
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="chartKnowledgeDist"></canvas>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "現在", "data": [37, 17, 53, 52, 45, 29], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <!-- Activity Feed -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                最近のアクティビティ
+              </h3>
+              <div class="space-y-3">
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #7c2d12"
+                  >
+                    佐
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">佐藤班長</span
+                      >が「SUS304旋盤加工の切削条件最適化」を登録しました
+                    </p>
+                    <p class="text-[11px] text-gray-400">2時間前</p>
+                  </div>
+                  <span class="sb bg-orange-50 text-orange-700 shrink-0"
+                    >加工技術</span
+                  >
+                </div>
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #ea580c"
+                  >
+                    田
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">田中主任</span
+                      >が「TIG溶接ビード制御」の動画をアップロードしました
+                    </p>
+                    <p class="text-[11px] text-gray-400">5時間前</p>
+                  </div>
+                  <span class="sb bg-blue-50 text-blue-700 shrink-0"
+                    >動画登録</span
+                  >
+                </div>
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #7c2d12"
+                  >
+                    鈴
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">鈴木技師</span
+                      >が「マシニングセンタ原点出しの勘所」をレビューしました
+                    </p>
+                    <p class="text-[11px] text-gray-400">8時間前</p>
+                  </div>
+                  <span class="sb bg-green-50 text-green-700 shrink-0"
+                    >レビュー</span
+                  >
+                </div>
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #ea580c"
+                  >
+                    山
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">山田若手</span
+                      >がNC旋盤の実技テストに合格しました（87点）
+                    </p>
+                    <p class="text-[11px] text-gray-400">1日前</p>
+                  </div>
+                  <span class="sb bg-emerald-50 text-emerald-700 shrink-0"
+                    >合格</span
+                  >
+                </div>
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #7c2d12"
+                  >
+                    高
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">高橋実習生</span
+                      >が溶接(TIG)のメンタリングセッションを完了しました
+                    </p>
+                    <p class="text-[11px] text-gray-400">1日前</p>
+                  </div>
+                  <span class="sb bg-purple-50 text-purple-700 shrink-0"
+                    >メンタリング</span
+                  >
+                </div>
+                <div class="flex gap-3 items-start">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0"
+                    style="background: #ea580c"
+                  >
+                    中
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">中村技師長</span
+                      >が「熱処理後の歪み矯正テクニック」を登録しました
+                    </p>
+                    <p class="text-[11px] text-gray-400">2日前</p>
+                  </div>
+                  <span class="sb bg-orange-50 text-orange-700 shrink-0"
+                    >加工技術</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
 
-// feature
-document.getElementById("hrSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#hrGrid [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+          <!-- ==================== PAGE 2: Skill Map ==================== -->
+          <div id="page-skillmap" class="page">
+            <!-- Legend -->
+            <div class="flex items-center gap-4 mb-5">
+              <span class="text-[12px] text-gray-500">凡例:</span>
+              <span class="inline-flex items-center gap-1.5 text-[12px]"
+                ><span
+                  class="w-6 h-6 rounded flex items-center justify-center text-[11px] font-bold skill-expert"
+                  >◎</span
+                >熟練</span
+              >
+              <span class="inline-flex items-center gap-1.5 text-[12px]"
+                ><span
+                  class="w-6 h-6 rounded flex items-center justify-center text-[11px] font-bold skill-competent"
+                  >○</span
+                >一人前</span
+              >
+              <span class="inline-flex items-center gap-1.5 text-[12px]"
+                ><span
+                  class="w-6 h-6 rounded flex items-center justify-center text-[11px] font-bold skill-learning"
+                  >△</span
+                >見習い</span
+              >
+              <span class="inline-flex items-center gap-1.5 text-[12px]"
+                ><span
+                  class="w-6 h-6 rounded flex items-center justify-center text-[11px] skill-none"
+                  >-</span
+                >未経験</span
+              >
+            </div>
 
-// data
-document.getElementById("gridSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#gridContainer [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+            <!-- Skill Matrix Table -->
+            <div class="card overflow-hidden mb-6">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 min-w-[140px]"
+                      >
+                        作業者
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        旋盤加工
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        フライス加工
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        溶接(TIG)
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        溶接(MIG)
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        NC旋盤
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[100px]"
+                      >
+                        マシニングセンタ
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        放電加工
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        研削加工
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        組立調整
+                      </th>
+                      <th
+                        class="px-3 py-3 text-center text-[11px] font-semibold text-gray-500 min-w-[80px]"
+                      >
+                        品質検査
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="skillMapBody"></tbody>
+                </table>
+              </div>
+            </div>
 
-// report
+            <!-- Gap Summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-3 flex items-center gap-2"
+                >
+                  <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i
+                  >カバレッジ不足スキル
+                </h3>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">放電加工</span
+                    ><span class="text-[12px] font-medium text-red-600"
+                      >熟練者1名のみ</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">研削加工</span
+                    ><span class="text-[12px] font-medium text-red-600"
+                      >熟練者1名のみ</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">溶接(TIG)</span
+                    ><span class="text-[12px] font-medium text-orange-600"
+                      >熟練者2名</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-3 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="trending-up"
+                    class="w-4 h-4"
+                    style="color: #ea580c"
+                  ></i
+                  >今月の成長
+                </h3>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">山田若手</span
+                    ><span
+                      class="text-[12px] font-medium"
+                      style="color: #7c2d12"
+                      >NC旋盤: △→○</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">高橋実習生</span
+                    ><span
+                      class="text-[12px] font-medium"
+                      style="color: #7c2d12"
+                      >旋盤加工: -→△</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">小林見習</span
+                    ><span
+                      class="text-[12px] font-medium"
+                      style="color: #7c2d12"
+                      >フライス加工: △→○</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-3 flex items-center gap-2"
+                >
+                  <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i
+                  >退職予定ベテラン
+                </h3>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">中村技師長</span
+                    ><span class="text-[12px] font-medium text-red-600"
+                      >2026年9月退職</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">佐藤班長</span
+                    ><span class="text-[12px] font-medium text-amber-600"
+                      >2027年3月退職</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12px] text-gray-600">保有スキル</span
+                    ><span class="text-[12px] font-medium text-gray-500"
+                      >計15項目の◎</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ==================== PAGE 3: Knowledge Base ==================== -->
+          <div id="page-knowledge" class="page">
+            <!-- Search and Filter -->
+            <div class="flex items-center justify-between mb-5 gap-3">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="knowledgeSearch"
+                    type="text"
+                    placeholder="ナレッジを検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2"
+                    style="focus:ring-color:#fed7aa"
+                  />
+                </div>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>ナレッジ追加
+              </button>
+            </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [170, 877, 724, 936, 906, 545], "backgroundColor": "#7c2d12", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Category Tabs -->
+            <div class="flex gap-0 border-b mb-5 overflow-x-auto">
+              <button
+                class="tab-btn active"
+                onclick="filterKnowledge('all', this)"
+              >
+                すべて
+              </button>
+              <button
+                class="tab-btn"
+                onclick="filterKnowledge('加工技術', this)"
+              >
+                加工技術
+              </button>
+              <button
+                class="tab-btn"
+                onclick="filterKnowledge('品質ノウハウ', this)"
+              >
+                品質ノウハウ
+              </button>
+              <button
+                class="tab-btn"
+                onclick="filterKnowledge('段取り手順', this)"
+              >
+                段取り手順
+              </button>
+              <button
+                class="tab-btn"
+                onclick="filterKnowledge('トラブル対応', this)"
+              >
+                トラブル対応
+              </button>
+              <button
+                class="tab-btn"
+                onclick="filterKnowledge('安全作業', this)"
+              >
+                安全作業
+              </button>
+            </div>
 
-</script>
-</body></html>
+            <!-- Knowledge Cards -->
+            <div
+              id="knowledgeGrid"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 4: Video Library ==================== -->
+          <div id="page-videos" class="page">
+            <div class="flex items-center justify-between mb-5 gap-3">
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    id="videoSearch"
+                    type="text"
+                    placeholder="動画を検索..."
+                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2"
+                  />
+                </div>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="upload" class="w-4 h-4"></i>動画アップロード
+              </button>
+            </div>
+
+            <div
+              id="videoGrid"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            >
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: Mentor Management ==================== -->
+          <div id="page-mentors" class="page">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="users"
+                      class="w-4 h-4"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">8</p>
+                    <p class="text-[11px] text-gray-400">活動中ペア数</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #ecfdf5"
+                  >
+                    <i
+                      data-lucide="check-circle"
+                      class="w-4 h-4 text-emerald-600"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">3</p>
+                    <p class="text-[11px] text-gray-400">今月完了</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="calendar"
+                      class="w-4 h-4"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">
+                      4.2<span class="text-[11px] text-gray-400 font-normal"
+                        >ヶ月</span
+                      >
+                    </p>
+                    <p class="text-[11px] text-gray-400">平均伝承期間</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fffbeb"
+                  >
+                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">
+                      4.6<span class="text-[11px] text-gray-400 font-normal"
+                        >/5.0</span
+                      >
+                    </p>
+                    <p class="text-[11px] text-gray-400">満足度スコア</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mentor-Mentee Table -->
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[14px] text-gray-700">
+                メンター・メンティー ペア一覧
+              </h3>
+              <button
+                class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>ペア追加
+              </button>
+            </div>
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        ペア名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        メンター
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        メンティー
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        伝承スキル
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider min-w-[140px]"
+                      >
+                        進捗率
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        開始日
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        次回予定
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        状態
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        旋盤基礎A
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            佐
+                          </div>
+                          佐藤班長
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            山
+                          </div>
+                          山田若手
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        旋盤加工
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 75%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >75%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2025/11/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/15
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        TIG溶接習得
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            田
+                          </div>
+                          田中主任
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            高
+                          </div>
+                          高橋実習生
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        溶接(TIG)
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 45%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >45%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/01/10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/12
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        NC加工基礎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            鈴
+                          </div>
+                          鈴木技師
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            山
+                          </div>
+                          山田若手
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        NC旋盤
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 100%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >100%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2025/08/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">—</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >完了</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        MC操作訓練
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            中
+                          </div>
+                          中村技師長
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            小
+                          </div>
+                          小林見習
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        マシニングセンタ
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 60%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >60%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2025/12/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/18
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        品質検査OJT
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            佐
+                          </div>
+                          佐藤班長
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            高
+                          </div>
+                          高橋実習生
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        品質検査
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 30%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >30%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/20
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        フライス応用
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            田
+                          </div>
+                          田中主任
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            小
+                          </div>
+                          小林見習
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        フライス加工
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 100%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >100%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2025/07/15
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">—</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >完了</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        放電加工入門
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            中
+                          </div>
+                          中村技師長
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            山
+                          </div>
+                          山田若手
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        放電加工
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 20%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >20%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/15
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/22
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        研削加工基礎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            鈴
+                          </div>
+                          鈴木技師
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            高
+                          </div>
+                          高橋実習生
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        研削加工
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 10%; background: #ea580c"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >10%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/25
+                      </td>
+                      <td class="px-4 py-3">
+                        <span
+                          class="sb"
+                          style="background: #fff7ed; color: #ea580c"
+                          >進行中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        MIG溶接訓練
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            佐
+                          </div>
+                          佐藤班長
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            小
+                          </div>
+                          小林見習
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        溶接(MIG)
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 0%; background: #9ca3af"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >0%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">—</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">—</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-gray-100 text-gray-500">中断</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        組立調整OJT
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #7c2d12"
+                          >
+                            鈴
+                          </div>
+                          鈴木技師
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        <div class="flex items-center gap-2">
+                          <div
+                            class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white"
+                            style="background: #ea580c"
+                          >
+                            小
+                          </div>
+                          小林見習
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        組立調整
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="progress-fill"
+                              style="width: 100%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[11px] font-medium text-gray-600"
+                            >100%</span
+                          >
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2025/06/01
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">—</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >完了</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: Assessment ==================== -->
+          <div id="page-assessment" class="page">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="file-check"
+                      class="w-4 h-4"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">18</p>
+                    <p class="text-[11px] text-gray-400">今月テスト数</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #ecfdf5"
+                  >
+                    <i data-lucide="award" class="w-4 h-4 text-emerald-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">
+                      72.2<span class="text-[11px] text-gray-400 font-normal"
+                        >%</span
+                      >
+                    </p>
+                    <p class="text-[11px] text-gray-400">合格率</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fff7ed"
+                  >
+                    <i
+                      data-lucide="bar-chart-3"
+                      class="w-4 h-4"
+                      style="color: #ea580c"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">
+                      74.8<span class="text-[11px] text-gray-400 font-normal"
+                        >点</span
+                      >
+                    </p>
+                    <p class="text-[11px] text-gray-400">平均スコア</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style="background: #fef2f2"
+                  >
+                    <i
+                      data-lucide="rotate-ccw"
+                      class="w-4 h-4 text-red-500"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-lg font-bold text-gray-800">3</p>
+                    <p class="text-[11px] text-gray-400">再試験予定</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別合格率推移
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="chartPassRate"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  スキル別スコア分布
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="chartSkillRadar"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Assessment Table -->
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table id="assessTbl" class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('assessTbl', 0)"
+                      >
+                        受験者 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('assessTbl', 1)"
+                      >
+                        テスト名 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('assessTbl', 2)"
+                      >
+                        スキル区分 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('assessTbl', 3)"
+                      >
+                        スコア <span class="text-gray-300">&#8597;</span>
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider"
+                      >
+                        判定
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800"
+                        onclick="sortTbl('assessTbl', 5)"
+                      >
+                        実施日 <span class="text-gray-300">&#8597;</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田若手
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        NC旋盤実技試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        NC旋盤
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        87/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/08
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        高橋実習生
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        TIG溶接筆記試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        溶接(TIG)
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        62/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-red-50 text-red-600">不合格</span>
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/07
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        小林見習
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        マシニングセンタ基礎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        マシニングセンタ
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        78/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/05
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田若手
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        旋盤加工応用試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        旋盤加工
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        91/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/03
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        高橋実習生
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        品質検査基礎
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        品質検査
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        71/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/28
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        小林見習
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        フライス加工認定
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        フライス加工
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        82/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/25
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田若手
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        放電加工入門試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        放電加工
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        58/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >再試験</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/20
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        高橋実習生
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        旋盤加工基礎試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        旋盤加工
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        65/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >再試験</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/18
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        小林見習
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        組立調整実技試験
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        組立調整
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        88/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/15
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        山田若手
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        溶接(MIG)筆記
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        溶接(MIG)
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        73/100
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >合格</span
+                        >
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/10
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: Settings ==================== -->
+          <div id="page-settings" class="page">
+            <div class="max-w-2xl">
+              <!-- Skill Category Management -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="layers"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >スキルカテゴリ管理
+                </h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #7c2d12"
+                      ></span
+                      ><span class="text-[13px] text-gray-700">加工技術</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-gray-400">42件</span
+                      ><button
+                        class="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #ea580c"
+                      ></span
+                      ><span class="text-[13px] text-gray-700"
+                        >品質ノウハウ</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-gray-400">38件</span
+                      ><button
+                        class="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #f59e0b"
+                      ></span
+                      ><span class="text-[13px] text-gray-700">段取り手順</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-gray-400">35件</span
+                      ><button
+                        class="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #ef4444"
+                      ></span
+                      ><span class="text-[13px] text-gray-700"
+                        >トラブル対応</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-gray-400">28件</span
+                      ><button
+                        class="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <span
+                        class="w-3 h-3 rounded-full"
+                        style="background: #10b981"
+                      ></span
+                      ><span class="text-[13px] text-gray-700">安全作業</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-gray-400">22件</span
+                      ><button
+                        class="text-[11px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    class="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-[13px] text-gray-400 hover:text-gray-600 hover:border-gray-400 transition cursor-pointer"
+                  >
+                    + カテゴリ追加
+                  </button>
+                </div>
+              </div>
+
+              <!-- Assessment Criteria -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="sliders"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >評価基準設定
+                </h3>
+                <div class="space-y-4">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >合格ライン（点）</label
+                      >
+                      <input
+                        type="number"
+                        value="70"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                        >再試験ライン（点）</label
+                      >
+                      <input
+                        type="number"
+                        value="60"
+                        class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >スキルレベル定義</label
+                    >
+                    <div class="space-y-2">
+                      <div
+                        class="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg"
+                      >
+                        <span
+                          class="w-7 h-7 rounded flex items-center justify-center text-[12px] font-bold skill-expert"
+                          >◎</span
+                        >
+                        <div class="flex-1">
+                          <span class="text-[12px] font-medium text-gray-700"
+                            >熟練</span
+                          ><span class="text-[11px] text-gray-400 ml-2"
+                            >— 指導可能レベル、独立判断で全工程対応</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        class="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg"
+                      >
+                        <span
+                          class="w-7 h-7 rounded flex items-center justify-center text-[12px] font-bold skill-competent"
+                          >○</span
+                        >
+                        <div class="flex-1">
+                          <span class="text-[12px] font-medium text-gray-700"
+                            >一人前</span
+                          ><span class="text-[11px] text-gray-400 ml-2"
+                            >— 通常業務を自律的に遂行可能</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        class="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg"
+                      >
+                        <span
+                          class="w-7 h-7 rounded flex items-center justify-center text-[12px] font-bold skill-learning"
+                          >△</span
+                        >
+                        <div class="flex-1">
+                          <span class="text-[12px] font-medium text-gray-700"
+                            >見習い</span
+                          ><span class="text-[11px] text-gray-400 ml-2"
+                            >— 指導者の監督下で作業可能</span
+                          >
+                        </div>
+                      </div>
+                      <div
+                        class="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg"
+                      >
+                        <span
+                          class="w-7 h-7 rounded flex items-center justify-center text-[12px] font-bold skill-none"
+                          >-</span
+                        >
+                        <div class="flex-1">
+                          <span class="text-[12px] font-medium text-gray-700"
+                            >未経験</span
+                          ><span class="text-[11px] text-gray-400 ml-2"
+                            >— 経験なし・未着手</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notification Settings -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="bell"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >通知設定
+                </h3>
+                <div class="divide-y">
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        ナレッジ登録通知
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        新しいナレッジが登録された時に通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        テスト結果通知
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        評価テストの結果をメンターに通知
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        メンタリング予定リマインド
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        セッション前日にリマインド送信
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" checked class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-[13px] font-medium text-gray-700">
+                        退職予定アラート
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        ベテラン退職6ヶ月前に自動アラート
+                      </p>
+                    </div>
+                    <label
+                      class="relative inline-flex items-center cursor-pointer"
+                      ><input type="checkbox" class="sr-only peer" />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-orange-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"
+                      ></div
+                    ></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User Management -->
+              <div class="card p-5 mb-5">
+                <h3
+                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="users"
+                    class="w-4 h-4"
+                    style="color: #7c2d12"
+                  ></i
+                  >ユーザー管理
+                </h3>
+                <div class="space-y-2">
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #7c2d12"
+                      >
+                        管
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          管理者
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          admin@example.com
+                        </p>
+                      </div>
+                    </div>
+                    <span class="sb" style="background: #7c2d12; color: #fff"
+                      >管理者</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #ea580c"
+                      >
+                        佐
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          佐藤班長
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          sato@example.com
+                        </p>
+                      </div>
+                    </div>
+                    <span class="sb" style="background: #fff7ed; color: #ea580c"
+                      >メンター</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #ea580c"
+                      >
+                        田
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          田中主任
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          tanaka@example.com
+                        </p>
+                      </div>
+                    </div>
+                    <span class="sb" style="background: #fff7ed; color: #ea580c"
+                      >メンター</span
+                    >
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white"
+                        style="background: #ea580c"
+                      >
+                        山
+                      </div>
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          山田若手
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          yamada@example.com
+                        </p>
+                      </div>
+                    </div>
+                    <span class="sb bg-blue-50 text-blue-700">メンティー</span>
+                  </div>
+                </div>
+                <button
+                  class="w-full mt-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-[13px] text-gray-400 hover:text-gray-600 hover:border-gray-400 transition cursor-pointer"
+                >
+                  + ユーザー追加
+                </button>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // ===== Navigation =====
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "技術伝承の全体概要",
+        },
+        {
+          id: "skillmap",
+          title: "スキルマップ",
+          desc: "作業者×スキルの習熟マトリクス",
+        },
+        {
+          id: "knowledge",
+          title: "ナレッジベース",
+          desc: "技術ノウハウの検索・閲覧",
+        },
+        { id: "videos", title: "動画ライブラリ", desc: "技能実演動画の管理" },
+        { id: "mentors", title: "メンター管理", desc: "伝承ペアの進捗管理" },
+        {
+          id: "assessment",
+          title: "評価・テスト",
+          desc: "スキル評価と試験結果",
+        },
+        { id: "settings", title: "設定", desc: "システム設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      // ===== Skill Map Data =====
+      const skillMapData = [
+        {
+          name: "佐藤班長",
+          role: "班長(30年)",
+          skills: ["◎", "◎", "◎", "◎", "◎", "○", "○", "○", "◎", "◎"],
+        },
+        {
+          name: "田中主任",
+          role: "主任(22年)",
+          skills: ["◎", "◎", "◎", "○", "○", "◎", "△", "○", "○", "◎"],
+        },
+        {
+          name: "鈴木技師",
+          role: "技師(18年)",
+          skills: ["○", "○", "○", "○", "◎", "◎", "○", "◎", "◎", "○"],
+        },
+        {
+          name: "中村技師長",
+          role: "技師長(35年)",
+          skills: ["◎", "◎", "○", "○", "○", "◎", "◎", "◎", "◎", "◎"],
+        },
+        {
+          name: "山田若手",
+          role: "製造(5年)",
+          skills: ["○", "○", "△", "○", "○", "△", "-", "△", "△", "△"],
+        },
+        {
+          name: "高橋実習生",
+          role: "実習生(2年)",
+          skills: ["△", "△", "△", "-", "△", "-", "-", "-", "-", "△"],
+        },
+        {
+          name: "小林見習",
+          role: "見習(3年)",
+          skills: ["○", "○", "△", "△", "△", "△", "-", "-", "○", "○"],
+        },
+        {
+          name: "加藤若手",
+          role: "製造(4年)",
+          skills: ["○", "△", "○", "○", "△", "△", "-", "△", "△", "○"],
+        },
+      ];
+
+      function renderSkillMap() {
+        const tbody = document.getElementById("skillMapBody");
+        const levelMap = {
+          "◎": "skill-expert",
+          "○": "skill-competent",
+          "△": "skill-learning",
+          "-": "skill-none",
+        };
+        tbody.innerHTML = skillMapData
+          .map((w) => {
+            const cells = w.skills
+              .map(
+                (s) =>
+                  `<td class="px-3 py-2.5 text-center"><span class="inline-flex w-8 h-8 rounded items-center justify-center text-[12px] font-bold ${levelMap[s]}">${s}</span></td>`,
+              )
+              .join("");
+            return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+      <td class="px-4 py-2.5 sticky left-0 bg-white z-10">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] text-white shrink-0" style="background:#7c2d12">${w.name[0]}</div>
+          <div><p class="text-[13px] font-medium text-gray-700">${w.name}</p><p class="text-[10px] text-gray-400">${w.role}</p></div>
+        </div>
+      </td>${cells}</tr>`;
+          })
+          .join("");
+      }
+
+      // ===== Knowledge Base Data =====
+      const knowledgeData = [
+        {
+          title: "SUS304旋盤加工の切削条件最適化",
+          category: "加工技術",
+          author: "佐藤班長",
+          date: "2026/03/08",
+          views: 142,
+          rating: 5,
+        },
+        {
+          title: "溶接ビード外観不良の原因と対策",
+          category: "品質ノウハウ",
+          author: "田中主任",
+          date: "2026/03/05",
+          views: 98,
+          rating: 4,
+        },
+        {
+          title: "マシニングセンタ原点出しの勘所",
+          category: "段取り手順",
+          author: "鈴木技師",
+          date: "2026/03/01",
+          views: 201,
+          rating: 5,
+        },
+        {
+          title: "熱処理後の歪み矯正テクニック",
+          category: "加工技術",
+          author: "中村技師長",
+          date: "2026/02/28",
+          views: 167,
+          rating: 5,
+        },
+        {
+          title: "切削油の選定と管理ポイント",
+          category: "安全作業",
+          author: "佐藤班長",
+          date: "2026/02/25",
+          views: 89,
+          rating: 4,
+        },
+        {
+          title: "NC旋盤プログラム最適化手法",
+          category: "加工技術",
+          author: "鈴木技師",
+          date: "2026/02/20",
+          views: 134,
+          rating: 4,
+        },
+        {
+          title: "寸法測定器の校正と使い方",
+          category: "品質ノウハウ",
+          author: "田中主任",
+          date: "2026/02/18",
+          views: 112,
+          rating: 4,
+        },
+        {
+          title: "金型研磨の表面粗さ管理",
+          category: "加工技術",
+          author: "中村技師長",
+          date: "2026/02/15",
+          views: 76,
+          rating: 5,
+        },
+        {
+          title: "アルミ合金フライス加工の注意点",
+          category: "加工技術",
+          author: "田中主任",
+          date: "2026/02/10",
+          views: 94,
+          rating: 3,
+        },
+        {
+          title: "旋盤チャック芯振れ補正の手順",
+          category: "段取り手順",
+          author: "佐藤班長",
+          date: "2026/02/08",
+          views: 158,
+          rating: 5,
+        },
+        {
+          title: "溶接割れの非破壊検査判定基準",
+          category: "品質ノウハウ",
+          author: "中村技師長",
+          date: "2026/02/05",
+          views: 87,
+          rating: 4,
+        },
+        {
+          title: "クーラント濃度管理と異臭対策",
+          category: "安全作業",
+          author: "佐藤班長",
+          date: "2026/01/30",
+          views: 63,
+          rating: 3,
+        },
+        {
+          title: "放電加工の電極消耗予測",
+          category: "加工技術",
+          author: "中村技師長",
+          date: "2026/01/28",
+          views: 45,
+          rating: 4,
+        },
+        {
+          title: "研削砥石のドレッシングタイミング",
+          category: "段取り手順",
+          author: "鈴木技師",
+          date: "2026/01/25",
+          views: 71,
+          rating: 4,
+        },
+        {
+          title: "重量物取扱い時の安全確認手順",
+          category: "安全作業",
+          author: "佐藤班長",
+          date: "2026/01/20",
+          views: 55,
+          rating: 3,
+        },
+        {
+          title: "ワーク固定治具の設計ノウハウ",
+          category: "段取り手順",
+          author: "田中主任",
+          date: "2026/01/15",
+          views: 102,
+          rating: 5,
+        },
+        {
+          title: "加工中の異音・振動トラブルシュート",
+          category: "トラブル対応",
+          author: "鈴木技師",
+          date: "2026/01/10",
+          views: 189,
+          rating: 5,
+        },
+        {
+          title: "CNC制御盤エラーコード対応マニュアル",
+          category: "トラブル対応",
+          author: "中村技師長",
+          date: "2026/01/05",
+          views: 213,
+          rating: 5,
+        },
+        {
+          title: "油圧機器の漏れ点検と応急処置",
+          category: "トラブル対応",
+          author: "佐藤班長",
+          date: "2025/12/28",
+          views: 97,
+          rating: 4,
+        },
+        {
+          title: "工具破損時の緊急対応フロー",
+          category: "トラブル対応",
+          author: "田中主任",
+          date: "2025/12/20",
+          views: 145,
+          rating: 4,
+        },
+      ];
+
+      const categoryColors = {
+        加工技術: "bg-orange-50 text-orange-700",
+        品質ノウハウ: "bg-blue-50 text-blue-700",
+        段取り手順: "bg-amber-50 text-amber-700",
+        トラブル対応: "bg-red-50 text-red-700",
+        安全作業: "bg-green-50 text-green-700",
+      };
+
+      function renderStars(n) {
+        let s = "";
+        for (let i = 0; i < 5; i++)
+          s += `<span class="${i < n ? "star" : "star-empty"}">&#9733;</span>`;
+        return s;
+      }
+
+      function renderKnowledge(filter) {
+        const items =
+          filter === "all"
+            ? knowledgeData
+            : knowledgeData.filter((k) => k.category === filter);
+        const grid = document.getElementById("knowledgeGrid");
+        grid.innerHTML = items
+          .map(
+            (k) => `
+    <div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="${k.title} ${k.category} ${k.author}">
+      <div class="flex items-center justify-between mb-2">
+        <span class="sb ${categoryColors[k.category]}">${k.category}</span>
+        <span class="text-[11px] text-gray-400">${k.date}</span>
+      </div>
+      <h4 class="text-[13px] font-semibold text-gray-800 mb-2 leading-snug">${k.title}</h4>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white" style="background:#7c2d12">${k.author[0]}</div>
+        <span class="text-[11px] text-gray-500">${k.author}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1 text-[12px]">${renderStars(k.rating)}</div>
+        <div class="flex items-center gap-1 text-[11px] text-gray-400"><i data-lucide="eye" class="w-3 h-3"></i>${k.views}</div>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      function filterKnowledge(cat, btn) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        renderKnowledge(cat);
+      }
+
+      // ===== Video Library Data =====
+      const videoData = [
+        {
+          title: "旋盤芯出し実演",
+          duration: "12:34",
+          instructor: "佐藤班長",
+          views: 324,
+          level: "中級",
+          gradient: "from-orange-800 to-amber-600",
+        },
+        {
+          title: "TIG溶接ビード制御",
+          duration: "18:22",
+          instructor: "田中主任",
+          views: 287,
+          level: "上級",
+          gradient: "from-red-800 to-orange-600",
+        },
+        {
+          title: "NC加工プログラム作成",
+          duration: "25:10",
+          instructor: "鈴木技師",
+          views: 198,
+          level: "中級",
+          gradient: "from-stone-700 to-orange-700",
+        },
+        {
+          title: "外観検査のポイント",
+          duration: "08:45",
+          instructor: "佐藤班長",
+          views: 412,
+          level: "初級",
+          gradient: "from-amber-700 to-yellow-600",
+        },
+        {
+          title: "マシニングセンタ座標設定",
+          duration: "15:30",
+          instructor: "中村技師長",
+          views: 156,
+          level: "上級",
+          gradient: "from-orange-900 to-red-700",
+        },
+        {
+          title: "フライス加工 段取り手順",
+          duration: "20:15",
+          instructor: "田中主任",
+          views: 234,
+          level: "中級",
+          gradient: "from-stone-800 to-amber-700",
+        },
+        {
+          title: "研削砥石の選定と取付",
+          duration: "10:08",
+          instructor: "鈴木技師",
+          views: 89,
+          level: "初級",
+          gradient: "from-amber-800 to-orange-500",
+        },
+        {
+          title: "放電加工 電極製作の基本",
+          duration: "22:40",
+          instructor: "中村技師長",
+          views: 67,
+          level: "上級",
+          gradient: "from-red-900 to-stone-700",
+        },
+        {
+          title: "ノギス・マイクロメーター使い方",
+          duration: "07:20",
+          instructor: "佐藤班長",
+          views: 521,
+          level: "初級",
+          gradient: "from-orange-700 to-amber-500",
+        },
+        {
+          title: "溶接(MIG)基本姿勢と送り速度",
+          duration: "14:55",
+          instructor: "田中主任",
+          views: 178,
+          level: "初級",
+          gradient: "from-stone-700 to-red-600",
+        },
+        {
+          title: "組立調整 クリアランス管理",
+          duration: "16:42",
+          instructor: "鈴木技師",
+          views: 134,
+          level: "中級",
+          gradient: "from-amber-900 to-orange-600",
+        },
+        {
+          title: "安全保護具の正しい着用方法",
+          duration: "05:30",
+          instructor: "佐藤班長",
+          views: 678,
+          level: "初級",
+          gradient: "from-green-800 to-emerald-600",
+        },
+      ];
+
+      const levelColors = {
+        初級: "bg-green-50 text-green-700",
+        中級: "bg-amber-50 text-amber-700",
+        上級: "bg-red-50 text-red-700",
+      };
+
+      function renderVideos() {
+        const grid = document.getElementById("videoGrid");
+        grid.innerHTML = videoData
+          .map(
+            (v) => `
+    <div class="card overflow-hidden hover:shadow-md transition-shadow cursor-pointer" data-search="${v.title} ${v.instructor} ${v.level}">
+      <div class="video-thumb bg-gradient-to-br ${v.gradient}">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+            <i data-lucide="play" class="w-5 h-5 text-white ml-0.5"></i>
+          </div>
+        </div>
+        <span class="absolute bottom-2 right-2 text-[11px] text-white bg-black/50 rounded px-1.5 py-0.5">${v.duration}</span>
+      </div>
+      <div class="p-3">
+        <h4 class="text-[13px] font-semibold text-gray-800 mb-2 leading-snug">${v.title}</h4>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white" style="background:#7c2d12">${v.instructor[0]}</div>
+            <span class="text-[11px] text-gray-500">${v.instructor}</span>
+          </div>
+          <span class="sb ${levelColors[v.level]}">${v.level}</span>
+        </div>
+        <div class="flex items-center gap-1 text-[11px] text-gray-400 mt-2"><i data-lucide="eye" class="w-3 h-3"></i>${v.views}回再生</div>
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      // ===== Table Sort =====
+      function sortTbl(id, col) {
+        const t = document.getElementById(id);
+        const b = t.querySelector("tbody");
+        const rows = Array.from(b.querySelectorAll("tr"));
+        const asc = t.dataset.sc !== col + "a";
+        t.dataset.sc = asc ? col + "a" : col + "d";
+        rows.sort((a, b) => {
+          const av = a.cells[col]?.textContent.trim() || "";
+          const bv = b.cells[col]?.textContent.trim() || "";
+          const an = parseFloat(av.replace(/[^0-9.-]/g, ""));
+          const bn = parseFloat(bv.replace(/[^0-9.-]/g, ""));
+          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
+        });
+        rows.forEach((r) => b.appendChild(r));
+      }
+
+      // ===== Search Handlers =====
+      function setupSearch(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener("input", function () {
+          const q = this.value.toLowerCase();
+          document
+            .querySelectorAll("#" + containerId + " [data-search]")
+            .forEach((el) => {
+              el.style.display = el.dataset.search.toLowerCase().includes(q)
+                ? ""
+                : "none";
+            });
+        });
+      }
+
+      // ===== Init =====
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        // Render dynamic content
+        renderSkillMap();
+        renderKnowledge("all");
+        renderVideos();
+
+        // Search
+        setupSearch("knowledgeSearch", "knowledgeGrid");
+        setupSearch("videoSearch", "videoGrid");
+
+        // ===== Chart: Department Progress (Bar) =====
+        charts.push(
+          new Chart(document.getElementById("chartDeptProgress"), {
+            type: "bar",
+            data: {
+              labels: ["製造1課", "製造2課", "品質管理課", "保全課", "技術課"],
+              datasets: [
+                {
+                  label: "完了",
+                  data: [72, 58, 81, 45, 67],
+                  backgroundColor: "#7c2d12",
+                  borderRadius: 4,
+                },
+                {
+                  label: "進行中",
+                  data: [18, 25, 12, 30, 20],
+                  backgroundColor: "#ea580c",
+                  borderRadius: 4,
+                },
+                {
+                  label: "未着手",
+                  data: [10, 17, 7, 25, 13],
+                  backgroundColor: "#fed7aa",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  stacked: true,
+                  grid: { display: false },
+                  ticks: { font: { size: 11 } },
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Chart: Knowledge Distribution (Doughnut) =====
+        charts.push(
+          new Chart(document.getElementById("chartKnowledgeDist"), {
+            type: "doughnut",
+            data: {
+              labels: [
+                "加工技術",
+                "品質ノウハウ",
+                "段取り手順",
+                "トラブル対応",
+                "安全作業",
+              ],
+              datasets: [
+                {
+                  data: [82, 48, 42, 38, 37],
+                  backgroundColor: [
+                    "#7c2d12",
+                    "#ea580c",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#10b981",
+                  ],
+                  borderWidth: 0,
+                  spacing: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "65%",
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw}件` },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Chart: Pass Rate Trend (Line) =====
+        charts.push(
+          new Chart(document.getElementById("chartPassRate"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "合格率",
+                  data: [60, 65, 63, 68, 70, 72.2],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1220",
+                  fill: true,
+                  tension: 0.4,
+                  pointBackgroundColor: "#7c2d12",
+                  pointRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: {
+                  beginAtZero: false,
+                  min: 50,
+                  max: 100,
+                  grid: { color: "#f3f4f6" },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Chart: Skill Radar =====
+        charts.push(
+          new Chart(document.getElementById("chartSkillRadar"), {
+            type: "radar",
+            data: {
+              labels: [
+                "旋盤加工",
+                "フライス",
+                "溶接",
+                "NC旋盤",
+                "MC",
+                "品質検査",
+              ],
+              datasets: [
+                {
+                  label: "山田若手",
+                  data: [78, 72, 55, 87, 48, 62],
+                  borderColor: "#ea580c",
+                  backgroundColor: "#ea580c20",
+                  pointBackgroundColor: "#ea580c",
+                },
+                {
+                  label: "高橋実習生",
+                  data: [45, 42, 38, 35, 30, 52],
+                  borderColor: "#7c2d12",
+                  backgroundColor: "#7c2d1220",
+                  pointBackgroundColor: "#7c2d12",
+                },
+                {
+                  label: "小林見習",
+                  data: [72, 82, 50, 48, 60, 75],
+                  borderColor: "#f59e0b",
+                  backgroundColor: "#f59e0b20",
+                  pointBackgroundColor: "#f59e0b",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, family: "Inter" },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+              },
+              scales: {
+                r: {
+                  beginAtZero: true,
+                  max: 100,
+                  grid: { color: "#e5e7eb" },
+                  pointLabels: { font: { size: 10 } },
+                  ticks: { stepSize: 25, font: { size: 9 } },
+                },
+              },
+            },
+          }),
+        );
+      });
+    </script>
+  </body>
+</html>
