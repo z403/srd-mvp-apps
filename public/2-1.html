@@ -1,118 +1,2945 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>生産計画のExcel管理 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ProductionCore | 生産管理統合システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1d4ed8",
+              primaryDark: "#1e3a8a",
+              accent: "#f59e0b",
+              accentDark: "#d97706",
+              surface: "#f8fafc",
+              danger: "#dc2626",
+              success: "#059669",
+              sidebar: "#0f172a",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Noto Sans JP", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(29, 78, 216, 0.3);
+        border-left: 3px solid #60a5fa;
+      }
+      .nav-item {
+        border-left: 3px solid transparent;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+      .gantt-bar {
+        height: 24px;
+        border-radius: 4px;
+        position: relative;
+        min-width: 20px;
+        cursor: pointer;
+      }
+      .gantt-bar:hover {
+        filter: brightness(1.1);
+      }
+      .kpi-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi-card::after {
+        content: "";
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        opacity: 0.06;
+      }
+      .alert-pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-surface">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[240px] flex flex-col text-white shrink-0 overflow-hidden bg-sidebar"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-bold text-sm shrink-0"
+            >
+              PC
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">ProductionCore</p>
+              <p class="text-[11px] text-slate-400 truncate">
+                生産管理統合システム
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="schedule"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('schedule')"
+            ><i
+              data-lucide="calendar-range"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">生産計画</span></a
+          >
+          <a
+            data-page="process"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('process')"
+            ><i
+              data-lucide="git-branch"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">工程管理</span></a
+          >
+          <a
+            data-page="inventory"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('inventory')"
+            ><i
+              data-lucide="package"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">在庫・資材</span></a
+          >
+          <a
+            data-page="quality"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('quality')"
+            ><i
+              data-lucide="shield-check"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">品質・設備</span></a
+          >
+          <a
+            data-page="analytics"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-[13px] cursor-pointer transition-all hover:bg-white/5"
+            onclick="navigate('analytics')"
+            ><i
+              data-lucide="bar-chart-3"
+              class="w-[18px] h-[18px] shrink-0 opacity-70"
+            ></i
+            ><span class="truncate">分析レポート</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-2">
+            <div
+              class="w-7 h-7 rounded-full bg-primary/40 flex items-center justify-center text-[11px]"
+            >
+              田
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">田中 製造部長</p>
+              <p class="text-[10px] text-slate-500">tanaka@factory.co.jp</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">生産計画のExcel管理</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="columns" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ボード</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="layout-list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">サマリー</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-slate-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-slate-400 mt-0.5">
+              生産状況の概要
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i
+              ><span>2026年3月10日 09:15</span>
+            </div>
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-blue-50 text-primary"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">統計サマリー</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#7c2d1215"><i data-lucide="clipboard-list" class="w-7 h-7" style="color:#7c2d12"></i></div><div><div class="text-3xl font-bold" style="color:#7c2d12">12件</div><div class="text-[13px] text-gray-500 mt-1">進行中タスク</div><div class="text-[11px] text-gray-400 mt-0.5">+2</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#ea580c15"><i data-lucide="check-circle" class="w-7 h-7" style="color:#ea580c"></i></div><div><div class="text-3xl font-bold" style="color:#ea580c">86%</div><div class="text-[13px] text-gray-500 mt-1">完了率</div><div class="text-[11px] text-gray-400 mt-0.5">+1pt</div></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">生産計画種別構成</h3><div style="height:240px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次生産計画推移</h3><div style="height:240px"><canvas id="dC2"></canvas></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="kSearch" type="text" placeholder="タスクを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規タスク</button></div><div class="flex gap-4 overflow-x-auto pb-4"><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#94a3b8"></div><span class="text-[13px] font-semibold text-gray-700">未着手</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">6</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/20</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/28</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/23</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">渡</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/8</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">中</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#7c2d12"></div><span class="text-[13px] font-semibold text-gray-700">進行中</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">2</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/2</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">山</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/9</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div><span class="text-[13px] font-semibold text-gray-700">レビュー</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">5</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/17</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク7</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/22</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">小</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク8</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/1</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">中</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/8</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">高</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#10b981"></div><span class="text-[13px] font-semibold text-gray-700">完了</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">3</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/21</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/26</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">鈴</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">生産計画タスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/7</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#7c2d12">佐</div></div></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="dataSearch" type="text" placeholder="データを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div class="flex items-center gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="filter" class="w-4 h-4"></i>フィルタ</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="dataTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',0)">タスクID <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',1)">タスク名 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',2)">担当者 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',3)">優先度 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',4)">期限 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',5)">状況 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2279</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤工場長</td><td class="px-4 py-3 text-[13px]  text-gray-700">購買課</td><td class="px-4 py-3 text-[13px]  text-gray-700">停止中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/18</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥935万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5807</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中製造課長</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/10</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥865万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6690</td><td class="px-4 py-3 text-[13px]  text-gray-700">鈴木品質管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">保全課</td><td class="px-4 py-3 text-[13px]  text-gray-700">停止中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/01</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥557万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#8221</td><td class="px-4 py-3 text-[13px]  text-gray-700">山田生産管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">購買課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/09</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥431万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4308</td><td class="px-4 py-3 text-[13px]  text-gray-700">高橋設備保全</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/08</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥23万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#1203</td><td class="px-4 py-3 text-[13px]  text-gray-700">伊藤購買担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">品質管理課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥527万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6608</td><td class="px-4 py-3 text-[13px]  text-gray-700">渡辺設計者</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造2課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/02</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥284万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3947</td><td class="px-4 py-3 text-[13px]  text-gray-700">中村品質検査員</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]  text-gray-700">停止中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/10</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥799万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9590</td><td class="px-4 py-3 text-[13px]  text-gray-700">小林ライン長</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/17</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥594万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9383</td><td class="px-4 py-3 text-[13px]  text-gray-700">加藤倉庫管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造2課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/02</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥904万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6941</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤工場長</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]  text-gray-700">停止中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/02</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥558万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9083</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中製造課長</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/26</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥234万</td></tr></tbody></table></div></div><div class="flex items-center justify-between mt-4"><span class="text-[12px] text-gray-400">12件</span><div class="flex gap-1"><button class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer transition-colors" style=background:#7c2d12>1</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >2</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >3</button></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-4xl"><div class="card p-6 mb-5"><div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold" style="background:#7c2d12">生</div><div><h2 class="text-[18px] font-bold text-gray-800">生産計画のExcel管理</h2><p class="text-[13px] text-gray-400">製造業 · 生産管理</p></div></div><div class="p-4 rounded-lg mb-5" style="background:#ffedd5"><p class="text-[13px]" style="color:#7c2d12">変更が反映追いつかず納期遅延</p></div><div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">12件</div><div class="text-[11px] text-gray-400 mt-1">進行中タスク</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">86%</div><div class="text-[11px] text-gray-400 mt-1">完了率</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">4件</div><div class="text-[11px] text-gray-400 mt-1">遅延件数</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">20名</div><div class="text-[11px] text-gray-400 mt-1">メンバー数</div></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">生産計画の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の生産計画を作成</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の生産計画を更新</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の生産計画を作成</p><p class="text-[11px] text-gray-400">2時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の生産計画を更新</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に生産計画をコメント</p><p class="text-[11px] text-gray-400">1時間前</p></div></div></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次生産計画推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥637</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥408</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥229</td><td class="px-4 py-3 text-[13px]  text-gray-700">35.9%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">16</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥976</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥478</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥498</td><td class="px-4 py-3 text-[13px]  text-gray-700">51.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">27</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥481</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥284</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥197</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">6</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥690</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥407</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥283</td><td class="px-4 py-3 text-[13px]  text-gray-700">41.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">12</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥508</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥208</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥300</td><td class="px-4 py-3 text-[13px]  text-gray-700">59.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">6</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥556</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥278</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥278</td><td class="px-4 py-3 text-[13px]  text-gray-700">50.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">90</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥3,848</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥2,063</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,785</td><td class="px-4 py-3 text-[13px]  text-gray-700">46.4%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次生産計画推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== DASHBOARD ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- Improvement Banner -->
+            <div
+              class="rounded-xl p-4 mb-5 flex items-center gap-4"
+              style="background: linear-gradient(135deg, #1e3a8a, #1d4ed8)"
+            >
+              <div
+                class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0"
+              >
+                <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold text-[14px]">
+                  Excel管理 → リアルタイム生産管理で納期遵守率 82% → 97.2%
+                  に改善
+                </p>
+                <p class="text-blue-200 text-[12px] mt-0.5">
+                  計画変更の即時反映により、納期遅延が月平均12件→2件に削減
+                </p>
+              </div>
+              <div class="flex gap-2 shrink-0">
+                <div class="text-center px-3 py-1.5 rounded-lg bg-white/10">
+                  <p class="text-[18px] font-bold text-white">82%</p>
+                  <p class="text-[10px] text-blue-200">導入前</p>
+                </div>
+                <div class="flex items-center">
+                  <i
+                    data-lucide="arrow-right"
+                    class="w-4 h-4 text-blue-300"
+                  ></i>
+                </div>
+                <div class="text-center px-3 py-1.5 rounded-lg bg-white/20">
+                  <p class="text-[18px] font-bold text-amber-300">97.2%</p>
+                  <p class="text-[10px] text-blue-200">導入後</p>
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "統計サマリー"}, {"id": "feature", "title": "ボード", "desc": "タスク管理"}, {"id": "data", "title": "データ一覧", "desc": "検索・並べ替え"}, {"id": "detail", "title": "サマリー", "desc": "概要カード"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div
+                class="card kpi-card p-4"
+                style="border-left: 3px solid #1d4ed8"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-slate-500 font-medium"
+                    >納期遵守率</span
+                  ><i data-lucide="target" class="w-4 h-4 text-primary"></i>
+                </div>
+                <div class="text-[26px] font-bold text-slate-800">
+                  97.2<span class="text-[16px]">%</span>
+                </div>
+                <div class="flex items-center gap-1 mt-1">
+                  <span class="text-[11px] text-success font-medium"
+                    >+15.2pt</span
+                  ><span class="text-[11px] text-slate-400"
+                    >vs Excel管理時</span
+                  >
+                </div>
+              </div>
+              <div
+                class="card kpi-card p-4"
+                style="border-left: 3px solid #059669"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-slate-500 font-medium"
+                    >生産効率(OEE)</span
+                  ><i data-lucide="gauge" class="w-4 h-4 text-success"></i>
+                </div>
+                <div class="text-[26px] font-bold text-slate-800">
+                  89.4<span class="text-[16px]">%</span>
+                </div>
+                <div class="flex items-center gap-1 mt-1">
+                  <span class="text-[11px] text-success font-medium"
+                    >+8.6pt</span
+                  ><span class="text-[11px] text-slate-400">前月比</span>
+                </div>
+              </div>
+              <div
+                class="card kpi-card p-4"
+                style="border-left: 3px solid #f59e0b"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-slate-500 font-medium"
+                    >設備稼働率</span
+                  ><i data-lucide="activity" class="w-4 h-4 text-accent"></i>
+                </div>
+                <div class="text-[26px] font-bold text-slate-800">
+                  92.1<span class="text-[16px]">%</span>
+                </div>
+                <div class="flex items-center gap-1 mt-1">
+                  <span class="text-[11px] text-success font-medium"
+                    >+3.2pt</span
+                  ><span class="text-[11px] text-slate-400">前月比</span>
+                </div>
+              </div>
+              <div
+                class="card kpi-card p-4"
+                style="border-left: 3px solid #8b5cf6"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[11px] text-slate-500 font-medium"
+                    >在庫回転率</span
+                  ><i data-lucide="repeat" class="w-4 h-4 text-violet-500"></i>
+                </div>
+                <div class="text-[26px] font-bold text-slate-800">
+                  8.3<span class="text-[16px]">回</span>
+                </div>
+                <div class="flex items-center gap-1 mt-1">
+                  <span class="text-[11px] text-success font-medium">+1.8</span
+                  ><span class="text-[11px] text-slate-400">前年同月比</span>
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "doughnut", "data": {"labels": ["材料費", "加工費", "設備費", "人件費", "その他"], "datasets": [{"data": [34, 25, 31, 32, 10], "backgroundColor": ["#7c2d12", "#ea580c", "#7c2d1280", "#ea580c80", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "実績", "data": [77, 81, 80, 37, 81, 27], "backgroundColor": "#7c2d12", "borderRadius": 6}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Charts -->
+            <div class="grid grid-cols-5 gap-4 mb-5">
+              <div class="col-span-3 card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-[13px] text-slate-700">
+                    月次 生産計画 vs 実績
+                  </h3>
+                  <div class="flex gap-3 text-[11px]">
+                    <span class="flex items-center gap-1"
+                      ><span
+                        class="w-2.5 h-2.5 rounded-sm bg-primary inline-block"
+                      ></span
+                      >計画</span
+                    ><span class="flex items-center gap-1"
+                      ><span
+                        class="w-2.5 h-2.5 rounded-sm bg-accent inline-block"
+                      ></span
+                      >実績</span
+                    ><span class="flex items-center gap-1"
+                      ><span class="w-3 h-0.5 bg-danger inline-block"></span
+                      >達成率</span
+                    >
+                  </div>
+                </div>
+                <div style="height: 220px">
+                  <canvas id="dashChart1"></canvas>
+                </div>
+              </div>
+              <div class="col-span-2 card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  ライン別稼働率
+                </h3>
+                <div style="height: 220px">
+                  <canvas id="dashChart2"></canvas>
+                </div>
+              </div>
+            </div>
 
-// feature
+            <!-- Alerts -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3
+                  class="font-semibold text-[13px] text-slate-700 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-accent"
+                  ></i
+                  >要対応アラート
+                </h3>
+                <span class="badge bg-red-50 text-danger">5件</span>
+              </div>
+              <div class="space-y-2.5">
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-red-50/60 border border-red-100"
+                >
+                  <div
+                    class="w-2 h-2 rounded-full bg-danger alert-pulse shrink-0"
+                  ></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-medium text-slate-700">
+                      【納期遅延】製造指図 #MO-2403-018
+                      「精密ベアリングユニット」 — 3/12納期に対し工程遅れ2日
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      Aライン・研磨工程で設備トラブル発生 → 保全チーム対応中
+                    </p>
+                  </div>
+                  <span class="badge bg-red-100 text-danger shrink-0"
+                    >緊急</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-red-50/60 border border-red-100"
+                >
+                  <div
+                    class="w-2 h-2 rounded-full bg-danger alert-pulse shrink-0"
+                  ></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-medium text-slate-700">
+                      【在庫切迫】SUS304丸棒 φ25 — 安全在庫割れ（現在庫 120kg /
+                      安全在庫 200kg）
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      発注済み 500kg → 入荷予定 3/12 — 生産計画への影響要確認
+                    </p>
+                  </div>
+                  <span class="badge bg-red-100 text-danger shrink-0"
+                    >緊急</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-amber-50/60 border border-amber-100"
+                >
+                  <div class="w-2 h-2 rounded-full bg-accent shrink-0"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-medium text-slate-700">
+                      【設備保全】CNC旋盤 MC-03
+                      定期メンテナンス予定日超過（3日）
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      前回実施: 2/25 → 次回予定: 3/7 → 未実施
+                    </p>
+                  </div>
+                  <span class="badge bg-amber-100 text-accentDark shrink-0"
+                    >警告</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-amber-50/60 border border-amber-100"
+                >
+                  <div class="w-2 h-2 rounded-full bg-accent shrink-0"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-medium text-slate-700">
+                      【品質】Bライン 不良率 3.2%（閾値 2.0%超過）—
+                      寸法不良が増加傾向
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      直近3ロットで外径公差外れ → 工具摩耗の可能性
+                    </p>
+                  </div>
+                  <span class="badge bg-amber-100 text-accentDark shrink-0"
+                    >警告</span
+                  >
+                </div>
+                <div
+                  class="flex items-center gap-3 p-3 rounded-lg bg-blue-50/60 border border-blue-100"
+                >
+                  <div class="w-2 h-2 rounded-full bg-primary shrink-0"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[12px] font-medium text-slate-700">
+                      【計画変更】得意先 ミツバ工業 受注数量変更
+                      500→750個（+50%）— 計画再編要
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                      3月後半の生産能力に余裕あり → 自動スケジュール提案済み
+                    </p>
+                  </div>
+                  <span class="badge bg-blue-100 text-primary shrink-0"
+                    >情報</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
 
-document.querySelectorAll('[draggable]').forEach(c=>{c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text',c.innerHTML);c.classList.add('opacity-40')});c.addEventListener('dragend',()=>c.classList.remove('opacity-40'))});
-document.querySelectorAll('.kanban-cards').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const d=document.createElement('div');d.className='bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move';d.draggable=true;d.innerHTML=e.dataTransfer.getData('text');col.appendChild(d)})});
+          <!-- ==================== PRODUCTION SCHEDULE ==================== -->
+          <div id="page-schedule" class="page">
+            <!-- Schedule Header -->
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <select
+                  class="px-3 py-2 text-[13px] border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                >
+                  <option>2026年3月</option>
+                  <option>2026年4月</option>
+                </select>
+                <div
+                  class="flex border border-slate-200 rounded-lg overflow-hidden"
+                >
+                  <button
+                    class="px-3 py-2 text-[12px] font-medium bg-primary text-white cursor-pointer"
+                  >
+                    大日程
+                  </button>
+                  <button
+                    class="px-3 py-2 text-[12px] font-medium bg-white text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  >
+                    中日程
+                  </button>
+                  <button
+                    class="px-3 py-2 text-[12px] font-medium bg-white text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  >
+                    小日程
+                  </button>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <i data-lucide="cpu" class="w-3.5 h-3.5 text-primary"></i
+                  >AI自動スケジュール
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium text-white rounded-lg bg-primary hover:bg-primaryDark cursor-pointer transition-colors"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>製造指図作成
+                </button>
+              </div>
+            </div>
 
+            <!-- Capacity Summary -->
+            <div class="grid grid-cols-4 gap-3 mb-5">
+              <div class="card p-3 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center"
+                >
+                  <i
+                    data-lucide="clipboard-list"
+                    class="w-5 h-5 text-primary"
+                  ></i>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-slate-800">42</p>
+                  <p class="text-[11px] text-slate-400">製造指図</p>
+                </div>
+              </div>
+              <div class="card p-3 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center"
+                >
+                  <i data-lucide="play" class="w-5 h-5 text-success"></i>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-slate-800">18</p>
+                  <p class="text-[11px] text-slate-400">生産中</p>
+                </div>
+              </div>
+              <div class="card p-3 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"
+                >
+                  <i data-lucide="clock" class="w-5 h-5 text-accent"></i>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-slate-800">
+                    87<span class="text-[13px]">%</span>
+                  </p>
+                  <p class="text-[11px] text-slate-400">負荷率</p>
+                </div>
+              </div>
+              <div class="card p-3 flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center"
+                >
+                  <i data-lucide="alert-circle" class="w-5 h-5 text-danger"></i>
+                </div>
+                <div>
+                  <p class="text-[18px] font-bold text-danger">3</p>
+                  <p class="text-[11px] text-slate-400">遅延リスク</p>
+                </div>
+              </div>
+            </div>
 
-// data
+            <!-- Gantt Chart -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                生産スケジュール（ガントチャート）
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full" style="min-width: 900px">
+                  <thead>
+                    <tr class="border-b border-slate-100">
+                      <th
+                        class="text-left text-[11px] font-semibold text-slate-500 pb-2 w-[200px] sticky left-0 bg-white"
+                      >
+                        製造指図
+                      </th>
+                      <th
+                        class="text-left text-[11px] font-semibold text-slate-500 pb-2 w-[80px]"
+                      >
+                        ライン
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        3/3
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        4
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        5
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        6
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        7
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        8
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        9
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px] bg-blue-50/50"
+                      >
+                        10
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        11
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        12
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        13
+                      </th>
+                      <th
+                        class="text-[10px] font-medium text-slate-400 pb-2 w-[40px]"
+                      >
+                        14
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-slate-50">
+                      <td
+                        class="py-2 text-[12px] font-medium text-slate-700 sticky left-0 bg-white"
+                      >
+                        精密ベアリングユニット<br /><span
+                          class="text-[10px] text-slate-400"
+                          >#MO-2403-018 | 500個</span
+                        >
+                      </td>
+                      <td class="text-[11px] text-slate-500">Aライン</td>
+                      <td colspan="3" class="py-2">
+                        <div
+                          class="gantt-bar bg-primary"
+                          title="旋削 3/3-5"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-400"
+                          title="研磨 3/6-7"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-300"
+                          title="組立 3/8-9"
+                        ></div>
+                      </td>
+                      <td class="py-2">
+                        <div
+                          class="gantt-bar bg-green-500"
+                          title="検査 3/10"
+                        ></div>
+                      </td>
+                      <td colspan="3"></td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                      <td
+                        class="py-2 text-[12px] font-medium text-slate-700 sticky left-0 bg-white"
+                      >
+                        油圧シリンダーロッド<br /><span
+                          class="text-[10px] text-slate-400"
+                          >#MO-2403-022 | 200個</span
+                        >
+                      </td>
+                      <td class="text-[11px] text-slate-500">Bライン</td>
+                      <td colspan="4" class="py-2">
+                        <div
+                          class="gantt-bar bg-primary"
+                          title="切削 3/3-6"
+                        ></div>
+                      </td>
+                      <td colspan="3" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-400"
+                          title="熱処理 3/7-9"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-300"
+                          title="仕上 3/10-11"
+                        ></div>
+                      </td>
+                      <td class="py-2">
+                        <div
+                          class="gantt-bar bg-green-500"
+                          title="検査 3/12"
+                        ></div>
+                      </td>
+                      <td></td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                      <td
+                        class="py-2 text-[12px] font-medium text-slate-700 sticky left-0 bg-white"
+                      >
+                        ステンレスフランジ A型<br /><span
+                          class="text-[10px] text-slate-400"
+                          >#MO-2403-025 | 1,000個</span
+                        >
+                      </td>
+                      <td class="text-[11px] text-slate-500">Cライン</td>
+                      <td></td>
+                      <td colspan="3" class="py-2">
+                        <div
+                          class="gantt-bar bg-primary"
+                          title="プレス 3/4-6"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-400"
+                          title="溶接 3/7-8"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-300"
+                          title="表面処理 3/9-10"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-green-500"
+                          title="検査 3/11-12"
+                        ></div>
+                      </td>
+                      <td></td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                      <td
+                        class="py-2 text-[12px] font-medium text-danger sticky left-0 bg-white"
+                      >
+                        ギヤシャフト GS-100<br /><span
+                          class="text-[10px] text-red-400"
+                          >#MO-2403-015 | 300個 ※遅延</span
+                        >
+                      </td>
+                      <td class="text-[11px] text-danger">Aライン</td>
+                      <td colspan="5" class="py-2">
+                        <div
+                          class="gantt-bar bg-danger/80"
+                          style="
+                            background: repeating-linear-gradient(
+                              45deg,
+                              #dc2626,
+                              #dc2626 5px,
+                              #ef4444 5px,
+                              #ef4444 10px
+                            );
+                          "
+                          title="遅延 3/3-7（本来3/5完了）"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-red-300"
+                          title="残工程 3/8-9"
+                        ></div>
+                      </td>
+                      <td></td>
+                      <td colspan="3"></td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                      <td
+                        class="py-2 text-[12px] font-medium text-slate-700 sticky left-0 bg-white"
+                      >
+                        アルミダイカスト筐体<br /><span
+                          class="text-[10px] text-slate-400"
+                          >#MO-2403-030 | 800個</span
+                        >
+                      </td>
+                      <td class="text-[11px] text-slate-500">Dライン</td>
+                      <td colspan="2"></td>
+                      <td colspan="3" class="py-2">
+                        <div
+                          class="gantt-bar bg-primary"
+                          title="鋳造 3/5-7"
+                        ></div>
+                      </td>
+                      <td colspan="3" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-400"
+                          title="機械加工 3/8-10"
+                        ></div>
+                      </td>
+                      <td colspan="2" class="py-2">
+                        <div
+                          class="gantt-bar bg-blue-300"
+                          title="塗装 3/11-12"
+                        ></div>
+                      </td>
+                      <td class="py-2">
+                        <div
+                          class="gantt-bar bg-green-500"
+                          title="検査 3/13"
+                        ></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                class="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500"
+              >
+                <span class="flex items-center gap-1.5"
+                  ><span
+                    class="w-3 h-2.5 rounded-sm bg-primary inline-block"
+                  ></span
+                  >前工程</span
+                >
+                <span class="flex items-center gap-1.5"
+                  ><span
+                    class="w-3 h-2.5 rounded-sm bg-blue-400 inline-block"
+                  ></span
+                  >中間工程</span
+                >
+                <span class="flex items-center gap-1.5"
+                  ><span
+                    class="w-3 h-2.5 rounded-sm bg-blue-300 inline-block"
+                  ></span
+                  >後工程</span
+                >
+                <span class="flex items-center gap-1.5"
+                  ><span
+                    class="w-3 h-2.5 rounded-sm bg-green-500 inline-block"
+                  ></span
+                  >検査</span
+                >
+                <span class="flex items-center gap-1.5"
+                  ><span
+                    class="w-3 h-2.5 rounded-sm bg-danger inline-block"
+                  ></span
+                  >遅延</span
+                >
+              </div>
+            </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+            <!-- Manufacturing Orders Table -->
+            <div class="card overflow-hidden">
+              <div
+                class="px-5 py-3 border-b border-slate-100 flex items-center justify-between"
+              >
+                <h3 class="font-semibold text-[13px] text-slate-700">
+                  製造指図一覧
+                </h3>
+                <div class="flex gap-2">
+                  <select
+                    class="px-2.5 py-1.5 text-[12px] border border-slate-200 rounded-lg bg-white cursor-pointer"
+                  >
+                    <option>全ステータス</option>
+                    <option>計画中</option>
+                    <option>段取中</option>
+                    <option>生産中</option>
+                    <option>検査中</option>
+                    <option>完了</option>
+                  </select>
+                  <select
+                    class="px-2.5 py-1.5 text-[12px] border border-slate-200 rounded-lg bg-white cursor-pointer"
+                  >
+                    <option>全ライン</option>
+                    <option>Aライン</option>
+                    <option>Bライン</option>
+                    <option>Cライン</option>
+                    <option>Dライン</option>
+                  </select>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-slate-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        指図No.
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        得意先
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        ライン
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        計画数
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        実績数
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        進捗
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        納期
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-primary"
+                      >
+                        MO-2403-018
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-700">
+                        精密ベアリングユニット
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        ミツバ工業
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Aライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        500
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        320
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-slate-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-primary"
+                            style="width: 64%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-danger font-medium">
+                        3/12
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-blue-50 text-primary"
+                          >生産中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-primary"
+                      >
+                        MO-2403-022
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-700">
+                        油圧シリンダーロッド
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        大和重工
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Bライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        200
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        85
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-slate-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-primary"
+                            style="width: 42%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">3/18</td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-blue-50 text-primary"
+                          >生産中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-primary"
+                      >
+                        MO-2403-025
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-700">
+                        ステンレスフランジ A型
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        東洋精機
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Cライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        1,000
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        0
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-slate-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-slate-300"
+                            style="width: 0%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">3/22</td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-slate-100 text-slate-600"
+                          >計画中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-red-50/30 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-danger"
+                      >
+                        MO-2403-015
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-danger font-medium">
+                        ギヤシャフト GS-100
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        富士機工
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Aライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        300
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-right font-medium text-danger"
+                      >
+                        210
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-red-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-danger"
+                            style="width: 70%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-danger font-medium">
+                        3/8 ※遅延
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-red-50 text-danger">遅延</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-primary"
+                      >
+                        MO-2403-030
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-700">
+                        アルミダイカスト筐体
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        ミツバ工業
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Dライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        800
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        0
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-slate-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-amber-400"
+                            style="width: 10%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">3/25</td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >段取中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] font-mono font-medium text-primary"
+                      >
+                        MO-2403-028
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-700">
+                        モータマウントブラケット
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        三栄製作所
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">
+                        Cライン
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-right font-medium">
+                        600
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[12px] text-right font-medium text-success"
+                      >
+                        600
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="w-20 bg-green-100 rounded-full h-1.5">
+                          <div
+                            class="h-1.5 rounded-full bg-success"
+                            style="width: 100%"
+                          ></div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-[12px] text-slate-500">3/9</td>
+                      <td class="px-4 py-3">
+                        <span class="badge bg-green-50 text-success">完了</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
+          <!-- ==================== PROCESS CONTROL ==================== -->
+          <div id="page-process" class="page">
+            <!-- Production Lines -->
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5 border-l-4 border-l-success">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"
+                    ></div>
+                    <h3 class="font-semibold text-[14px] text-slate-700">
+                      Aライン — CNC旋盤加工
+                    </h3>
+                  </div>
+                  <span class="badge bg-green-50 text-success">稼働中</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">94.2%</p>
+                    <p class="text-[10px] text-slate-400">稼働率</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">
+                      156<span class="text-[11px]">/180</span>
+                    </p>
+                    <p class="text-[10px] text-slate-400">日産実績/計画</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-success">1.2%</p>
+                    <p class="text-[10px] text-slate-400">不良率</p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">現在工程:</span
+                    ><span class="font-medium text-slate-700"
+                      >精密ベアリングユニット — 研磨工程</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">担当者:</span
+                    ><span class="font-medium text-slate-700"
+                      >佐藤、山田、高橋</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">次工程:</span
+                    ><span class="text-slate-600">組立工程（3/11〜）</span>
+                  </div>
+                </div>
+              </div>
 
-// report
+              <div class="card p-5 border-l-4 border-l-success">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"
+                    ></div>
+                    <h3 class="font-semibold text-[14px] text-slate-700">
+                      Bライン — マシニングセンタ
+                    </h3>
+                  </div>
+                  <span class="badge bg-green-50 text-success">稼働中</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">88.7%</p>
+                    <p class="text-[10px] text-slate-400">稼働率</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">
+                      42<span class="text-[11px]">/50</span>
+                    </p>
+                    <p class="text-[10px] text-slate-400">日産実績/計画</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-danger">3.2%</p>
+                    <p class="text-[10px] text-slate-400">不良率 ※超過</p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">現在工程:</span
+                    ><span class="font-medium text-slate-700"
+                      >油圧シリンダーロッド — 切削工程</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">担当者:</span
+                    ><span class="font-medium text-slate-700">鈴木、伊藤</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">注意:</span
+                    ><span class="text-danger font-medium"
+                      >不良率閾値超過 — 工具摩耗確認要</span
+                    >
+                  </div>
+                </div>
+              </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+              <div class="card p-5 border-l-4 border-l-amber-400">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-accent"></div>
+                    <h3 class="font-semibold text-[14px] text-slate-700">
+                      Cライン — プレス・溶接
+                    </h3>
+                  </div>
+                  <span class="badge bg-amber-50 text-accentDark"
+                    >段取替え</span
+                  >
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">76.3%</p>
+                    <p class="text-[10px] text-slate-400">稼働率</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">
+                      0<span class="text-[11px]">/120</span>
+                    </p>
+                    <p class="text-[10px] text-slate-400">日産実績/計画</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-success">0.8%</p>
+                    <p class="text-[10px] text-slate-400">不良率</p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">現在工程:</span
+                    ><span class="font-medium text-accentDark"
+                      >段取替え中（金型交換）</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">次生産:</span
+                    ><span class="font-medium text-slate-700"
+                      >ステンレスフランジ A型 — プレス工程</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">予定:</span
+                    ><span class="text-slate-600"
+                      >段取完了 11:30 → 生産開始 13:00</span
+                    >
+                  </div>
+                </div>
+              </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [637, 976, 481, 690, 508, 556], "backgroundColor": "#7c2d12", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+              <div class="card p-5 border-l-4 border-l-red-400">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-danger"></div>
+                    <h3 class="font-semibold text-[14px] text-slate-700">
+                      Dライン — ダイカスト・塗装
+                    </h3>
+                  </div>
+                  <span class="badge bg-red-50 text-danger">停止中</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-danger">0%</p>
+                    <p class="text-[10px] text-slate-400">稼働率</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-800">
+                      0<span class="text-[11px]">/80</span>
+                    </p>
+                    <p class="text-[10px] text-slate-400">日産実績/計画</p>
+                  </div>
+                  <div class="text-center p-2 rounded-lg bg-slate-50">
+                    <p class="text-[16px] font-bold text-slate-400">—</p>
+                    <p class="text-[10px] text-slate-400">不良率</p>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">停止理由:</span
+                    ><span class="text-danger font-medium"
+                      >定期メンテナンス（ダイカストマシン清掃）</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">復旧予定:</span
+                    ><span class="font-medium text-slate-700">3/11 08:00</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[12px]">
+                    <span class="text-slate-500 w-20 shrink-0">影響:</span
+                    ><span class="text-slate-600"
+                      >アルミダイカスト筐体 — 計画通り(余裕あり)</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Daily Production Record -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-slate-700">
+                  本日の生産実績（3/10）
+                </h3>
+                <div class="flex gap-2">
+                  <select
+                    class="px-2.5 py-1.5 text-[12px] border border-slate-200 rounded-lg bg-white cursor-pointer"
+                  >
+                    <option>日勤</option>
+                    <option>夜勤</option>
+                  </select>
+                  <button
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                  >
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>CSV出力
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-slate-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        ライン
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        工程
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        計画数
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        良品数
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        不良数
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        達成率
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        担当
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        備考
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td
+                        class="px-4 py-2.5 text-[12px] font-medium text-slate-700"
+                      >
+                        Aライン
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">
+                        精密ベアリングユニット
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">研磨</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">180</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right font-medium"
+                      >
+                        156
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-danger"
+                      >
+                        2
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success"
+                          >86.7%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">佐藤・山田</td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">
+                        研磨砥石交換15:00
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td
+                        class="px-4 py-2.5 text-[12px] font-medium text-slate-700"
+                      >
+                        Bライン
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">
+                        油圧シリンダーロッド
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">切削</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">50</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right font-medium"
+                      >
+                        42
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-danger"
+                      >
+                        4
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >84.0%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">鈴木・伊藤</td>
+                      <td class="px-4 py-2.5 text-[12px] text-danger">
+                        寸法不良増 要確認
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td
+                        class="px-4 py-2.5 text-[12px] font-medium text-accentDark"
+                      >
+                        Cライン
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">
+                        —（段取替え中）
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">—</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-slate-100 text-slate-500"
+                          >段取替え</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">渡辺・中村</td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">
+                        金型交換 10:00〜
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td
+                        class="px-4 py-2.5 text-[12px] font-medium text-danger"
+                      >
+                        Dライン
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">
+                        —（停止中）
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">—</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-slate-400"
+                      >
+                        —
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">停止</span>
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">保全チーム</td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-400">
+                        定期メンテナンス
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== INVENTORY ==================== -->
+          <div id="page-inventory" class="page">
+            <!-- Inventory Summary -->
+            <div class="grid grid-cols-3 gap-4 mb-5">
+              <div class="card p-4">
+                <div class="flex items-center gap-3 mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center"
+                  >
+                    <i data-lucide="box" class="w-5 h-5 text-primary"></i>
+                  </div>
+                  <div>
+                    <p class="text-[11px] text-slate-400">原材料在庫</p>
+                    <p class="text-[20px] font-bold text-slate-800">¥12.4M</p>
+                  </div>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">48品目</span
+                  ><span class="text-danger font-medium"
+                    >3品目が安全在庫割れ</span
+                  >
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3 mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"
+                  >
+                    <i data-lucide="settings" class="w-5 h-5 text-accent"></i>
+                  </div>
+                  <div>
+                    <p class="text-[11px] text-slate-400">仕掛品在庫</p>
+                    <p class="text-[20px] font-bold text-slate-800">¥8.7M</p>
+                  </div>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">18ロット</span
+                  ><span class="text-accentDark font-medium">工程滞留2件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="flex items-center gap-3 mb-3">
+                  <div
+                    class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center"
+                  >
+                    <i
+                      data-lucide="package-check"
+                      class="w-5 h-5 text-success"
+                    ></i>
+                  </div>
+                  <div>
+                    <p class="text-[11px] text-slate-400">製品在庫</p>
+                    <p class="text-[20px] font-bold text-slate-800">¥15.2M</p>
+                  </div>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">32品目</span
+                  ><span class="text-success font-medium">適正水準</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- MRP Alerts -->
+            <div class="card p-5 mb-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3
+                  class="font-semibold text-[13px] text-slate-700 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-danger"
+                  ></i
+                  >MRP発注アラート
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-white rounded-lg bg-primary hover:bg-primaryDark cursor-pointer transition-colors"
+                >
+                  <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i
+                  >一括発注
+                </button>
+              </div>
+              <div class="space-y-2">
+                <div
+                  class="flex items-center gap-4 p-3 rounded-lg bg-red-50/50 border border-red-100"
+                >
+                  <div class="shrink-0">
+                    <span class="badge bg-red-100 text-danger">発注点割れ</span>
+                  </div>
+                  <div class="flex-1 grid grid-cols-6 gap-2 text-[12px]">
+                    <span class="font-medium text-slate-700"
+                      >SUS304丸棒 φ25</span
+                    >
+                    <span class="text-slate-500">M-0042</span>
+                    <span class="text-right"
+                      >現在庫:
+                      <span class="text-danger font-medium">120kg</span></span
+                    >
+                    <span class="text-right">安全在庫: 200kg</span>
+                    <span class="text-right">発注点: 250kg</span>
+                    <span class="text-primary font-medium">入荷予定 3/12</span>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-4 p-3 rounded-lg bg-red-50/50 border border-red-100"
+                >
+                  <div class="shrink-0">
+                    <span class="badge bg-red-100 text-danger">発注点割れ</span>
+                  </div>
+                  <div class="flex-1 grid grid-cols-6 gap-2 text-[12px]">
+                    <span class="font-medium text-slate-700"
+                      >超硬エンドミル φ10</span
+                    >
+                    <span class="text-slate-500">T-0118</span>
+                    <span class="text-right"
+                      >現在庫:
+                      <span class="text-danger font-medium">8本</span></span
+                    >
+                    <span class="text-right">安全在庫: 15本</span>
+                    <span class="text-right">発注点: 20本</span>
+                    <span class="text-danger font-medium">未発注</span>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-4 p-3 rounded-lg bg-amber-50/50 border border-amber-100"
+                >
+                  <div class="shrink-0">
+                    <span class="badge bg-amber-100 text-accentDark"
+                      >在庫僅少</span
+                    >
+                  </div>
+                  <div class="flex-1 grid grid-cols-6 gap-2 text-[12px]">
+                    <span class="font-medium text-slate-700"
+                      >ADC12アルミインゴット</span
+                    >
+                    <span class="text-slate-500">M-0087</span>
+                    <span class="text-right"
+                      >現在庫:
+                      <span class="text-accentDark font-medium"
+                        >450kg</span
+                      ></span
+                    >
+                    <span class="text-right">安全在庫: 300kg</span>
+                    <span class="text-right">発注点: 500kg</span>
+                    <span class="text-primary font-medium">発注済 3/8</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inventory Table & ABC Chart -->
+            <div class="grid grid-cols-5 gap-4">
+              <div class="col-span-3 card overflow-hidden">
+                <div class="px-5 py-3 border-b border-slate-100">
+                  <h3 class="font-semibold text-[13px] text-slate-700">
+                    原材料在庫一覧
+                  </h3>
+                </div>
+                <table class="w-full">
+                  <thead class="bg-slate-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        品番
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        品名
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        現在庫
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        安全在庫
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        ABC
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        状態
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td class="px-4 py-2.5 text-[12px] font-mono">M-0042</td>
+                      <td class="px-4 py-2.5 text-[12px]">SUS304丸棒 φ25</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-danger font-medium"
+                      >
+                        120kg
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">200kg</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">A</span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">不足</span>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td class="px-4 py-2.5 text-[12px] font-mono">M-0015</td>
+                      <td class="px-4 py-2.5 text-[12px]">SCM435丸棒 φ30</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">380kg</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">200kg</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">A</span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">適正</span>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td class="px-4 py-2.5 text-[12px] font-mono">M-0087</td>
+                      <td class="px-4 py-2.5 text-[12px]">
+                        ADC12アルミインゴット
+                      </td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-right text-accentDark font-medium"
+                      >
+                        450kg
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">300kg</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">A</span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >僅少</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td class="px-4 py-2.5 text-[12px] font-mono">M-0023</td>
+                      <td class="px-4 py-2.5 text-[12px]">SUS316L板材 t3.0</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">85枚</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">30枚</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark">B</span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">適正</span>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td class="px-4 py-2.5 text-[12px] font-mono">M-0056</td>
+                      <td class="px-4 py-2.5 text-[12px]">研磨砥石 WA60</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">24個</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">10個</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-blue-50 text-primary">C</span>
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">適正</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-span-2 card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  在庫金額 ABC分析
+                </h3>
+                <div style="height: 240px"><canvas id="invChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== QUALITY & EQUIPMENT ==================== -->
+          <div id="page-quality" class="page">
+            <!-- Quality KPIs -->
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-4" style="border-left: 3px solid #059669">
+                <p class="text-[11px] text-slate-400 mb-1">検査合格率</p>
+                <p class="text-[24px] font-bold text-slate-800">98.1%</p>
+                <p class="text-[11px] text-success font-medium mt-1">
+                  +0.3pt 前月比
+                </p>
+              </div>
+              <div class="card p-4" style="border-left: 3px solid #dc2626">
+                <p class="text-[11px] text-slate-400 mb-1">総合不良率</p>
+                <p class="text-[24px] font-bold text-slate-800">1.9%</p>
+                <p class="text-[11px] text-success font-medium mt-1">
+                  -0.4pt 前月比
+                </p>
+              </div>
+              <div class="card p-4" style="border-left: 3px solid #f59e0b">
+                <p class="text-[11px] text-slate-400 mb-1">顧客クレーム</p>
+                <p class="text-[24px] font-bold text-slate-800">
+                  0<span class="text-[14px]">件</span>
+                </p>
+                <p class="text-[11px] text-success font-medium mt-1">
+                  3ヶ月連続ゼロ
+                </p>
+              </div>
+              <div class="card p-4" style="border-left: 3px solid #8b5cf6">
+                <p class="text-[11px] text-slate-400 mb-1">是正処置完了率</p>
+                <p class="text-[24px] font-bold text-slate-800">92%</p>
+                <p class="text-[11px] text-slate-400 mt-1">12/13件完了</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <!-- Defect Pareto -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  不良内訳パレート図（今月）
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="qualChart1"></canvas>
+                </div>
+              </div>
+              <!-- Quality Trend -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  月次不良率推移
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="qualChart2"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Equipment Status -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-slate-700">
+                  設備一覧・保全管理
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <i data-lucide="wrench" class="w-3.5 h-3.5"></i>保全計画
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-slate-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        設備名
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        型式
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        ライン
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                      >
+                        稼働時間
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        稼働率
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        前回保全
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        次回予定
+                      </th>
+                      <th
+                        class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                      >
+                        状態
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 text-[12px] font-medium">
+                        CNC旋盤 MC-01
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        MAZAK QT-200
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Aライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">
+                        12,450h
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success"
+                          >96.2%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">2/28</td>
+                      <td class="px-4 py-2.5 text-[12px]">3/14</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">正常</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 text-[12px] font-medium">
+                        CNC旋盤 MC-02
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        MAZAK QT-200
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Aライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">
+                        11,820h
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success"
+                          >93.8%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">3/1</td>
+                      <td class="px-4 py-2.5 text-[12px]">3/15</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">正常</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-red-50/30 cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-2.5 text-[12px] font-medium text-danger"
+                      >
+                        CNC旋盤 MC-03
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        MAZAK QT-250
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Aライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">
+                        15,200h
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >87.1%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">2/25</td>
+                      <td
+                        class="px-4 py-2.5 text-[12px] text-danger font-medium"
+                      >
+                        3/7 ※超過
+                      </td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger"
+                          >保全超過</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 text-[12px] font-medium">
+                        マシニングセンタ VM-01
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        DMG MORI NVX
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Bライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">9,800h</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success"
+                          >91.5%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">3/3</td>
+                      <td class="px-4 py-2.5 text-[12px]">3/17</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-green-50 text-success">正常</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 text-[12px] font-medium">
+                        プレス機 PR-01
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        AIDA NC1-200
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Cライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">8,600h</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >78.3%</span
+                        >
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">3/5</td>
+                      <td class="px-4 py-2.5 text-[12px]">3/19</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-amber-50 text-accentDark"
+                          >段取中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-slate-50 hover:bg-slate-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-2.5 text-[12px] font-medium">
+                        ダイカストマシン DC-01
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                        東芝 DC-350
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">Dライン</td>
+                      <td class="px-4 py-2.5 text-[12px] text-right">6,200h</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-red-50 text-danger">0%</span>
+                      </td>
+                      <td class="px-4 py-2.5 text-[12px]">3/10</td>
+                      <td class="px-4 py-2.5 text-[12px]">3/24</td>
+                      <td class="px-4 py-2.5">
+                        <span class="badge bg-blue-50 text-primary"
+                          >保全中</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== ANALYTICS ==================== -->
+          <div id="page-analytics" class="page">
+            <!-- Before/After Comparison -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[14px] text-slate-700 mb-4">
+                導入効果分析：Excel管理 vs ProductionCore
+              </h3>
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <p
+                    class="text-[12px] font-semibold text-slate-500 mb-3 flex items-center gap-2"
+                  >
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span
+                    >Before（Excel管理）
+                  </p>
+                  <div class="space-y-2.5">
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-red-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600">納期遵守率</span
+                      ><span class="text-[14px] font-bold text-danger"
+                        >82.0%</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-red-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >計画変更の反映時間</span
+                      ><span class="text-[14px] font-bold text-danger"
+                        >平均4.2時間</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-red-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >在庫過不足による損失</span
+                      ><span class="text-[14px] font-bold text-danger"
+                        >¥2.4M/月</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-red-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >月平均納期遅延件数</span
+                      ><span class="text-[14px] font-bold text-danger"
+                        >12件</span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-red-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >生産計画作成工数</span
+                      ><span class="text-[14px] font-bold text-danger"
+                        >16時間/週</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p
+                    class="text-[12px] font-semibold text-slate-500 mb-3 flex items-center gap-2"
+                  >
+                    <span class="w-2 h-2 rounded-full bg-primary"></span
+                    >After（ProductionCore）
+                  </p>
+                  <div class="space-y-2.5">
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-blue-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600">納期遵守率</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-bold text-primary"
+                          >97.2%</span
+                        ><span class="badge bg-green-50 text-success"
+                          >+15.2pt</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-blue-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >計画変更の反映時間</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-bold text-primary"
+                          >即時</span
+                        ><span class="badge bg-green-50 text-success"
+                          >-4.2h</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-blue-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >在庫過不足による損失</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-bold text-primary"
+                          >¥0.6M/月</span
+                        ><span class="badge bg-green-50 text-success"
+                          >-75%</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-blue-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >月平均納期遅延件数</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-bold text-primary"
+                          >2件</span
+                        ><span class="badge bg-green-50 text-success"
+                          >-83%</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 rounded-lg bg-blue-50/50"
+                    >
+                      <span class="text-[12px] text-slate-600"
+                        >生産計画作成工数</span
+                      >
+                      <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-bold text-primary"
+                          >3時間/週</span
+                        ><span class="badge bg-green-50 text-success"
+                          >-81%</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  納期遵守率トレンド（12ヶ月）
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="anaChart1"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-slate-700 mb-4">
+                  ライン別生産効率比較
+                </h3>
+                <div style="height: 240px">
+                  <canvas id="anaChart2"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost Variance Analysis -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-slate-700">
+                  原価差異分析（今月）
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>レポート出力
+                </button>
+              </div>
+              <table class="w-full">
+                <thead class="bg-slate-50/80 border-b">
+                  <tr>
+                    <th
+                      class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                    >
+                      費目
+                    </th>
+                    <th
+                      class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                    >
+                      標準原価
+                    </th>
+                    <th
+                      class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                    >
+                      実際原価
+                    </th>
+                    <th
+                      class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                    >
+                      差異
+                    </th>
+                    <th
+                      class="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500"
+                    >
+                      差異率
+                    </th>
+                    <th
+                      class="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500"
+                    >
+                      要因
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-slate-50">
+                    <td class="px-4 py-2.5 text-[12px] font-medium">材料費</td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥8,200,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥8,450,000
+                    </td>
+                    <td
+                      class="px-4 py-2.5 text-[12px] text-right text-danger font-medium"
+                    >
+                      +¥250,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-danger">
+                      +3.0%
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                      SUS304単価上昇
+                    </td>
+                  </tr>
+                  <tr class="border-b border-slate-50">
+                    <td class="px-4 py-2.5 text-[12px] font-medium">加工費</td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥5,600,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥5,380,000
+                    </td>
+                    <td
+                      class="px-4 py-2.5 text-[12px] text-right text-success font-medium"
+                    >
+                      -¥220,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-success">
+                      -3.9%
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                      段取時間短縮効果
+                    </td>
+                  </tr>
+                  <tr class="border-b border-slate-50">
+                    <td class="px-4 py-2.5 text-[12px] font-medium">労務費</td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥4,800,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥4,920,000
+                    </td>
+                    <td
+                      class="px-4 py-2.5 text-[12px] text-right text-danger font-medium"
+                    >
+                      +¥120,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-danger">
+                      +2.5%
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                      残業増（遅延対応）
+                    </td>
+                  </tr>
+                  <tr class="border-b border-slate-50">
+                    <td class="px-4 py-2.5 text-[12px] font-medium">経費</td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥2,400,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥2,350,000
+                    </td>
+                    <td
+                      class="px-4 py-2.5 text-[12px] text-right text-success font-medium"
+                    >
+                      -¥50,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-success">
+                      -2.1%
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-slate-500">
+                      電力使用量最適化
+                    </td>
+                  </tr>
+                  <tr class="bg-slate-50 font-semibold">
+                    <td class="px-4 py-2.5 text-[12px]">合計</td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥21,000,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right">
+                      ¥21,100,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-danger">
+                      +¥100,000
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-right text-danger">
+                      +0.5%
+                    </td>
+                    <td class="px-4 py-2.5 text-[12px] text-slate-500">—</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        { id: "dashboard", title: "ダッシュボード", desc: "生産状況の概要" },
+        {
+          id: "schedule",
+          title: "生産計画",
+          desc: "製造指図・スケジュール管理",
+        },
+        { id: "process", title: "工程管理", desc: "ライン稼働・実績入力" },
+        { id: "inventory", title: "在庫・資材", desc: "原材料・仕掛品・MRP" },
+        { id: "quality", title: "品質・設備", desc: "不良分析・保全管理" },
+        { id: "analytics", title: "分析レポート", desc: "KPI・原価差異分析" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      const fontOpt = { family: "Inter, Noto Sans JP" };
+
+      // Dashboard Chart 1: Production Plan vs Actual (combo bar+line)
+      charts.push(
+        new Chart(document.getElementById("dashChart1"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "計画",
+                data: [4200, 4500, 4800, 4600, 4400, 5100],
+                backgroundColor: "#1d4ed8",
+                borderRadius: 4,
+                order: 2,
+              },
+              {
+                label: "実績",
+                data: [3980, 4380, 4720, 4550, 4350, 4920],
+                backgroundColor: "#f59e0b",
+                borderRadius: 4,
+                order: 2,
+              },
+              {
+                label: "達成率",
+                data: [94.8, 97.3, 98.3, 98.9, 98.9, 96.5],
+                type: "line",
+                borderColor: "#dc2626",
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: "#dc2626",
+                yAxisID: "y1",
+                order: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f1f5f9" },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+              y1: {
+                position: "right",
+                min: 80,
+                max: 100,
+                grid: { display: false },
+                ticks: {
+                  callback: (v) => v + "%",
+                  font: { size: 11, ...fontOpt },
+                },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Dashboard Chart 2: Line Utilization (horizontal bar)
+      charts.push(
+        new Chart(document.getElementById("dashChart2"), {
+          type: "bar",
+          data: {
+            labels: ["Aライン", "Bライン", "Cライン", "Dライン"],
+            datasets: [
+              {
+                data: [94.2, 88.7, 76.3, 0],
+                backgroundColor: ["#059669", "#059669", "#f59e0b", "#dc2626"],
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                min: 0,
+                max: 100,
+                grid: { color: "#f1f5f9" },
+                ticks: {
+                  callback: (v) => v + "%",
+                  font: { size: 11, ...fontOpt },
+                },
+              },
+              y: {
+                grid: { display: false },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Inventory ABC Chart
+      charts.push(
+        new Chart(document.getElementById("invChart"), {
+          type: "doughnut",
+          data: {
+            labels: ["Aランク（70%）", "Bランク（20%）", "Cランク（10%）"],
+            datasets: [
+              {
+                data: [70, 20, 10],
+                backgroundColor: ["#1d4ed8", "#f59e0b", "#94a3b8"],
+                borderWidth: 0,
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, ...fontOpt },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+          },
+        }),
+      );
+
+      // Quality Pareto Chart
+      charts.push(
+        new Chart(document.getElementById("qualChart1"), {
+          type: "bar",
+          data: {
+            labels: ["寸法不良", "面粗さ", "キズ", "バリ", "割れ", "その他"],
+            datasets: [
+              {
+                label: "件数",
+                data: [18, 12, 8, 5, 3, 2],
+                backgroundColor: "#1d4ed8",
+                borderRadius: 4,
+                order: 2,
+              },
+              {
+                label: "累積%",
+                data: [37.5, 62.5, 79.2, 89.6, 95.8, 100],
+                type: "line",
+                borderColor: "#dc2626",
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: "#dc2626",
+                yAxisID: "y1",
+                order: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f1f5f9" },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+              y1: {
+                position: "right",
+                min: 0,
+                max: 100,
+                grid: { display: false },
+                ticks: {
+                  callback: (v) => v + "%",
+                  font: { size: 11, ...fontOpt },
+                },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Quality Trend
+      charts.push(
+        new Chart(document.getElementById("qualChart2"), {
+          type: "line",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "総合不良率",
+                data: [3.1, 2.8, 2.5, 2.3, 2.3, 1.9],
+                borderColor: "#1d4ed8",
+                backgroundColor: "#1d4ed820",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: "#1d4ed8",
+              },
+              {
+                label: "閾値",
+                data: [2, 2, 2, 2, 2, 2],
+                borderColor: "#dc2626",
+                borderDash: [5, 3],
+                borderWidth: 1.5,
+                pointRadius: 0,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, ...fontOpt },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 4,
+                grid: { color: "#f1f5f9" },
+                ticks: {
+                  callback: (v) => v + "%",
+                  font: { size: 11, ...fontOpt },
+                },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Analytics Chart 1: On-time Delivery Trend
+      charts.push(
+        new Chart(document.getElementById("anaChart1"), {
+          type: "line",
+          data: {
+            labels: [
+              "4月",
+              "5月",
+              "6月",
+              "7月",
+              "8月",
+              "9月",
+              "10月",
+              "11月",
+              "12月",
+              "1月",
+              "2月",
+              "3月",
+            ],
+            datasets: [
+              {
+                label: "Excel管理時",
+                data: [80, 82, 79, 83, 81, 84, 82, 85, 83, null, null, null],
+                borderColor: "#94a3b8",
+                borderDash: [5, 3],
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: "#94a3b8",
+                tension: 0.3,
+              },
+              {
+                label: "ProductionCore",
+                data: [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  88,
+                  92,
+                  95,
+                  96.5,
+                  97.0,
+                  97.2,
+                ],
+                borderColor: "#1d4ed8",
+                borderWidth: 2.5,
+                pointRadius: 4,
+                pointBackgroundColor: "#1d4ed8",
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, ...fontOpt },
+                  usePointStyle: true,
+                  padding: 12,
+                },
+              },
+            },
+            scales: {
+              y: {
+                min: 70,
+                max: 100,
+                grid: { color: "#f1f5f9" },
+                ticks: {
+                  callback: (v) => v + "%",
+                  font: { size: 11, ...fontOpt },
+                },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 11, ...fontOpt } },
+              },
+            },
+          },
+        }),
+      );
+
+      // Analytics Chart 2: Line Efficiency Comparison
+      charts.push(
+        new Chart(document.getElementById("anaChart2"), {
+          type: "radar",
+          data: {
+            labels: ["稼働率", "生産性", "品質", "段取効率", "納期遵守"],
+            datasets: [
+              {
+                label: "Aライン",
+                data: [94, 92, 98, 88, 97],
+                borderColor: "#1d4ed8",
+                backgroundColor: "#1d4ed820",
+                pointRadius: 3,
+              },
+              {
+                label: "Bライン",
+                data: [89, 84, 96, 82, 95],
+                borderColor: "#f59e0b",
+                backgroundColor: "#f59e0b20",
+                pointRadius: 3,
+              },
+              {
+                label: "Cライン",
+                data: [76, 78, 99, 75, 93],
+                borderColor: "#059669",
+                backgroundColor: "#05966920",
+                pointRadius: 3,
+              },
+              {
+                label: "Dライン",
+                data: [85, 80, 97, 80, 94],
+                borderColor: "#8b5cf6",
+                backgroundColor: "#8b5cf620",
+                pointRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11, ...fontOpt },
+                  usePointStyle: true,
+                  padding: 8,
+                },
+              },
+            },
+            scales: {
+              r: {
+                min: 60,
+                max: 100,
+                ticks: { stepSize: 10, font: { size: 10 } },
+                pointLabels: { font: { size: 11, ...fontOpt } },
+                grid: { color: "#e2e8f0" },
+              },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
