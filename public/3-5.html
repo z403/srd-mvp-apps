@@ -1,117 +1,2691 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>燃料費・高速代の管理 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>FuelTracker — 燃料費・運行コスト管理システム | SRD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.25s ease-out;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 10px 12px;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+      }
+      td {
+        font-size: 13px;
+        color: #374151;
+        padding: 10px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        white-space: nowrap;
+      }
+      tr:hover td {
+        background: #f9fafb;
+      }
+      .kpi-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        opacity: 0.06;
+        transform: translate(20px, -20px);
+      }
+      .tab-active {
+        border-bottom: 2px solid #065f46;
+        color: #065f46;
+        font-weight: 600;
+      }
+      .tab-inactive {
+        border-bottom: 2px solid transparent;
+        color: #9ca3af;
+      }
+      .badge-green {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-amber {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+      .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .progress-bar .fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #0c4a6e"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+            >
+              <i data-lucide="fuel" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">FuelTracker</p>
+              <p class="text-[11px] opacity-50 truncate">
+                燃料費・運行コスト管理
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('dashboard')"
+            ><i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span class="truncate">ダッシュボード</span></a
+          >
+          <a
+            data-page="fuel"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('fuel')"
+            ><i data-lucide="droplets" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">給油記録</span></a
+          >
+          <a
+            data-page="highway"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('highway')"
+            ><i data-lucide="route" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">高速道路利用</span></a
+          >
+          <a
+            data-page="vehicle-cost"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('vehicle-cost')"
+            ><i data-lucide="truck" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">車両別コスト</span></a
+          >
+          <a
+            data-page="driver-cost"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('driver-cost')"
+            ><i data-lucide="users" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">ドライバー別分析</span></a
+          >
+          <a
+            data-page="budget"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('budget')"
+            ><i data-lucide="piggy-bank" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">予算管理</span></a
+          >
+          <a
+            data-page="settings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
+            onclick="navigate('settings')"
+            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
+            ><span class="truncate">設定</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              管
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">管理者</p>
+              <p class="text-[10px] opacity-40">admin@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">燃料費・高速代の管理</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="calculator" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">シミュレーター</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="folder" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="eye" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              燃料費・高速代の概要
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
+              style="background: #d1fae5; color: #065f46"
+              >MVP Demo</span
+            >
+            <span class="text-[11px] text-gray-400">2026年3月</span>
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">パフォーマンス概要</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6"><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#065f46" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="119.6" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#065f46">44%</div><div class="text-[11px] text-gray-400">利益率</div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#10b981" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="89.7" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#10b981">58%</div><div class="text-[11px] text-gray-400">効率</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#065f46" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="44.9" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#065f46">79%</div><div class="text-[11px] text-gray-400">遵守</div></div></div></div><div class="card p-5 flex justify-center"><div class="flex flex-col items-center gap-2"><svg width="80" height="80" class="-rotate-90"><circle cx="40" cy="40" r="34" fill="none" stroke="#e5e7eb" stroke-width="6"/><circle cx="40" cy="40" r="34" fill="none" stroke="#10b981" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="44.9" stroke-linecap="round"/></svg><div class="text-center"><div class="text-lg font-bold" style="color:#10b981">79%</div><div class="text-[11px] text-gray-400">満足度</div></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">燃料費・高速代管理指標</h3><div style="height:280px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">燃料費・高速代の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> に燃料費・高速代をコメント</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> の燃料費・高速代を更新</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> の燃料費・高速代を作成</p><p class="text-[11px] text-gray-400">32時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> に燃料費・高速代をコメント</p><p class="text-[11px] text-gray-400">15時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋経理</span> の燃料費・高速代を作成</p><p class="text-[11px] text-gray-400">26時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-5">入力パラメータ</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">売上高（万円）</label><input type="number" name="売上高（万円）" placeholder="10000" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">原価率（%）</label><input type="number" name="原価率（%）" placeholder="60" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">販管費（万円）</label><input type="number" name="販管費（万円）" placeholder="2000" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">人件費（万円）</label><input type="number" name="人件費（万円）" placeholder="1500" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div class="pt-2"><button onclick="calcProfit()" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="calculator" class="w-4 h-4"></i>計算する</button></div></div></div><div class="space-y-4"><div class="card p-5" id="calcResult"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">計算結果</h3><div class="space-y-3"><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">粗利</span><span id="rGross" class="font-bold" style="color:#065f46">—</span></div><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">粗利率</span><span id="rGrossRate" class="font-bold" style="color:#065f46">—</span></div><div class="flex justify-between py-2 border-b"><span class="text-[13px] text-gray-500">営業利益</span><span id="rOp" class="font-bold" style="color:#065f46">—</span></div><div class="flex justify-between py-2"><span class="text-[13px] text-gray-500">営業利益率</span><span id="rOpRate" class="font-bold" style="color:#065f46">—</span></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">利益構成</h3><div style="height:200px"><canvas id="calcChart"></canvas></div></div></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="accSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div><div class="space-y-3"><details class="card overflow-hidden" open><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#065f46"></i><span class="font-semibold text-[13px] text-gray-700">整備課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">1件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400">#5088 · 2026/01/19</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#065f46"></i><span class="font-semibold text-[13px] text-gray-700">管理課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">3件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400">#2072 · 2026/01/11</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">渡辺整備管理</p><p class="text-[11px] text-gray-400">#9688 · 2026/02/06</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400">#1538 · 2026/03/03</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#065f46"></i><span class="font-semibold text-[13px] text-gray-700">倉庫課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">3件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">鈴木運行管理者</p><p class="text-[11px] text-gray-400">#9687 · 2026/02/21</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">配送中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">中村安全管理者</p><p class="text-[11px] text-gray-400">#2694 · 2026/02/12</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">加藤事務</p><p class="text-[11px] text-gray-400">#5587 · 2026/03/06</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#065f46"></i><span class="font-semibold text-[13px] text-gray-700">配送2課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">2件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">山田倉庫管理</p><p class="text-[11px] text-gray-400">#2769 · 2026/01/19</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400">#3803 · 2026/03/02</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div></div></details><details class="card overflow-hidden" ><summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><i data-lucide="folder" class="w-5 h-5" style="color:#065f46"></i><span class="font-semibold text-[13px] text-gray-700">営業課</span><span class="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">3件</span></div><i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i></summary><div class="border-t px-4 py-2 space-y-0.5"><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">高橋経理</p><p class="text-[11px] text-gray-400">#8912 · 2026/01/14</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">伊藤営業</p><p class="text-[11px] text-gray-400">#3070 · 2026/03/03</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">配送中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"><div class="flex items-center gap-3"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i><div><p class="text-[13px] text-gray-700">小林荷役担当</p><p class="text-[11px] text-gray-400">#1572 · 2026/03/24</p></div></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div></div></details></div></div>
-<div id="page-detail" class="page"><div class="card p-5"><div class="flex gap-0 border-b mb-4"><button class="tab-btn px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer" style="border-b-2;border-color:#065f46" data-tab="dtlTab-0" onclick="switchTab('dtlTab',0,'#065f46')">基本情報</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-1" onclick="switchTab('dtlTab',1,'#065f46')">履歴</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-2" onclick="switchTab('dtlTab',2,'#065f46')">添付ファイル</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-3" onclick="switchTab('dtlTab',3,'#065f46')">コメント</button></div><div data-panel="dtlTab-0" style="display:block"><div class="grid grid-cols-2 gap-4"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">ID</span><span class="text-[14px] font-medium">#5088</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">担当</span><span class="text-[14px] font-medium">佐藤配車担当</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">状態</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">金額</span><span class="text-[14px] font-bold" style="color:#065f46">¥2,398万</span></div></div></div><div data-panel="dtlTab-1" style="display:none"><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> に燃料費・高速代をコメント</p><p class="text-[11px] text-gray-400">16時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> の燃料費・高速代を更新</p><p class="text-[11px] text-gray-400">11時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> の燃料費・高速代を作成</p><p class="text-[11px] text-gray-400">32時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> に燃料費・高速代をコメント</p><p class="text-[11px] text-gray-400">15時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋経理</span> の燃料費・高速代を作成</p><p class="text-[11px] text-gray-400">26時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤営業</span> に燃料費・高速代を報告</p><p class="text-[11px] text-gray-400">36時間前</p></div></div></div></div><div data-panel="dtlTab-2" style="display:none"><div class="text-center py-16"><i data-lucide="paperclip" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i><p class="text-[13px] text-gray-400">添付ファイルはありません</p></div></div><div data-panel="dtlTab-3" style="display:none"><div class="space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px]" style="background:#065f46">管</div><div class="flex-1 card p-3"><p class="text-[13px] text-gray-700">問題ありません。承認します。</p><p class="text-[11px] text-gray-400 mt-1">2時間前</p></div></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">コメント追加</label><textarea name="コメント追加" rows="3" placeholder="コメントを入力..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">売上</span><i data-lucide="trending-up" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">1995万円</div><div class="text-[11px] mt-2 text-emerald-600">↑ +295%</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">原価率</span><i data-lucide="percent" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">65%</div><div class="text-[11px] mt-2 text-red-500">↓ -11pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">粗利</span><i data-lucide="wallet" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">2817万円</div><div class="text-[11px] mt-2 text-emerald-600">↑ +291%</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">営業利益率</span><i data-lucide="trending-up" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">21%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2pt</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">売上トレンド分析</h3><div style="height:320px"><canvas id="rpC1"></canvas></div></div><div class="card p-5 mt-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-3">分析サマリー</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">売上が前月比改善</p></div><div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">原価率が変動傾向</p></div><div class="p-3 rounded-lg" style="background:#d1fae5"><p class="text-[11px] font-medium mb-1" style="color:#065f46">予測</p><p class="text-[13px]" style="color:#065f46">Q2目標達成見込み</p></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== PAGE 1: Dashboard ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="card kpi-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500">今月燃料費</span>
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #d1fae5"
+                  >
+                    <i
+                      data-lucide="droplets"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  287.4<span class="text-sm font-medium text-gray-400 ml-1"
+                    >万円</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-red-500">
+                  +3.2% <span class="text-gray-400">vs 先月</span>
+                </div>
+              </div>
+              <div class="card kpi-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500">今月高速代</span>
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #dbeafe"
+                  >
+                    <i
+                      data-lucide="route"
+                      class="w-4 h-4"
+                      style="color: #1d4ed8"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  142.8<span class="text-sm font-medium text-gray-400 ml-1"
+                    >万円</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  -1.8% <span class="text-gray-400">vs 先月</span>
+                </div>
+              </div>
+              <div class="card kpi-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500">平均燃費</span>
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #fef3c7"
+                  >
+                    <i
+                      data-lucide="gauge"
+                      class="w-4 h-4"
+                      style="color: #92400e"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold" style="color: #065f46">
+                  4.32<span class="text-sm font-medium text-gray-400 ml-1"
+                    >km/L</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  +0.15 <span class="text-gray-400">vs 先月</span>
+                </div>
+              </div>
+              <div class="card kpi-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[12px] text-gray-500"
+                    >前月比コスト増減</span
+                  >
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background: #fee2e2"
+                  >
+                    <i
+                      data-lucide="trending-up"
+                      class="w-4 h-4"
+                      style="color: #991b1b"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-bold text-red-600">
+                  +1.4<span class="text-sm font-medium text-gray-400 ml-1"
+                    >%</span
+                  >
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  総コスト 430.2万円
+                </div>
+              </div>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "パフォーマンス概要"}, {"id": "feature", "title": "シミュレーター", "desc": "原価・利益計算"}, {"id": "data", "title": "データ一覧", "desc": "グループ表示"}, {"id": "detail", "title": "詳細", "desc": "タブ切替表示"}, {"id": "report", "title": "レポート", "desc": "トレンド分析"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別コスト推移
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="dashCostTrend"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  車両別燃費ランキング
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="dashFuelRank"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "radar", "data": {"labels": ["安全", "効率", "コスト", "顧客満足", "稼働率", "品質"], "datasets": [{"label": "現在", "data": [27, 10, 19, 18, 46, 44], "borderColor": "#065f46", "backgroundColor": "#065f4620", "pointBackgroundColor": "#065f46"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+          <!-- ==================== PAGE 2: Fuel Records ==================== -->
+          <div id="page-fuel" class="page">
+            <!-- Add entry form -->
+            <div class="card p-5 mb-5">
+              <h3
+                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+              >
+                <i
+                  data-lucide="plus-circle"
+                  class="w-4 h-4"
+                  style="color: #065f46"
+                ></i
+                >給油記録の追加
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >日付</label
+                  ><input
+                    type="date"
+                    value="2026-03-10"
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >車番</label
+                  ><select
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option>品川100あ1234</option>
+                    <option>足立200か5678</option>
+                    <option>練馬300さ9012</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >ドライバー</label
+                  ><select
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option>佐藤 健一</option>
+                    <option>田中 誠</option>
+                    <option>鈴木 大輔</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >スタンド名</label
+                  ><input
+                    type="text"
+                    placeholder="ENEOS 板橋SS"
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >給油量(L)</label
+                  ><input
+                    type="number"
+                    placeholder="120"
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >単価(円/L)</label
+                  ><input
+                    type="number"
+                    placeholder="155"
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[11px] font-medium text-gray-500 mb-1"
+                    >走行距離(km)</label
+                  ><input
+                    type="number"
+                    placeholder="480"
+                    class="w-full px-2 py-2 text-[12px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div class="flex items-end">
+                  <button
+                    class="w-full py-2 px-3 text-[12px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>登録
+                  </button>
+                </div>
+              </div>
+            </div>
 
-// feature
+            <!-- Filters & Summary -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+              <div class="flex items-center gap-2">
+                <label class="text-[11px] text-gray-500">車両:</label>
+                <select
+                  id="fuelFilterVehicle"
+                  onchange="filterFuelTable()"
+                  class="px-2 py-1.5 text-[12px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option value="">全車両</option>
+                  <option>品川100あ1234</option>
+                  <option>足立200か5678</option>
+                  <option>練馬300さ9012</option>
+                  <option>横浜400た3456</option>
+                  <option>川崎500な7890</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-[11px] text-gray-500">ドライバー:</label>
+                <select
+                  id="fuelFilterDriver"
+                  onchange="filterFuelTable()"
+                  class="px-2 py-1.5 text-[12px] border rounded-lg bg-white focus:outline-none"
+                >
+                  <option value="">全員</option>
+                  <option>佐藤 健一</option>
+                  <option>田中 誠</option>
+                  <option>鈴木 大輔</option>
+                  <option>山田 太郎</option>
+                  <option>高橋 裕也</option>
+                </select>
+              </div>
+              <div class="ml-auto flex gap-3">
+                <div class="card px-4 py-2 flex items-center gap-2">
+                  <span class="text-[11px] text-gray-400">今月合計</span
+                  ><span class="font-bold text-[14px]" style="color: #065f46"
+                    >287.4万円</span
+                  >
+                </div>
+                <div class="card px-4 py-2 flex items-center gap-2">
+                  <span class="text-[11px] text-gray-400">総給油量</span
+                  ><span class="font-bold text-[14px]" style="color: #065f46"
+                    >18,540L</span
+                  >
+                </div>
+                <div class="card px-4 py-2 flex items-center gap-2">
+                  <span class="text-[11px] text-gray-400">平均燃費</span
+                  ><span class="font-bold text-[14px]" style="color: #065f46"
+                    >4.32km/L</span
+                  >
+                </div>
+              </div>
+            </div>
 
-function calcProfit(){
-const rev=parseFloat(document.querySelector('[name="売上高（万円）"]').value)||0;
-const cr=parseFloat(document.querySelector('[name="原価率（%）"]').value)||0;
-const sg=parseFloat(document.querySelector('[name="販管費（万円）"]').value)||0;
-const hr=parseFloat(document.querySelector('[name="人件費（万円）"]').value)||0;
-const cost=rev*cr/100;const gross=rev-cost;const op=gross-sg-hr;
-document.getElementById('rGross').textContent=gross.toLocaleString()+'万円';
-document.getElementById('rGrossRate').textContent=(gross/rev*100).toFixed(1)+'%';
-document.getElementById('rOp').textContent=op.toLocaleString()+'万円';
-document.getElementById('rOpRate').textContent=(op/rev*100).toFixed(1)+'%';
-const el=document.getElementById('calcChart');const old=charts.findIndex(c=>c.canvas===el);if(old>=0)charts[old].destroy();
-charts.push(new Chart(el,{type:'doughnut',data:{labels:['原価','販管費','人件費','営業利益'],datasets:[{data:[cost,sg,hr,Math.max(0,op)],backgroundColor:['#065f46','#10b981','#065f4680','#10b981'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11}}}}}}));
-}
+            <!-- Fuel Table -->
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table id="fuelTable">
+                  <thead>
+                    <tr>
+                      <th>日付</th>
+                      <th>車番</th>
+                      <th>ドライバー</th>
+                      <th>スタンド名</th>
+                      <th class="text-right">給油量(L)</th>
+                      <th class="text-right">単価(円/L)</th>
+                      <th class="text-right">金額(円)</th>
+                      <th class="text-right">走行距離(km)</th>
+                      <th class="text-right">燃費(km/L)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>2026/03/09</td>
+                      <td>品川100あ1234</td>
+                      <td>佐藤 健一</td>
+                      <td>ENEOS 板橋SS</td>
+                      <td class="text-right">135</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">20,925</td>
+                      <td class="text-right">594</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.40</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/09</td>
+                      <td>足立200か5678</td>
+                      <td>田中 誠</td>
+                      <td>出光 足立入谷SS</td>
+                      <td class="text-right">148</td>
+                      <td class="text-right">153</td>
+                      <td class="text-right font-medium">22,644</td>
+                      <td class="text-right">592</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.00</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/08</td>
+                      <td>練馬300さ9012</td>
+                      <td>鈴木 大輔</td>
+                      <td>コスモ石油 練馬SS</td>
+                      <td class="text-right">125</td>
+                      <td class="text-right">156</td>
+                      <td class="text-right font-medium">19,500</td>
+                      <td class="text-right">563</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.50</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/08</td>
+                      <td>横浜400た3456</td>
+                      <td>山田 太郎</td>
+                      <td>ENEOS 横浜港北SS</td>
+                      <td class="text-right">142</td>
+                      <td class="text-right">154</td>
+                      <td class="text-right font-medium">21,868</td>
+                      <td class="text-right">540</td>
+                      <td class="text-right">
+                        <span class="font-medium text-amber-600">3.80</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/07</td>
+                      <td>川崎500な7890</td>
+                      <td>高橋 裕也</td>
+                      <td>出光 川崎殿町SS</td>
+                      <td class="text-right">138</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">21,390</td>
+                      <td class="text-right">607</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.40</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/07</td>
+                      <td>品川100あ1234</td>
+                      <td>佐藤 健一</td>
+                      <td>ENEOS 大井SS</td>
+                      <td class="text-right">130</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">20,150</td>
+                      <td class="text-right">585</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.50</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/06</td>
+                      <td>足立200か5678</td>
+                      <td>田中 誠</td>
+                      <td>Shell 葛飾SS</td>
+                      <td class="text-right">145</td>
+                      <td class="text-right">157</td>
+                      <td class="text-right font-medium">22,765</td>
+                      <td class="text-right">551</td>
+                      <td class="text-right">
+                        <span class="font-medium text-amber-600">3.80</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/06</td>
+                      <td>練馬300さ9012</td>
+                      <td>鈴木 大輔</td>
+                      <td>コスモ石油 練馬SS</td>
+                      <td class="text-right">128</td>
+                      <td class="text-right">156</td>
+                      <td class="text-right font-medium">19,968</td>
+                      <td class="text-right">576</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.50</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/05</td>
+                      <td>横浜400た3456</td>
+                      <td>山田 太郎</td>
+                      <td>ENEOS 横浜港北SS</td>
+                      <td class="text-right">150</td>
+                      <td class="text-right">154</td>
+                      <td class="text-right font-medium">23,100</td>
+                      <td class="text-right">570</td>
+                      <td class="text-right">
+                        <span class="font-medium text-amber-600">3.80</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/05</td>
+                      <td>川崎500な7890</td>
+                      <td>高橋 裕也</td>
+                      <td>Shell 川崎SS</td>
+                      <td class="text-right">132</td>
+                      <td class="text-right">156</td>
+                      <td class="text-right font-medium">20,592</td>
+                      <td class="text-right">581</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.40</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/04</td>
+                      <td>品川100あ1234</td>
+                      <td>佐藤 健一</td>
+                      <td>ENEOS 板橋SS</td>
+                      <td class="text-right">140</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">21,700</td>
+                      <td class="text-right">630</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.50</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/04</td>
+                      <td>足立200か5678</td>
+                      <td>田中 誠</td>
+                      <td>出光 足立入谷SS</td>
+                      <td class="text-right">140</td>
+                      <td class="text-right">153</td>
+                      <td class="text-right font-medium">21,420</td>
+                      <td class="text-right">546</td>
+                      <td class="text-right">
+                        <span class="font-medium text-amber-600">3.90</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/03</td>
+                      <td>練馬300さ9012</td>
+                      <td>鈴木 大輔</td>
+                      <td>ENEOS 和光SS</td>
+                      <td class="text-right">118</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">18,290</td>
+                      <td class="text-right">543</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.60</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/03</td>
+                      <td>横浜400た3456</td>
+                      <td>山田 太郎</td>
+                      <td>コスモ石油 横浜SS</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right">154</td>
+                      <td class="text-right font-medium">23,870</td>
+                      <td class="text-right">558</td>
+                      <td class="text-right">
+                        <span class="font-medium text-red-500">3.60</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/02</td>
+                      <td>川崎500な7890</td>
+                      <td>高橋 裕也</td>
+                      <td>出光 川崎殿町SS</td>
+                      <td class="text-right">136</td>
+                      <td class="text-right">155</td>
+                      <td class="text-right font-medium">21,080</td>
+                      <td class="text-right">598</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.40</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/01</td>
+                      <td>品川100あ1234</td>
+                      <td>佐藤 健一</td>
+                      <td>Shell 品川SS</td>
+                      <td class="text-right">128</td>
+                      <td class="text-right">156</td>
+                      <td class="text-right font-medium">19,968</td>
+                      <td class="text-right">570</td>
+                      <td class="text-right">
+                        <span class="font-medium text-emerald-600">4.45</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/01</td>
+                      <td>足立200か5678</td>
+                      <td>田中 誠</td>
+                      <td>ENEOS 北千住SS</td>
+                      <td class="text-right">142</td>
+                      <td class="text-right">154</td>
+                      <td class="text-right font-medium">21,868</td>
+                      <td class="text-right">554</td>
+                      <td class="text-right">
+                        <span class="font-medium text-amber-600">3.90</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-// detail
+          <!-- ==================== PAGE 3: Highway ==================== -->
+          <div id="page-highway" class="page">
+            <!-- Stats row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <div class="text-[11px] text-gray-400 mb-1">今月高速代合計</div>
+                <div class="text-xl font-bold" style="color: #065f46">
+                  1,428,200円
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="text-[11px] text-gray-400 mb-1">利用回数</div>
+                <div class="text-xl font-bold" style="color: #065f46">87回</div>
+              </div>
+              <div class="card p-4">
+                <div class="text-[11px] text-gray-400 mb-1">平均料金</div>
+                <div class="text-xl font-bold" style="color: #065f46">
+                  16,417円
+                </div>
+              </div>
+              <div class="card p-4">
+                <div class="text-[11px] text-gray-400 mb-1">割引適用率</div>
+                <div class="text-xl font-bold text-emerald-600">68.5%</div>
+                <div class="progress-bar mt-2">
+                  <div
+                    class="fill"
+                    style="width: 68.5%; background: #10b981"
+                  ></div>
+                </div>
+              </div>
+            </div>
 
-function switchTab(gid,idx,color){
-document.querySelectorAll('[data-tab^="'+gid+'"]').forEach((b,i)=>{
-b.style.borderColor=i===idx?color:'transparent';
-b.classList.toggle('font-semibold',i===idx);b.classList.toggle('text-gray-400',i!==idx);});
-document.querySelectorAll('[data-panel^="'+gid+'"]').forEach((p,i)=>{
-p.style.display=i===idx?'block':'none';});}
+            <!-- ETC Table -->
+            <div class="card overflow-hidden mb-5">
+              <div class="p-4 border-b flex items-center justify-between">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  ETC利用明細
+                </h3>
+                <button
+                  class="py-1.5 px-3 text-[12px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                  style="background: #065f46"
+                >
+                  <i data-lucide="download" class="w-3 h-3 inline mr-1"></i
+                  >CSV出力
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>日付</th>
+                      <th>車番</th>
+                      <th>入口IC</th>
+                      <th>出口IC</th>
+                      <th class="text-right">料金(円)</th>
+                      <th>時間帯割引</th>
+                      <th>ドライバー</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>2026/03/10</td>
+                      <td>品川100あ1234</td>
+                      <td>用賀</td>
+                      <td>浜松西</td>
+                      <td class="text-right font-medium">7,320</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>佐藤 健一</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/10</td>
+                      <td>足立200か5678</td>
+                      <td>川口JCT</td>
+                      <td>宇都宮</td>
+                      <td class="text-right font-medium">3,880</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-gray"
+                          >なし</span
+                        >
+                      </td>
+                      <td>田中 誠</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/09</td>
+                      <td>練馬300さ9012</td>
+                      <td>練馬</td>
+                      <td>藤岡JCT</td>
+                      <td class="text-right font-medium">3,560</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-blue"
+                          >休日30%</span
+                        >
+                      </td>
+                      <td>鈴木 大輔</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/09</td>
+                      <td>横浜400た3456</td>
+                      <td>横浜町田</td>
+                      <td>御殿場</td>
+                      <td class="text-right font-medium">2,780</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>山田 太郎</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/09</td>
+                      <td>川崎500な7890</td>
+                      <td>東名川崎</td>
+                      <td>名古屋</td>
+                      <td class="text-right font-medium">8,120</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>高橋 裕也</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/08</td>
+                      <td>品川100あ1234</td>
+                      <td>浜松西</td>
+                      <td>用賀</td>
+                      <td class="text-right font-medium">7,320</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >平日朝夕50%</span
+                        >
+                      </td>
+                      <td>佐藤 健一</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/08</td>
+                      <td>足立200か5678</td>
+                      <td>宇都宮</td>
+                      <td>川口JCT</td>
+                      <td class="text-right font-medium">3,880</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >平日朝夕50%</span
+                        >
+                      </td>
+                      <td>田中 誠</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/08</td>
+                      <td>練馬300さ9012</td>
+                      <td>藤岡JCT</td>
+                      <td>新潟中央</td>
+                      <td class="text-right font-medium">5,440</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-gray"
+                          >なし</span
+                        >
+                      </td>
+                      <td>鈴木 大輔</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/07</td>
+                      <td>横浜400た3456</td>
+                      <td>御殿場</td>
+                      <td>横浜町田</td>
+                      <td class="text-right font-medium">2,780</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-gray"
+                          >なし</span
+                        >
+                      </td>
+                      <td>山田 太郎</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/07</td>
+                      <td>川崎500な7890</td>
+                      <td>名古屋</td>
+                      <td>東名川崎</td>
+                      <td class="text-right font-medium">8,120</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >平日朝夕50%</span
+                        >
+                      </td>
+                      <td>高橋 裕也</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/06</td>
+                      <td>品川100あ1234</td>
+                      <td>用賀</td>
+                      <td>静岡</td>
+                      <td class="text-right font-medium">5,280</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>佐藤 健一</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/06</td>
+                      <td>足立200か5678</td>
+                      <td>川口JCT</td>
+                      <td>前橋</td>
+                      <td class="text-right font-medium">3,120</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-gray"
+                          >なし</span
+                        >
+                      </td>
+                      <td>田中 誠</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/05</td>
+                      <td>練馬300さ9012</td>
+                      <td>練馬</td>
+                      <td>長野</td>
+                      <td class="text-right font-medium">4,960</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>鈴木 大輔</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/05</td>
+                      <td>横浜400た3456</td>
+                      <td>横浜町田</td>
+                      <td>沼津</td>
+                      <td class="text-right font-medium">2,340</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >平日朝夕50%</span
+                        >
+                      </td>
+                      <td>山田 太郎</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/04</td>
+                      <td>川崎500な7890</td>
+                      <td>東名川崎</td>
+                      <td>浜松西</td>
+                      <td class="text-right font-medium">6,480</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >深夜30%</span
+                        >
+                      </td>
+                      <td>高橋 裕也</td>
+                    </tr>
+                    <tr>
+                      <td>2026/03/03</td>
+                      <td>品川100あ1234</td>
+                      <td>静岡</td>
+                      <td>用賀</td>
+                      <td class="text-right font-medium">5,280</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-gray"
+                          >なし</span
+                        >
+                      </td>
+                      <td>佐藤 健一</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
+            <!-- Highway Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  ルート別高速料金
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="hwRouteChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月別高速代推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="hwMonthlyChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [41, 43, 80, 58, 44, 43, 27, 78, 83, 48, 53, 50], "borderColor": "#065f46", "tension": 0.4, "pointRadius": 4, "pointBackgroundColor": "#065f46"}, {"label": "予測", "data": [41, 43, 80, 58, 44, 43, 27, 78, null, null, null, null], "borderColor": "#d1d5db", "borderDash": [5, 5], "tension": 0.4, "pointRadius": 0}, {"label": "目標", "data": [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60], "borderColor": "#f59e0b", "borderDash": [2, 4], "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+          <!-- ==================== PAGE 4: Vehicle Cost ==================== -->
+          <div id="page-vehicle-cost" class="page">
+            <!-- Vehicle Cost Table -->
+            <div class="card overflow-hidden mb-5">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  車両別コスト一覧（2026年3月）
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>車番</th>
+                      <th>車種</th>
+                      <th class="text-right">燃料費</th>
+                      <th class="text-right">高速代</th>
+                      <th class="text-right">修繕費</th>
+                      <th class="text-right">タイヤ代</th>
+                      <th class="text-right">合計</th>
+                      <th class="text-right">km単価</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">品川100あ1234</td>
+                      <td>日野 プロフィア</td>
+                      <td class="text-right">624,300</td>
+                      <td class="text-right">352,800</td>
+                      <td class="text-right">45,000</td>
+                      <td class="text-right">28,000</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        1,050,100
+                      </td>
+                      <td class="text-right">58.9</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">足立200か5678</td>
+                      <td>いすゞ ギガ</td>
+                      <td class="text-right">658,400</td>
+                      <td class="text-right">298,600</td>
+                      <td class="text-right">62,000</td>
+                      <td class="text-right">0</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        1,019,000
+                      </td>
+                      <td class="text-right">62.3</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">練馬300さ9012</td>
+                      <td>三菱ふそう スーパーグレート</td>
+                      <td class="text-right">578,200</td>
+                      <td class="text-right">312,400</td>
+                      <td class="text-right">0</td>
+                      <td class="text-right">35,000</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        925,600
+                      </td>
+                      <td class="text-right">55.1</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">横浜400た3456</td>
+                      <td>UDトラックス クオン</td>
+                      <td class="text-right">712,500</td>
+                      <td class="text-right">268,200</td>
+                      <td class="text-right">85,000</td>
+                      <td class="text-right">42,000</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        1,107,700
+                      </td>
+                      <td class="text-right">68.4</td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">川崎500な7890</td>
+                      <td>日野 レンジャー</td>
+                      <td class="text-right">598,600</td>
+                      <td class="text-right">342,200</td>
+                      <td class="text-right">32,000</td>
+                      <td class="text-right">0</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        972,800
+                      </td>
+                      <td class="text-right">54.6</td>
+                    </tr>
+                    <tr class="border-t-2">
+                      <td class="font-bold" colspan="2">合計</td>
+                      <td class="text-right font-bold">3,172,000</td>
+                      <td class="text-right font-bold">1,574,200</td>
+                      <td class="text-right font-bold">224,000</td>
+                      <td class="text-right font-bold">105,000</td>
+                      <td class="text-right font-bold" style="color: #065f46">
+                        5,075,200
+                      </td>
+                      <td class="text-right font-bold">59.8</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Vehicle Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  車両別コスト比較
+                </h3>
+                <div style="height: 320px">
+                  <canvas id="vcCompare"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  コスト構成比
+                </h3>
+                <div style="height: 320px"><canvas id="vcPie"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 5: Driver Cost ==================== -->
+          <div id="page-driver-cost" class="page">
+            <!-- Driver Ranking Table -->
+            <div class="card overflow-hidden mb-5">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  ドライバー別パフォーマンス（2026年3月）
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>順位</th>
+                      <th>ドライバー名</th>
+                      <th class="text-right">走行距離(km)</th>
+                      <th class="text-right">燃料費(円)</th>
+                      <th class="text-right">高速代(円)</th>
+                      <th class="text-right">燃費(km/L)</th>
+                      <th>エコドライブスコア</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span
+                          class="inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              #f59e0b,
+                              #d97706
+                            );
+                          "
+                          >1</span
+                        >
+                      </td>
+                      <td class="font-medium">鈴木 大輔</td>
+                      <td class="text-right">16,820</td>
+                      <td class="text-right">578,200</td>
+                      <td class="text-right">312,400</td>
+                      <td class="text-right">
+                        <span class="font-bold text-emerald-600">4.53</span>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 92%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold text-emerald-600"
+                            >92</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          class="inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              #9ca3af,
+                              #6b7280
+                            );
+                          "
+                          >2</span
+                        >
+                      </td>
+                      <td class="font-medium">佐藤 健一</td>
+                      <td class="text-right">17,850</td>
+                      <td class="text-right">624,300</td>
+                      <td class="text-right">352,800</td>
+                      <td class="text-right">
+                        <span class="font-bold text-emerald-600">4.45</span>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 88%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold text-emerald-600"
+                            >88</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          class="inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                          style="
+                            background: linear-gradient(
+                              135deg,
+                              #d97706,
+                              #92400e
+                            );
+                          "
+                          >3</span
+                        >
+                      </td>
+                      <td class="font-medium">高橋 裕也</td>
+                      <td class="text-right">17,860</td>
+                      <td class="text-right">598,600</td>
+                      <td class="text-right">342,200</td>
+                      <td class="text-right">
+                        <span class="font-bold text-emerald-600">4.40</span>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 85%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold text-emerald-600"
+                            >85</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          class="inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] font-bold bg-gray-200 text-gray-600"
+                          >4</span
+                        >
+                      </td>
+                      <td class="font-medium">田中 誠</td>
+                      <td class="text-right">16,430</td>
+                      <td class="text-right">658,400</td>
+                      <td class="text-right">298,600</td>
+                      <td class="text-right">
+                        <span class="font-bold text-amber-600">3.90</span>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 74%; background: #f59e0b"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold text-amber-600"
+                            >74</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span
+                          class="inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] font-bold bg-gray-200 text-gray-600"
+                          >5</span
+                        >
+                      </td>
+                      <td class="font-medium">山田 太郎</td>
+                      <td class="text-right">16,180</td>
+                      <td class="text-right">712,500</td>
+                      <td class="text-right">268,200</td>
+                      <td class="text-right">
+                        <span class="font-bold text-red-500">3.73</span>
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 62%; background: #ef4444"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold text-red-500"
+                            >62</span
+                          >
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Driver Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  エコドライブスコア推移
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="dcEcoChart"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  ドライバー別コスト内訳
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="dcCostChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 6: Budget ==================== -->
+          <div id="page-budget" class="page">
+            <!-- Budget vs Actual Table -->
+            <div class="card overflow-hidden mb-5">
+              <div class="p-4 border-b flex items-center justify-between">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  予算vs実績（2026年3月）
+                </h3>
+                <span
+                  class="text-[11px] px-2.5 py-1 rounded-full badge-amber font-medium"
+                  >月中間時点</span
+                >
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>科目</th>
+                      <th class="text-right">予算額(円)</th>
+                      <th class="text-right">実績額(円)</th>
+                      <th class="text-right">差異(円)</th>
+                      <th>達成率</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">
+                        <span
+                          class="inline-block w-3 h-3 rounded-sm mr-2"
+                          style="background: #065f46"
+                        ></span
+                        >燃料費
+                      </td>
+                      <td class="text-right">3,200,000</td>
+                      <td class="text-right">2,874,000</td>
+                      <td class="text-right text-emerald-600">-326,000</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 89.8%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-medium">89.8%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">
+                        <span
+                          class="inline-block w-3 h-3 rounded-sm mr-2"
+                          style="background: #10b981"
+                        ></span
+                        >高速代
+                      </td>
+                      <td class="text-right">1,500,000</td>
+                      <td class="text-right">1,428,200</td>
+                      <td class="text-right text-emerald-600">-71,800</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 95.2%; background: #f59e0b"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-medium">95.2%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">
+                        <span
+                          class="inline-block w-3 h-3 rounded-sm mr-2"
+                          style="background: #3b82f6"
+                        ></span
+                        >修繕費
+                      </td>
+                      <td class="text-right">350,000</td>
+                      <td class="text-right">224,000</td>
+                      <td class="text-right text-emerald-600">-126,000</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 64%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-medium">64.0%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">
+                        <span
+                          class="inline-block w-3 h-3 rounded-sm mr-2"
+                          style="background: #8b5cf6"
+                        ></span
+                        >保険料
+                      </td>
+                      <td class="text-right">480,000</td>
+                      <td class="text-right">480,000</td>
+                      <td class="text-right text-gray-400">0</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 100%; background: #ef4444"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-medium">100%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">
+                        <span
+                          class="inline-block w-3 h-3 rounded-sm mr-2"
+                          style="background: #f59e0b"
+                        ></span
+                        >税金
+                      </td>
+                      <td class="text-right">320,000</td>
+                      <td class="text-right">320,000</td>
+                      <td class="text-right text-gray-400">0</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 100%; background: #ef4444"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-medium">100%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="border-t-2">
+                      <td class="font-bold">合計</td>
+                      <td class="text-right font-bold">5,850,000</td>
+                      <td class="text-right font-bold">5,326,200</td>
+                      <td class="text-right font-bold text-emerald-600">
+                        -523,800
+                      </td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <div class="progress-bar flex-1">
+                            <div
+                              class="fill"
+                              style="width: 91%; background: #10b981"
+                            ></div>
+                          </div>
+                          <span class="text-[12px] font-bold">91.0%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Budget Chart -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                予算消化推移
+              </h3>
+              <div style="height: 300px">
+                <canvas id="budgetTrend"></canvas>
+              </div>
+            </div>
+
+            <!-- Annual Forecast -->
+            <div class="card overflow-hidden">
+              <div class="p-4 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  年間予測（2026年度）
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>月</th>
+                      <th class="text-right">燃料費</th>
+                      <th class="text-right">高速代</th>
+                      <th class="text-right">修繕費</th>
+                      <th class="text-right">保険・税金</th>
+                      <th class="text-right">合計</th>
+                      <th>予算対比</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">1月</td>
+                      <td class="text-right">2,980,000</td>
+                      <td class="text-right">1,380,000</td>
+                      <td class="text-right">180,000</td>
+                      <td class="text-right">800,000</td>
+                      <td class="text-right font-bold">5,340,000</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >予算内</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">2月</td>
+                      <td class="text-right">2,784,000</td>
+                      <td class="text-right">1,454,000</td>
+                      <td class="text-right">310,000</td>
+                      <td class="text-right">800,000</td>
+                      <td class="text-right font-bold">5,348,000</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >予算内</span
+                        >
+                      </td>
+                    </tr>
+                    <tr style="background: #f0fdf4">
+                      <td class="font-medium">3月 (実績)</td>
+                      <td class="text-right">2,874,000</td>
+                      <td class="text-right">1,428,200</td>
+                      <td class="text-right">224,000</td>
+                      <td class="text-right">800,000</td>
+                      <td class="text-right font-bold">5,326,200</td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >予算内</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-gray-400">4月 (予測)</td>
+                      <td class="text-right text-gray-400">3,100,000</td>
+                      <td class="text-right text-gray-400">1,500,000</td>
+                      <td class="text-right text-gray-400">250,000</td>
+                      <td class="text-right text-gray-400">800,000</td>
+                      <td class="text-right font-bold text-gray-400">
+                        5,650,000
+                      </td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >注意</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-gray-400">5月 (予測)</td>
+                      <td class="text-right text-gray-400">3,050,000</td>
+                      <td class="text-right text-gray-400">1,480,000</td>
+                      <td class="text-right text-gray-400">200,000</td>
+                      <td class="text-right text-gray-400">800,000</td>
+                      <td class="text-right font-bold text-gray-400">
+                        5,530,000
+                      </td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                          >予算内</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium text-gray-400">6月 (予測)</td>
+                      <td class="text-right text-gray-400">3,200,000</td>
+                      <td class="text-right text-gray-400">1,520,000</td>
+                      <td class="text-right text-gray-400">320,000</td>
+                      <td class="text-right text-gray-400">800,000</td>
+                      <td class="text-right font-bold text-gray-400">
+                        5,840,000
+                      </td>
+                      <td>
+                        <span
+                          class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                          >注意</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== PAGE 7: Settings ==================== -->
+          <div id="page-settings" class="page">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <!-- Vehicle Master -->
+              <div class="card overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between">
+                  <h3
+                    class="font-semibold text-[13px] text-gray-700 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="truck"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i
+                    >車両マスタ
+                  </h3>
+                  <button
+                    class="py-1.5 px-3 text-[11px] rounded-lg text-white font-medium hover:opacity-90 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>追加
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>車番</th>
+                        <th>車種</th>
+                        <th>年式</th>
+                        <th>状態</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="font-medium">品川100あ1234</td>
+                        <td>日野 プロフィア</td>
+                        <td>2022</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >稼働中</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">足立200か5678</td>
+                        <td>いすゞ ギガ</td>
+                        <td>2021</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >稼働中</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">練馬300さ9012</td>
+                        <td>三菱ふそう スーパーグレート</td>
+                        <td>2023</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >稼働中</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">横浜400た3456</td>
+                        <td>UDトラックス クオン</td>
+                        <td>2020</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                            >車検中</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">川崎500な7890</td>
+                        <td>日野 レンジャー</td>
+                        <td>2023</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >稼働中</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- ETC Card Management -->
+              <div class="card overflow-hidden">
+                <div class="p-4 border-b flex items-center justify-between">
+                  <h3
+                    class="font-semibold text-[13px] text-gray-700 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="credit-card"
+                      class="w-4 h-4"
+                      style="color: #065f46"
+                    ></i
+                    >ETCカード管理
+                  </h3>
+                  <button
+                    class="py-1.5 px-3 text-[11px] rounded-lg text-white font-medium hover:opacity-90 cursor-pointer"
+                    style="background: #065f46"
+                  >
+                    <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>追加
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>カード番号</th>
+                        <th>紐付車両</th>
+                        <th>有効期限</th>
+                        <th>状態</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="font-medium">****-****-****-3201</td>
+                        <td>品川100あ1234</td>
+                        <td>2028/03</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >有効</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">****-****-****-4502</td>
+                        <td>足立200か5678</td>
+                        <td>2027/11</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >有効</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">****-****-****-6789</td>
+                        <td>練馬300さ9012</td>
+                        <td>2028/06</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >有効</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">****-****-****-1234</td>
+                        <td>横浜400た3456</td>
+                        <td>2026/09</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-amber"
+                            >更新予定</span
+                          >
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">****-****-****-5678</td>
+                        <td>川崎500な7890</td>
+                        <td>2028/01</td>
+                        <td>
+                          <span
+                            class="px-2 py-0.5 rounded-full text-[10px] font-medium badge-green"
+                            >有効</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Unit Price Master -->
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="tag"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >単価マスタ
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >軽油単価（円/L）</label
+                    >
+                    <input
+                      type="number"
+                      value="155"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                    <p class="text-[10px] text-gray-400 mt-1">
+                      最終更新: 2026/03/01
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >レギュラー単価（円/L）</label
+                    >
+                    <input
+                      type="number"
+                      value="168"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >高速割引率（ETC大口多頻度割引）</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value="30"
+                        class="flex-1 px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      />
+                      <span class="text-[13px] text-gray-500">%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >AdBlue単価（円/L）</label
+                    >
+                    <input
+                      type="number"
+                      value="85"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Budget Settings -->
+              <div class="card p-5">
+                <h3
+                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
+                >
+                  <i
+                    data-lucide="calculator"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i
+                  >月間予算設定
+                </h3>
+                <div class="space-y-4">
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >燃料費（円）</label
+                    >
+                    <input
+                      type="number"
+                      value="3200000"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >高速代（円）</label
+                    >
+                    <input
+                      type="number"
+                      value="1500000"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >修繕費（円）</label
+                    >
+                    <input
+                      type="number"
+                      value="350000"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[11px] font-medium text-gray-500 mb-1"
+                      >保険・税金（円）</label
+                    >
+                    <input
+                      type="number"
+                      value="800000"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div class="pt-2">
+                    <button
+                      class="w-full py-2.5 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
+                      style="background: #065f46"
+                    >
+                      <i data-lucide="save" class="w-4 h-4 inline mr-1"></i
+                      >設定を保存
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "燃料費・高速代の概要",
+        },
+        { id: "fuel", title: "給油記録", desc: "給油データの記録・管理" },
+        { id: "highway", title: "高速道路利用", desc: "ETC利用明細・割引分析" },
+        {
+          id: "vehicle-cost",
+          title: "車両別コスト",
+          desc: "車両ごとのコスト分析",
+        },
+        {
+          id: "driver-cost",
+          title: "ドライバー別分析",
+          desc: "ドライバー別パフォーマンス",
+        },
+        { id: "budget", title: "予算管理", desc: "予算vs実績・年間予測" },
+        { id: "settings", title: "設定", desc: "マスタデータ・各種設定" },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) {
+          el.classList.add("active");
+        }
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+
+      // Fuel table filter
+      function filterFuelTable() {
+        const v = document.getElementById("fuelFilterVehicle").value;
+        const d = document.getElementById("fuelFilterDriver").value;
+        const rows = document.querySelectorAll("#fuelTable tbody tr");
+        rows.forEach((r) => {
+          const cells = r.querySelectorAll("td");
+          const vMatch = !v || cells[1].textContent === v;
+          const dMatch = !d || cells[2].textContent === d;
+          r.style.display = vMatch && dMatch ? "" : "none";
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        initCharts();
+      });
+
+      function initCharts() {
+        const fontOpts = { family: "'Inter','Noto Sans JP',sans-serif" };
+        const gridColor = "#f3f4f6";
+        const primary = "#065f46";
+        const secondary = "#10b981";
+
+        // ===== Dashboard: Monthly Cost Trend (stacked bar) =====
+        charts.push(
+          new Chart(document.getElementById("dashCostTrend"), {
+            type: "bar",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "燃料費",
+                  data: [310, 295, 320, 298, 278, 287],
+                  backgroundColor: primary,
+                  borderRadius: 4,
+                },
+                {
+                  label: "高速代",
+                  data: [148, 155, 162, 138, 145, 143],
+                  backgroundColor: secondary,
+                  borderRadius: 4,
+                },
+                {
+                  label: "その他",
+                  data: [52, 48, 65, 53, 58, 55],
+                  backgroundColor: "#93c5fd",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      ctx.dataset.label + ": " + ctx.parsed.y + "万円",
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  stacked: true,
+                  grid: { display: false },
+                  ticks: { font: { size: 11 } },
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Dashboard: Vehicle Fuel Efficiency Ranking (horizontal bar) =====
+        charts.push(
+          new Chart(document.getElementById("dashFuelRank"), {
+            type: "bar",
+            data: {
+              labels: [
+                "練馬300さ9012",
+                "品川100あ1234",
+                "川崎500な7890",
+                "足立200か5678",
+                "横浜400た3456",
+              ],
+              datasets: [
+                {
+                  label: "燃費(km/L)",
+                  data: [4.53, 4.45, 4.4, 3.9, 3.73],
+                  backgroundColor: [
+                    secondary,
+                    secondary,
+                    secondary,
+                    "#f59e0b",
+                    "#ef4444",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: { label: (ctx) => ctx.parsed.x + " km/L" },
+                },
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  max: 5.5,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + " km/L" },
+                },
+                y: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10, ...fontOpts } },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Highway: Route-based toll chart (bar) =====
+        charts.push(
+          new Chart(document.getElementById("hwRouteChart"), {
+            type: "bar",
+            data: {
+              labels: [
+                "東名(用賀-浜松西)",
+                "関越(練馬-藤岡)",
+                "東北(川口-宇都宮)",
+                "東名(川崎-名古屋)",
+                "中央(練馬-長野)",
+                "東名(横浜町田-御殿場)",
+              ],
+              datasets: [
+                {
+                  label: "平均料金(円)",
+                  data: [7320, 3560, 3880, 8120, 4960, 2780],
+                  backgroundColor: [
+                    primary,
+                    secondary,
+                    "#3b82f6",
+                    "#8b5cf6",
+                    "#f59e0b",
+                    "#ec4899",
+                  ],
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => ctx.parsed.y.toLocaleString() + "円",
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 9, ...fontOpts }, maxRotation: 45 },
+                },
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: {
+                    font: { size: 11 },
+                    callback: (v) => v.toLocaleString() + "円",
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Highway: Monthly toll trend (line) =====
+        charts.push(
+          new Chart(document.getElementById("hwMonthlyChart"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "高速代合計",
+                  data: [148, 155, 162, 138, 145, 143],
+                  borderColor: primary,
+                  backgroundColor: primary + "20",
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 5,
+                  pointBackgroundColor: primary,
+                },
+                {
+                  label: "割引適用額",
+                  data: [42, 48, 52, 44, 46, 45],
+                  borderColor: secondary,
+                  borderDash: [5, 5],
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: secondary,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      ctx.dataset.label + ": " + ctx.parsed.y + "万円",
+                  },
+                },
+              },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Vehicle Cost: Grouped bar comparison =====
+        charts.push(
+          new Chart(document.getElementById("vcCompare"), {
+            type: "bar",
+            data: {
+              labels: [
+                "品川100あ",
+                "足立200か",
+                "練馬300さ",
+                "横浜400た",
+                "川崎500な",
+              ],
+              datasets: [
+                {
+                  label: "燃料費",
+                  data: [62.4, 65.8, 57.8, 71.3, 59.9],
+                  backgroundColor: primary,
+                  borderRadius: 4,
+                },
+                {
+                  label: "高速代",
+                  data: [35.3, 29.9, 31.2, 26.8, 34.2],
+                  backgroundColor: secondary,
+                  borderRadius: 4,
+                },
+                {
+                  label: "修繕費",
+                  data: [4.5, 6.2, 0, 8.5, 3.2],
+                  backgroundColor: "#3b82f6",
+                  borderRadius: 4,
+                },
+                {
+                  label: "タイヤ代",
+                  data: [2.8, 0, 3.5, 4.2, 0],
+                  backgroundColor: "#f59e0b",
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      ctx.dataset.label + ": " + ctx.parsed.y + "万円",
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10, ...fontOpts } },
+                },
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Vehicle Cost: Pie chart =====
+        charts.push(
+          new Chart(document.getElementById("vcPie"), {
+            type: "doughnut",
+            data: {
+              labels: ["燃料費", "高速代", "修繕費", "タイヤ代"],
+              datasets: [
+                {
+                  data: [3172000, 1574200, 224000, 105000],
+                  backgroundColor: [primary, secondary, "#3b82f6", "#f59e0b"],
+                  borderWidth: 0,
+                  hoverOffset: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => {
+                      const v = ctx.parsed;
+                      const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                      return (
+                        ctx.label +
+                        ": " +
+                        v.toLocaleString() +
+                        "円 (" +
+                        ((v / t) * 100).toFixed(1) +
+                        "%)"
+                      );
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Driver: Eco-driving score trend (line) =====
+        charts.push(
+          new Chart(document.getElementById("dcEcoChart"), {
+            type: "line",
+            data: {
+              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              datasets: [
+                {
+                  label: "鈴木 大輔",
+                  data: [85, 87, 88, 90, 91, 92],
+                  borderColor: primary,
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: primary,
+                },
+                {
+                  label: "佐藤 健一",
+                  data: [80, 82, 84, 85, 87, 88],
+                  borderColor: secondary,
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: secondary,
+                },
+                {
+                  label: "高橋 裕也",
+                  data: [78, 80, 81, 82, 84, 85],
+                  borderColor: "#3b82f6",
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#3b82f6",
+                },
+                {
+                  label: "田中 誠",
+                  data: [68, 70, 71, 72, 73, 74],
+                  borderColor: "#f59e0b",
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#f59e0b",
+                },
+                {
+                  label: "山田 太郎",
+                  data: [55, 57, 58, 60, 61, 62],
+                  borderColor: "#ef4444",
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: "#ef4444",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 10,
+                  },
+                },
+              },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: {
+                  min: 40,
+                  max: 100,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "点" },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Driver: Cost breakdown horizontal stacked bar =====
+        charts.push(
+          new Chart(document.getElementById("dcCostChart"), {
+            type: "bar",
+            data: {
+              labels: ["鈴木", "佐藤", "高橋", "田中", "山田"],
+              datasets: [
+                {
+                  label: "燃料費",
+                  data: [57.8, 62.4, 59.9, 65.8, 71.3],
+                  backgroundColor: primary,
+                  borderRadius: 4,
+                },
+                {
+                  label: "高速代",
+                  data: [31.2, 35.3, 34.2, 29.9, 26.8],
+                  backgroundColor: secondary,
+                  borderRadius: 4,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      ctx.dataset.label + ": " + ctx.parsed.x + "万円",
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  stacked: true,
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+                },
+                y: {
+                  stacked: true,
+                  grid: { display: false },
+                  ticks: { font: { size: 11, ...fontOpts } },
+                },
+              },
+            },
+          }),
+        );
+
+        // ===== Budget: Consumption trend (line with threshold) =====
+        charts.push(
+          new Chart(document.getElementById("budgetTrend"), {
+            type: "line",
+            data: {
+              labels: [
+                "4月",
+                "5月",
+                "6月",
+                "7月",
+                "8月",
+                "9月",
+                "10月",
+                "11月",
+                "12月",
+                "1月",
+                "2月",
+                "3月",
+              ],
+              datasets: [
+                {
+                  label: "累計実績",
+                  data: [
+                    5.2, 10.8, 16.5, 22.1, 27.4, 33.0, 38.1, 43.6, 49.8, 55.1,
+                    60.4, 65.7,
+                  ],
+                  borderColor: primary,
+                  backgroundColor: primary + "15",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 4,
+                  pointBackgroundColor: primary,
+                },
+                {
+                  label: "累計予算",
+                  data: [
+                    5.9, 11.8, 17.7, 23.6, 29.5, 35.4, 41.3, 47.2, 53.1, 59.0,
+                    64.9, 70.2,
+                  ],
+                  borderColor: "#ef4444",
+                  borderDash: [6, 4],
+                  tension: 0.3,
+                  pointRadius: 0,
+                  fill: false,
+                },
+                {
+                  label: "前年実績",
+                  data: [
+                    5.5, 11.2, 17.0, 22.8, 28.5, 34.1, 39.8, 45.2, 51.0, 56.8,
+                    62.5, 68.0,
+                  ],
+                  borderColor: "#9ca3af",
+                  borderDash: [3, 3],
+                  tension: 0.3,
+                  pointRadius: 0,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    font: { size: 11, ...fontOpts },
+                    usePointStyle: true,
+                    padding: 14,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) =>
+                      ctx.dataset.label + ": " + ctx.parsed.y + "百万円",
+                  },
+                },
+              },
+              scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridColor },
+                  ticks: { font: { size: 11 }, callback: (v) => v + "百万" },
+                },
+              },
+            },
+          }),
+        );
+      }
+    </script>
+  </body>
+</html>
