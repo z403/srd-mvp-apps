@@ -1,105 +1,3230 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>在庫管理の不正確さ | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>在庫管理の不正確さ | 製造業 | SRD MVP Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .sb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .tab-a {
+        border-bottom: 2px solid #7c2d12;
+        color: #7c2d12;
+        font-weight: 600;
+      }
+      .tab-i {
+        border-bottom: 2px solid transparent;
+        color: #9ca3af;
+      }
+      .tab-b {
+        cursor: pointer;
+        transition: all 0.15s;
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+      .loc-cell {
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #4a2010"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0"
+            >
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">StockPrecision</p>
+              <p class="text-[11px] opacity-50 truncate">
+                在庫精度管理システム
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('dashboard')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span>ダッシュボード</span></a
+          >
+          <a
+            data-page="inout"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('inout')"
+          >
+            <i
+              data-lucide="arrow-left-right"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span>入出庫管理</span></a
+          >
+          <a
+            data-page="stock"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('stock')"
+          >
+            <i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>在庫一覧</span></a
+          >
+          <a
+            data-page="count"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('count')"
+          >
+            <i
+              data-lucide="clipboard-check"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span>棚卸管理</span></a
+          >
+          <a
+            data-page="order"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('order')"
+          >
+            <i
+              data-lucide="shopping-cart"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span>発注・仕入</span></a
+          >
+          <a
+            data-page="production"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('production')"
+          >
+            <i data-lucide="factory" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>生産連携</span></a
+          >
+          <a
+            data-page="analysis"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('analysis')"
+          >
+            <i data-lucide="bar-chart-2" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>分析・レポート</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              倉
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">倉田 主任</p>
+              <p class="text-[10px] opacity-40">kurata@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">在庫管理の不正確さ</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="package" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">在庫管理</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="panel-left" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="layout-list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">サマリー</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <!-- Main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              在庫精度・入出庫・棚卸差異の全体状況
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-orange-50 text-orange-700"
+              >第1倉庫</span
+            >
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-amber-50 text-amber-700"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">トレンドとアラート</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">管理品目数</span><i data-lucide="package" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">1614品</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">在庫金額</span><i data-lucide="database" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">3941万円</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">発注点割れ</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">6品</div><div class="text-[11px] mt-2 text-red-500">↓ -1</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">回転率</span><i data-lucide="refresh-cw" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">12回</div><div class="text-[11px] mt-2 text-emerald-600">↑ +2</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次在庫管理推移</h3><div style="height:300px"><canvas id="dC1"></canvas></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">在庫管理種別構成</h3><div style="height:200px"><canvas id="dC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別在庫管理比較</h3><div style="height:200px"><canvas id="dC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">アラート</h3><div class="space-y-2"><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">佐藤工場長 — の発注を実行</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">田中製造課長 — の出庫を処理</span></div><div class="flex items-center gap-2 p-2 rounded-lg bg-amber-50"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i><span class="text-[12px] text-amber-700">鈴木品質管理 — の出庫を処理</span></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="invSearch" type="text" placeholder="品目を検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>入荷登録</button></div><div id="invGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-856"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-856</p></div><div class="text-2xl font-bold text-gray-800">159<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 47個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-320"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-320</p></div><div class="text-2xl font-bold text-gray-800">58<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 15個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-481"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-481</p></div><div class="text-2xl font-bold text-gray-800">174<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 26個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-749"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-749</p></div><div class="text-2xl font-bold text-gray-800">49<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:74%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 22個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-408"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-408</p></div><div class="text-2xl font-bold text-gray-800">50<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:83%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 20個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-553"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-553</p><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">低在庫</span></div><div class="text-2xl font-bold text-gray-800">5<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-red-500" style="width:14%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 12個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-808"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-808</p></div><div class="text-2xl font-bold text-gray-800">87<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 28個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-445"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-445</p></div><div class="text-2xl font-bold text-gray-800">51<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:94%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 18個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-244"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-244</p></div><div class="text-2xl font-bold text-gray-800">186<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 35個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-114"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-114</p><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">低在庫</span></div><div class="text-2xl font-bold text-gray-800">5<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-red-500" style="width:14%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 12個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-408"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-408</p></div><div class="text-2xl font-bold text-gray-800">196<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-emerald-500" style="width:100%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 35個</p></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" data-search="品目-427"><div class="flex items-center justify-between mb-3"><p class="text-[13px] font-medium text-gray-700">品目-427</p><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">低在庫</span></div><div class="text-2xl font-bold text-gray-800">35<span class="text-[12px] font-normal text-gray-400 ml-1">個</span></div><div class="w-full bg-gray-100 rounded-full h-1.5 mt-3"><div class="h-1.5 rounded-full bg-red-500" style="width:25%"></div></div><p class="text-[11px] text-gray-400 mt-1.5">発注点: 47個</p></div></div></div>
-<div id="page-data" class="page"><div class="grid grid-cols-1 lg:grid-cols-5 gap-0 card overflow-hidden" style="height:calc(100vh - 180px)"><div class="lg:col-span-2 border-r overflow-y-auto"><div class="p-3 border-b"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="splitSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div id="splitList"><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors border-l-2" style="border-left-color:#7c2d12" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400">#9558 · 2026/02/16</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400">#9065 · 2026/01/28</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">鈴木品質管理</p><p class="text-[11px] text-gray-400">#2636 · 2026/02/01</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">停止中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">山田生産管理</p><p class="text-[11px] text-gray-400">#4489 · 2026/02/05</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">生産中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">高橋設備保全</p><p class="text-[11px] text-gray-400">#4615 · 2026/02/08</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">検査中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">伊藤購買担当</p><p class="text-[11px] text-gray-400">#6745 · 2026/02/11</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">渡辺設計者</p><p class="text-[11px] text-gray-400">#8536 · 2026/01/20</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">中村品質検査員</p><p class="text-[11px] text-gray-400">#7290 · 2026/02/14</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">小林ライン長</p><p class="text-[11px] text-gray-400">#4942 · 2026/02/04</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">加藤倉庫管理</p><p class="text-[11px] text-gray-400">#4246 · 2026/01/03</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">佐藤工場長</p><p class="text-[11px] text-gray-400">#9263 · 2026/01/10</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#7c2d12')"><div><p class="text-[13px] font-medium text-gray-700">田中製造課長</p><p class="text-[11px] text-gray-400">#3766 · 2026/03/10</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">停止中</span></div></div></div><div class="lg:col-span-3 overflow-y-auto"><div class="p-5"><div class="flex items-center gap-3 mb-6"><div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style="background:#7c2d12">佐</div><div><p class="text-[15px] font-bold text-gray-800">佐藤工場長</p><p class="text-[12px] text-gray-400">#9558 · 製造2課</p></div></div><div class="grid grid-cols-2 gap-4"><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">ステータス</span><span class="text-[13px] font-medium">完了</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">金額</span><span class="text-[13px] font-medium" style="color:#7c2d12">18個</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">更新日</span><span class="text-[13px] font-medium">2026/02/16</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">部門</span><span class="text-[13px] font-medium">製造2課</span></div></div><div class="mt-5 pt-5 border-t"><h4 class="text-[13px] font-semibold text-gray-700 mb-3">アクティビティ</h4><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の発注を実行</p><p class="text-[11px] text-gray-400">42時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の出庫を処理</p><p class="text-[11px] text-gray-400">36時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の出庫を処理</p><p class="text-[11px] text-gray-400">43時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の在庫を調整</p><p class="text-[11px] text-gray-400">30時間前</p></div></div></div></div></div></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-4xl"><div class="card p-6 mb-5"><div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold" style="background:#7c2d12">在</div><div><h2 class="text-[18px] font-bold text-gray-800">在庫管理の不正確さ</h2><p class="text-[13px] text-gray-400">製造業 · 倉庫・生産管理</p></div></div><div class="p-4 rounded-lg mb-5" style="background:#ffedd5"><p class="text-[13px]" style="color:#7c2d12">実在庫と帳簿の乖離が常態化。棚卸で差異数百万円</p></div><div class="grid grid-cols-2 md:grid-cols-4 gap-3"><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">1614品</div><div class="text-[11px] text-gray-400 mt-1">管理品目数</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">3941万円</div><div class="text-[11px] text-gray-400 mt-1">在庫金額</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">6品</div><div class="text-[11px] text-gray-400 mt-1">発注点割れ</div></div><div class="text-center p-3 rounded-lg bg-gray-50"><div class="text-[18px] font-bold" style="color:#7c2d12">12回</div><div class="text-[11px] text-gray-400 mt-1">回転率</div></div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">在庫管理の最新状況</h3><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> の発注を実行</p><p class="text-[11px] text-gray-400">42時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の出庫を処理</p><p class="text-[11px] text-gray-400">36時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> の出庫を処理</p><p class="text-[11px] text-gray-400">43時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> の在庫を調整</p><p class="text-[11px] text-gray-400">30時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> の出庫を処理</p><p class="text-[11px] text-gray-400">29時間前</p></div></div></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><div class="flex gap-2"><button class="text-[12px] px-3 py-1.5 rounded-lg text-white cursor-pointer transition-colors" style=background:#7c2d12>月次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >週次</button><button class="text-[12px] px-3 py-1.5 rounded-lg border text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors" >日次</button></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次在庫管理推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">在庫管理種別構成</h3><div style="height:240px"><canvas id="rpC2"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">部門別在庫管理比較</h3><div style="height:240px"><canvas id="rpC3"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">在庫管理管理指標</h3><div style="height:240px"><canvas id="rpC4"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== Dashboard ==================== -->
+          <div id="page-dashboard" class="page active">
+            <!-- Alert Banner -->
+            <div
+              class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-center gap-3"
+            >
+              <i
+                data-lucide="alert-triangle"
+                class="w-5 h-5 text-red-500 shrink-0"
+              ></i>
+              <div class="flex-1">
+                <p class="text-[13px] font-medium text-red-700">
+                  棚卸差異アラート: 3品目で帳簿乖離 ¥2,340,000 検出
+                </p>
+                <p class="text-[12px] text-red-600 mt-0.5">
+                  SUS304板材（-42個/¥1,260,000）、M10ボルトセット（+180個/¥540,000）、油圧シリンダー（-6個/¥540,000）
+                </p>
+              </div>
+              <button
+                class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-red-500"
+              >
+                差異調査
+              </button>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "トレンドとアラート"}, {"id": "feature", "title": "在庫管理", "desc": "在庫状況・発注"}, {"id": "data", "title": "データ一覧", "desc": "リスト・詳細表示"}, {"id": "detail", "title": "サマリー", "desc": "概要カード"}, {"id": "report", "title": "レポート", "desc": "分析・集計"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">在庫精度</span>
+                  <i
+                    data-lucide="target"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  96.8<span class="text-base">%</span>
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  ↑ 前月比+2.1pt（目標99%）
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">在庫総額</span>
+                  <i
+                    data-lucide="database"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-800">
+                  ¥1.84<span class="text-base">億</span>
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  2,847 SKU / 156,320個
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">棚卸差異額</span>
+                  <i
+                    data-lucide="alert-circle"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-red-600">
+                  ¥234<span class="text-base">万</span>
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  ↓ 前期¥580万 → 59.7%削減
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">在庫回転率</span>
+                  <i
+                    data-lucide="refresh-cw"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-blue-700">
+                  8.4<span class="text-base">回</span>
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  ↑ 前期7.2回 → +16.7%
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [27, 74, 76, 77, 24, 87, 61, 45, 50, 83, 86, 44], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "fill": true, "tension": 0.4, "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "doughnut", "data": {"labels": ["材料費", "加工費", "設備費", "人件費"], "datasets": [{"data": [33, 32, 36, 32], "backgroundColor": ["#7c2d12", "#ea580c", "#7c2d1260", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [27, 74, 76, 77, 24, 87], "backgroundColor": "#7c2d12", "borderRadius": 4}, {"label": "前期", "data": [35, 30, 40, 18, 37, 39], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- Before/After -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                導入効果 — 帳簿乖離の常態化からの脱却
+              </h3>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="bg-red-50/50 rounded-xl p-4 border border-red-100">
+                  <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
+                    <span class="text-[13px] font-semibold text-red-700"
+                      >Before: Excel + 紙台帳</span
+                    >
+                  </div>
+                  <div class="space-y-2 text-[12px] text-gray-600">
+                    <div class="flex justify-between">
+                      <span>在庫精度</span
+                      ><span class="font-medium text-red-600"
+                        >82.3%（常態的に乖離）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>棚卸差異</span
+                      ><span class="font-medium text-red-600">年間 ¥580万</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>棚卸作業</span
+                      ><span class="font-medium text-red-600"
+                        >年2回・3日間全員動員</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>欠品発生</span
+                      ><span class="font-medium text-red-600">月平均12件</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>差異原因</span
+                      ><span class="font-medium text-red-600"
+                        >不明（追跡不可能）</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100"
+                >
+                  <div class="flex items-center gap-2 mb-3">
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-4 h-4 text-emerald-500"
+                    ></i>
+                    <span class="text-[13px] font-semibold text-emerald-700"
+                      >After: StockPrecision導入</span
+                    >
+                  </div>
+                  <div class="space-y-2 text-[12px] text-gray-600">
+                    <div class="flex justify-between">
+                      <span>在庫精度</span
+                      ><span class="font-medium text-emerald-600"
+                        >96.8%（目標99%）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>棚卸差異</span
+                      ><span class="font-medium text-emerald-600"
+                        >¥234万（59.7%削減）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>棚卸作業</span
+                      ><span class="font-medium text-emerald-600"
+                        >循環棚卸・毎日30分</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>欠品発生</span
+                      ><span class="font-medium text-emerald-600"
+                        >月平均2件（83%削減）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>差異原因</span
+                      ><span class="font-medium text-emerald-600"
+                        >全件トレース可能</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// feature
-document.getElementById("invSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#invGrid [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+            <!-- Charts -->
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  在庫精度 推移（月次）
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dAccuracy"></canvas>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  在庫金額 カテゴリ別構成
+                </h3>
+                <div style="height: 260px">
+                  <canvas id="dCategory"></canvas>
+                </div>
+              </div>
+            </div>
 
-// data
+            <!-- Recent Activity -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                直近のアクティビティ
+              </h3>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-[11px] text-emerald-700 font-medium shrink-0"
+                  >
+                    入
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">入庫</span> SUS304板材 120枚 →
+                      <span class="loc-cell">A-03-02</span> に格納完了
+                    </p>
+                    <p class="text-[11px] text-gray-400">15分前 — 担当: 山本</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[11px] text-blue-700 font-medium shrink-0"
+                  >
+                    出
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">出庫</span> 油圧シリンダーφ50
+                      8本 → 製造2ラインへ払出
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      42分前 — 担当: 佐々木
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-[11px] text-amber-700 font-medium shrink-0"
+                  >
+                    棚
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">循環棚卸</span> B棟2列目 完了 —
+                      差異0件（32 SKU確認）
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      1時間前 — 担当: 倉田
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-[11px] text-red-700 font-medium shrink-0"
+                  >
+                    警
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">安全在庫割れ</span> M10×30ボルト
+                      残230個（安全在庫500個）→ 自動発注実行済
+                    </p>
+                    <p class="text-[11px] text-gray-400">
+                      2時間前 — システム自動
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function selectItem(el,color){document.querySelectorAll('#splitList > div').forEach(d=>{d.classList.remove('border-l-2');d.style.borderLeftColor=''});
-el.classList.add('border-l-2');el.style.borderLeftColor=color;}
+          <!-- ==================== 入出庫管理 ==================== -->
+          <div id="page-inout" class="page">
+            <div class="flex gap-0 border-b mb-5">
+              <button class="tab-b tab-a" onclick="switchInoutTab(0)">
+                入庫処理
+              </button>
+              <button class="tab-b tab-i" onclick="switchInoutTab(1)">
+                出庫処理
+              </button>
+              <button class="tab-b tab-i" onclick="switchInoutTab(2)">
+                入出庫履歴
+              </button>
+            </div>
 
+            <!-- Tab 0: Receiving -->
+            <div id="inoutTab0">
+              <!-- Receiving Form -->
+              <div class="card p-5 mb-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  入庫登録
+                </h3>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >発注番号</label
+                    >
+                    <input
+                      type="text"
+                      value="PO-2026-0184"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >仕入先</label
+                    >
+                    <input
+                      type="text"
+                      value="東京鋼材(株)"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-gray-50 focus:outline-none"
+                      readonly
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >入庫日</label
+                    >
+                    <input
+                      type="date"
+                      value="2026-03-10"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+                <div class="border rounded-lg overflow-hidden mb-4">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目コード
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目名
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          発注数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          入荷数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          格納先
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ロット
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          検品
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-t">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          MAT-SUS304-3
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          SUS304板材 t3.0 4×8
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          120
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            value="120"
+                            class="w-20 px-2 py-1 text-[13px] border rounded text-right focus:outline-none focus:ring-1 focus:ring-orange-200"
+                          />
+                        </td>
+                        <td class="px-4 py-2">
+                          <select
+                            class="text-[12px] border rounded px-2 py-1 bg-white"
+                          >
+                            <option>A-03-02</option>
+                            <option>A-03-03</option>
+                            <option>B-01-01</option>
+                          </select>
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-500"
+                        >
+                          LOT-240310-01
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-emerald-50 text-emerald-700"
+                            >合格</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          MAT-AL5052-2
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          A5052アルミ板 t2.0 4×8
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          80
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            value="78"
+                            class="w-20 px-2 py-1 text-[13px] border rounded text-right focus:outline-none focus:ring-1 focus:ring-orange-200"
+                          />
+                        </td>
+                        <td class="px-4 py-2">
+                          <select
+                            class="text-[12px] border rounded px-2 py-1 bg-white"
+                          >
+                            <option>A-04-01</option>
+                            <option>A-04-02</option>
+                          </select>
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-500"
+                        >
+                          LOT-240310-02
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-amber-50 text-amber-700"
+                            >数量差異 -2</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-[12px] text-gray-400">
+                    バーコード / QRスキャンで品目自動入力対応
+                  </p>
+                  <div class="flex gap-2">
+                    <button
+                      class="px-4 py-2 rounded-lg text-[13px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                    >
+                      一時保存
+                    </button>
+                    <button
+                      class="px-4 py-2 rounded-lg text-[13px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                      style="background: #7c2d12"
+                    >
+                      入庫確定
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [27, 74, 76, 77, 24, 87, 61, 45, 50, 83, 86, 44], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1215", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC2"),{"type": "doughnut", "data": {"labels": ["材料費", "加工費", "設備費", "人件費", "その他"], "datasets": [{"data": [33, 32, 36, 32, 31], "backgroundColor": ["#7c2d12", "#ea580c", "#7c2d1260", "#ea580c60", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("rpC3"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "今期", "data": [27, 74, 76, 77, 24, 87], "backgroundColor": "#7c2d12", "borderRadius": 4}, {"label": "前期", "data": [35, 30, 40, 18, 37, 39], "backgroundColor": "#e5e7eb", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
-charts.push(new Chart(document.getElementById("rpC4"),{"type": "radar", "data": {"labels": ["品質", "納期", "コスト", "安全", "生産性", "稼働率"], "datasets": [{"label": "スコア", "data": [35, 30, 40, 18, 37, 39], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1220", "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"r": {"beginAtZero": true, "grid": {"color": "#e5e7eb"}, "pointLabels": {"font": {"size": 11}}}}}}));
+            <!-- Tab 1: Shipping -->
+            <div id="inoutTab1" style="display: none">
+              <div class="card p-5 mb-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  出庫処理（ピッキング指示）
+                </h3>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >出庫指示番号</label
+                    >
+                    <input
+                      type="text"
+                      value="PICK-2026-0312"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-gray-50 focus:outline-none"
+                      readonly
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >出庫先</label
+                    >
+                    <select
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none"
+                    >
+                      <option>製造1ライン</option>
+                      <option>製造2ライン</option>
+                      <option>組立ライン</option>
+                      <option>出荷（顧客向け）</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
+                      >製造指図番号</label
+                    >
+                    <input
+                      type="text"
+                      value="MO-2026-0089"
+                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+                <div class="border rounded-lg overflow-hidden mb-4">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          指示数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ロケーション
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          在庫数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          ピック数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ステータス
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-t">
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          SUS304板材 t3.0
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-700"
+                        >
+                          24
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          A-03-02
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-500"
+                        >
+                          162
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            value="24"
+                            class="w-20 px-2 py-1 text-[13px] border rounded text-right focus:outline-none"
+                          />
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-emerald-50 text-emerald-700"
+                            >ピック済</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          M10×30六角ボルト
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-700"
+                        >
+                          96
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          C-12-05
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-500"
+                        >
+                          230
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            class="w-20 px-2 py-1 text-[13px] border rounded text-right focus:outline-none"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-amber-50 text-amber-700"
+                            >未ピック</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          油圧シリンダーφ50
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-700"
+                        >
+                          4
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          D-02-01
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-500"
+                        >
+                          18
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            class="w-20 px-2 py-1 text-[13px] border rounded text-right focus:outline-none"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-gray-100 text-gray-600"
+                            >未着手</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex justify-end gap-2">
+                  <button
+                    class="px-4 py-2 rounded-lg text-[13px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                    style="background: #7c2d12"
+                  >
+                    出庫確定
+                  </button>
+                </div>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- Tab 2: History -->
+            <div id="inoutTab2" style="display: none">
+              <div class="card overflow-hidden">
+                <div
+                  class="px-5 py-3 border-b flex items-center justify-between"
+                >
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    入出庫履歴
+                  </h3>
+                  <div class="flex gap-2">
+                    <input
+                      type="date"
+                      class="text-[12px] border rounded-lg px-2 py-1 focus:outline-none"
+                      value="2026-03-01"
+                    />
+                    <span class="text-[12px] text-gray-400 self-center"
+                      >〜</span
+                    >
+                    <input
+                      type="date"
+                      class="text-[12px] border rounded-lg px-2 py-1 focus:outline-none"
+                      value="2026-03-10"
+                    />
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50/80 border-b">
+                      <tr>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          日時
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          種別
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目
+                        </th>
+                        <th
+                          class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          数量
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ロケーション
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          相手先
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          担当
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          03/10 09:15
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="sb bg-emerald-50 text-emerald-700"
+                            >入庫</span
+                          >
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-700">
+                          SUS304板材 t3.0
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                        >
+                          +120
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[12px] loc-cell text-gray-500"
+                        >
+                          A-03-02
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          東京鋼材(株)
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          山本
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          03/10 08:40
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="sb bg-blue-50 text-blue-700">出庫</span>
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-700">
+                          油圧シリンダーφ50
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[13px] text-right text-blue-700"
+                        >
+                          -8
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[12px] loc-cell text-gray-500"
+                        >
+                          D-02-01
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          製造2ライン
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          佐々木
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          03/09 16:20
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="sb bg-blue-50 text-blue-700">出庫</span>
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-700">
+                          A5052アルミ板 t2.0
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[13px] text-right text-blue-700"
+                        >
+                          -36
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[12px] loc-cell text-gray-500"
+                        >
+                          A-04-01
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          製造1ライン
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          倉田
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          03/09 14:00
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="sb bg-emerald-50 text-emerald-700"
+                            >入庫</span
+                          >
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-700">
+                          M10×30六角ボルト
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[13px] text-right text-emerald-600"
+                        >
+                          +500
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[12px] loc-cell text-gray-500"
+                        >
+                          C-12-05
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          大阪ネジ工業
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          山本
+                        </td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          03/09 10:30
+                        </td>
+                        <td class="px-4 py-3">
+                          <span class="sb bg-purple-50 text-purple-700"
+                            >移動</span
+                          >
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-700">
+                          ベアリング6205
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[13px] text-right text-gray-500"
+                        >
+                          50
+                        </td>
+                        <td
+                          class="px-4 py-3 text-[12px] loc-cell text-gray-500"
+                        >
+                          B-08-03→B-02-01
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          ロケ変更
+                        </td>
+                        <td class="px-4 py-3 text-[13px] text-gray-500">
+                          佐々木
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 在庫一覧 ==================== -->
+          <div id="page-stock" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="品目コード・品名・ロケーションで検索..."
+                    class="pl-10 pr-4 py-2 text-[13px] bg-white border rounded-lg w-[320px] focus:outline-none focus:ring-2 focus:ring-orange-100"
+                  />
+                </div>
+                <select
+                  class="text-[13px] border rounded-lg px-3 py-2 bg-white focus:outline-none"
+                >
+                  <option>全カテゴリ</option>
+                  <option>鋼材</option>
+                  <option>非鉄金属</option>
+                  <option>締結部品</option>
+                  <option>油圧部品</option>
+                  <option>電子部品</option>
+                  <option>消耗品</option>
+                </select>
+                <select
+                  class="text-[13px] border rounded-lg px-3 py-2 bg-white focus:outline-none"
+                >
+                  <option>全ステータス</option>
+                  <option>正常</option>
+                  <option>安全在庫割れ</option>
+                  <option>発注点以下</option>
+                  <option>過剰在庫</option>
+                </select>
+              </div>
+              <button
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>CSV出力
+              </button>
+            </div>
+
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        品目コード
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        品目名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        カテゴリ
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ロケーション
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        帳簿数量
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        安全在庫
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        発注点
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        在庫金額
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        MAT-SUS304-3
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        SUS304板材 t3.0 4×8
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">鋼材</td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        A-03-02
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        162
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        50
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        80
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥4,860,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >正常</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        MAT-AL5052-2
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        A5052アルミ板 t2.0 4×8
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        非鉄金属
+                      </td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        A-04-01
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        98
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        30
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        50
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥1,568,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >正常</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer bg-red-50/30"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        BLT-M10-30
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        M10×30六角ボルト
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        締結部品
+                      </td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        C-12-05
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-red-600 font-medium"
+                      >
+                        230
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        500
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        800
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥69,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-red-50 text-red-600"
+                          >安全在庫割れ</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        HYD-CYL-50
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        油圧シリンダーφ50×200
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        油圧部品
+                      </td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        D-02-01
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        18
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        5
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        10
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥1,620,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >正常</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer bg-amber-50/20"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        BRG-6205
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        ベアリング6205 ZZ
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        機械部品
+                      </td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        B-02-01
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-amber-600 font-medium"
+                      >
+                        842
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        100
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        200
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥1,263,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >過剰在庫</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-600">
+                        ELC-CAP-100
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        電解コンデンサ 100μF/50V
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        電子部品
+                      </td>
+                      <td class="px-4 py-3 text-[12px] loc-cell text-gray-500">
+                        E-01-12
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        3,200
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        1,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-400"
+                      >
+                        2,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥128,000
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >正常</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Location Map -->
+            <div class="card p-5 mt-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                倉庫レイアウト — 第1倉庫
+              </h3>
+              <div class="grid grid-cols-5 gap-2">
+                <div
+                  class="border-2 border-blue-200 rounded-lg p-3 bg-blue-50/30 text-center cursor-pointer hover:bg-blue-50 transition"
+                >
+                  <p class="text-[11px] font-bold text-blue-700">A列</p>
+                  <p class="text-[10px] text-gray-500">鋼材・板材</p>
+                  <p class="text-[13px] font-bold text-gray-700 mt-1">412個</p>
+                  <div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+                    <div
+                      class="h-1.5 rounded-full bg-blue-500"
+                      style="width: 68%"
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  class="border-2 border-emerald-200 rounded-lg p-3 bg-emerald-50/30 text-center cursor-pointer hover:bg-emerald-50 transition"
+                >
+                  <p class="text-[11px] font-bold text-emerald-700">B列</p>
+                  <p class="text-[10px] text-gray-500">機械部品</p>
+                  <p class="text-[13px] font-bold text-gray-700 mt-1">
+                    1,284個
+                  </p>
+                  <div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+                    <div
+                      class="h-1.5 rounded-full bg-emerald-500"
+                      style="width: 82%"
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  class="border-2 border-amber-200 rounded-lg p-3 bg-amber-50/30 text-center cursor-pointer hover:bg-amber-50 transition"
+                >
+                  <p class="text-[11px] font-bold text-amber-700">C列</p>
+                  <p class="text-[10px] text-gray-500">締結・小物</p>
+                  <p class="text-[13px] font-bold text-gray-700 mt-1">
+                    28,400個
+                  </p>
+                  <div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+                    <div
+                      class="h-1.5 rounded-full bg-amber-500"
+                      style="width: 45%"
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  class="border-2 border-purple-200 rounded-lg p-3 bg-purple-50/30 text-center cursor-pointer hover:bg-purple-50 transition"
+                >
+                  <p class="text-[11px] font-bold text-purple-700">D列</p>
+                  <p class="text-[10px] text-gray-500">油圧・空圧</p>
+                  <p class="text-[13px] font-bold text-gray-700 mt-1">86個</p>
+                  <div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+                    <div
+                      class="h-1.5 rounded-full bg-purple-500"
+                      style="width: 35%"
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  class="border-2 border-rose-200 rounded-lg p-3 bg-rose-50/30 text-center cursor-pointer hover:bg-rose-50 transition"
+                >
+                  <p class="text-[11px] font-bold text-rose-700">E列</p>
+                  <p class="text-[10px] text-gray-500">電子部品</p>
+                  <p class="text-[13px] font-bold text-gray-700 mt-1">
+                    126,138個
+                  </p>
+                  <div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+                    <div
+                      class="h-1.5 rounded-full bg-rose-500"
+                      style="width: 72%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 棚卸管理 ==================== -->
+          <div id="page-count" class="page">
+            <div class="flex gap-0 border-b mb-5">
+              <button class="tab-b tab-a" onclick="switchCountTab(0)">
+                循環棚卸
+              </button>
+              <button class="tab-b tab-i" onclick="switchCountTab(1)">
+                差異調査
+              </button>
+              <button class="tab-b tab-i" onclick="switchCountTab(2)">
+                棚卸履歴
+              </button>
+            </div>
+
+            <!-- Tab 0: Cycle Count -->
+            <div id="countTab0">
+              <div class="grid grid-cols-4 gap-4 mb-5">
+                <div class="card p-4">
+                  <span class="text-[12px] text-gray-500"
+                    >今月カウント進捗</span
+                  >
+                  <div class="text-xl font-bold text-gray-800 mt-1">
+                    68<span class="text-sm">%</span>
+                  </div>
+                  <div class="w-full h-2 bg-gray-100 rounded-full mt-2">
+                    <div
+                      class="h-2 rounded-full"
+                      style="width: 68%; background: #7c2d12"
+                    ></div>
+                  </div>
+                </div>
+                <div class="card p-4">
+                  <span class="text-[12px] text-gray-500">確認済SKU</span>
+                  <div class="text-xl font-bold text-emerald-600 mt-1">
+                    1,936<span class="text-sm">/2,847</span>
+                  </div>
+                </div>
+                <div class="card p-4">
+                  <span class="text-[12px] text-gray-500">差異検出</span>
+                  <div class="text-xl font-bold text-red-600 mt-1">
+                    14<span class="text-sm">件</span>
+                  </div>
+                </div>
+                <div class="card p-4">
+                  <span class="text-[12px] text-gray-500">差異金額</span>
+                  <div class="text-xl font-bold text-red-600 mt-1">
+                    ¥234<span class="text-sm">万</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Today's Count Plan -->
+              <div class="card p-5 mb-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-[13px] text-gray-700">
+                    本日のカウント予定 — 3月10日（C列 1-6棚）
+                  </h3>
+                  <button
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                    style="background: #7c2d12"
+                  >
+                    <i data-lucide="scan-line" class="w-3.5 h-3.5"></i
+                    >カウント開始
+                  </button>
+                </div>
+                <div class="border rounded-lg overflow-hidden">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          ロケーション
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          帳簿数量
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          実数量
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          差異
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          結果
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-t">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          C-01-01
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          M6×20六角ボルト
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          4,200
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            value="4200"
+                            class="w-24 px-2 py-1 text-[13px] border rounded text-right focus:outline-none focus:ring-1 focus:ring-orange-200"
+                          />
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-emerald-600 font-medium"
+                        >
+                          0
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-emerald-50 text-emerald-700"
+                            >一致</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t bg-red-50/20">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          C-02-03
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          M8×25六角ボルト
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          1,800
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            value="1720"
+                            class="w-24 px-2 py-1 text-[13px] border rounded text-right border-red-300 focus:outline-none focus:ring-1 focus:ring-red-200"
+                          />
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-600 font-medium"
+                        >
+                          -80
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-red-50 text-red-600"
+                            >差異あり</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          C-03-01
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          φ8×20スプリングピン
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          620
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            class="w-24 px-2 py-1 text-[13px] border rounded text-right focus:outline-none focus:ring-1 focus:ring-orange-200"
+                            placeholder="入力"
+                          />
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-400"
+                        >
+                          —
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-gray-100 text-gray-600"
+                            >未カウント</span
+                          >
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td
+                          class="px-4 py-2 text-[12px] loc-cell text-gray-600"
+                        >
+                          C-04-02
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          ワッシャーM10 平
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          5,600
+                        </td>
+                        <td class="px-4 py-2">
+                          <input
+                            type="number"
+                            class="w-24 px-2 py-1 text-[13px] border rounded text-right focus:outline-none focus:ring-1 focus:ring-orange-200"
+                            placeholder="入力"
+                          />
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-400"
+                        >
+                          —
+                        </td>
+                        <td class="px-4 py-2">
+                          <span class="sb bg-gray-100 text-gray-600"
+                            >未カウント</span
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 1: Discrepancy Investigation -->
+            <div id="countTab1" style="display: none">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  差異調査・原因分析
+                </h3>
+                <div class="space-y-4">
+                  <div
+                    class="border rounded-xl p-4 bg-red-50/20 border-red-100"
+                  >
+                    <div class="flex items-center justify-between mb-3">
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          SUS304板材 t3.0 — 帳簿204個 → 実数162個（<span
+                            class="text-red-600"
+                            >-42個 / ¥1,260,000</span
+                          >）
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                          検出日: 2026/03/08 — ロケーション: A-03-02
+                        </p>
+                      </div>
+                      <span class="sb bg-red-50 text-red-600">調査中</span>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 mt-2">
+                      <p class="text-[12px] font-medium text-gray-600 mb-2">
+                        原因分析（トレース結果）
+                      </p>
+                      <div class="space-y-1 text-[12px] text-gray-500">
+                        <p>
+                          1. 03/01 出庫伝票 PICK-0298: 出庫数24枚 →
+                          実際は36枚払出（端材含む未記録 +12枚）
+                        </p>
+                        <p>
+                          2. 03/04 出庫伝票 PICK-0305:
+                          製造ライン直接持出（伝票未起票 推定18枚）
+                        </p>
+                        <p>
+                          3. 02/28 入庫伝票 RCV-0412: 検品合格120枚 →
+                          12枚不良返品（返品伝票未起票）
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                          → 推定差異: -12 -18 -12 = -42枚 ✓ 帳簿差異と一致
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                        style="background: #7c2d12"
+                      >
+                        帳簿修正
+                      </button>
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        再カウント
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="border rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <p class="text-[13px] font-medium text-gray-700">
+                          M10ボルトセット — 帳簿1,620個 → 実数1,800個（<span
+                            class="text-amber-600"
+                            >+180個 / ¥540,000</span
+                          >）
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                          検出日: 2026/03/06 — ロケーション: C-12-05
+                        </p>
+                      </div>
+                      <span class="sb bg-amber-50 text-amber-700"
+                        >原因特定済</span
+                      >
+                    </div>
+                    <p class="text-[12px] text-gray-500 mt-2">
+                      原因: 03/09入庫 500個の入庫伝票が二重登録 → 取消済。残差異
+                      +180個は02/25の戻入未処理と判明。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: History -->
+            <div id="countTab2" style="display: none">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次棚卸精度推移
+                </h3>
+                <div style="height: 280px">
+                  <canvas id="countHistory"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 発注・仕入 ==================== -->
+          <div id="page-order" class="page">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">発注残</span>
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  18<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">入荷予定（今週）</span>
+                <div class="text-xl font-bold text-blue-700 mt-1">
+                  6<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">自動発注実行</span>
+                <div class="text-xl font-bold text-emerald-600 mt-1">
+                  3<span class="text-sm">件</span>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-1">
+                  発注点割れ自動検知
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">仕入金額（今月）</span>
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  ¥1,240<span class="text-sm">万</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auto-Order Alert -->
+            <div
+              class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center gap-3"
+            >
+              <i data-lucide="zap" class="w-5 h-5 text-blue-500 shrink-0"></i>
+              <div class="flex-1">
+                <p class="text-[13px] font-medium text-blue-700">
+                  自動発注: 3品目が発注点を割りました
+                </p>
+                <p class="text-[12px] text-blue-600 mt-0.5">
+                  M10×30六角ボルト（残230/発注点800）、切削油
+                  5L缶（残3/発注点10）、研磨紙#240（残45/発注点100）
+                </p>
+              </div>
+              <button
+                class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-blue-600"
+              >
+                発注承認
+              </button>
+            </div>
+
+            <!-- Purchase Order List -->
+            <div class="card overflow-hidden">
+              <div class="px-5 py-3 border-b flex items-center justify-between">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  発注一覧
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[12px] font-medium cursor-pointer hover:opacity-90 transition"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>新規発注
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        発注番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        仕入先
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        品目
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        数量
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        金額
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        納期
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        種別
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        PO-2026-0186
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        大阪ネジ工業
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        M10×30六角ボルト
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        2,000
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥600,000
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/14</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">自動</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >承認待ち</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        PO-2026-0185
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        関東油脂(株)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        切削油 5L缶
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        20
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥180,000
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/12</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">自動</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >発注済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        PO-2026-0184
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        東京鋼材(株)
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        SUS304板材 t3.0
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        120
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        ¥3,600,000
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/10</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-gray-100 text-gray-600">手動</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >入荷済</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 生産連携 ==================== -->
+          <div id="page-production" class="page">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500"
+                  >製造指図（進行中）</span
+                >
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  12<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">材料引当済</span>
+                <div class="text-xl font-bold text-emerald-600 mt-1">
+                  9<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">欠品待ち</span>
+                <div class="text-xl font-bold text-red-600 mt-1">
+                  2<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">今月完成入庫</span>
+                <div class="text-xl font-bold text-blue-700 mt-1">
+                  34<span class="text-sm">台</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOM / Material Requirement -->
+            <div class="card p-5 mb-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  製造指図 MO-2026-0089 — 油圧プレスユニット HP-200 × 4台
+                </h3>
+                <span class="sb bg-blue-50 text-blue-700">材料引当中</span>
+              </div>
+              <div class="border rounded-lg overflow-hidden">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        部品コード
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        部品名
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        BOM数量
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        所要量
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        在庫
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        引当数
+                      </th>
+                      <th
+                        class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        不足
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        判定
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 text-[12px] loc-cell text-gray-600">
+                        HYD-CYL-50
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        油圧シリンダーφ50×200
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-600"
+                      >
+                        2
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-700 font-medium"
+                      >
+                        8
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-500"
+                      >
+                        18
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-emerald-600"
+                      >
+                        8
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-400"
+                      >
+                        0
+                      </td>
+                      <td class="px-4 py-2">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >OK</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 text-[12px] loc-cell text-gray-600">
+                        MAT-SUS304-3
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        SUS304板材 t3.0
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-600"
+                      >
+                        6
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-700 font-medium"
+                      >
+                        24
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-500"
+                      >
+                        162
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-emerald-600"
+                      >
+                        24
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-400"
+                      >
+                        0
+                      </td>
+                      <td class="px-4 py-2">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >OK</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-t bg-red-50/20">
+                      <td class="px-4 py-2 text-[12px] loc-cell text-gray-600">
+                        BLT-M10-30
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        M10×30六角ボルト
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-600"
+                      >
+                        24
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-700 font-medium"
+                      >
+                        96
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-right text-red-500">
+                        230
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-right text-red-600">
+                        96
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-400"
+                      >
+                        0
+                      </td>
+                      <td class="px-4 py-2">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >在庫僅少</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 text-[12px] loc-cell text-gray-600">
+                        BRG-6205
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        ベアリング6205 ZZ
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-600"
+                      >
+                        4
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-700 font-medium"
+                      >
+                        16
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-500"
+                      >
+                        842
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-emerald-600"
+                      >
+                        16
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-400"
+                      >
+                        0
+                      </td>
+                      <td class="px-4 py-2">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >OK</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-t bg-red-50/20">
+                      <td class="px-4 py-2 text-[12px] loc-cell text-gray-600">
+                        SEAL-HYD-50
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        油圧シールキットφ50
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-600"
+                      >
+                        2
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-gray-700 font-medium"
+                      >
+                        8
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-right text-red-500">
+                        3
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-right text-red-600">
+                        3
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-right text-red-600 font-medium"
+                      >
+                        -5
+                      </td>
+                      <td class="px-4 py-2">
+                        <span class="sb bg-red-50 text-red-600">欠品</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="flex items-center justify-between mt-4">
+                <p class="text-[12px] text-red-600">
+                  油圧シールキットφ50 が5個不足 → PO-2026-0187で発注済（納期:
+                  03/13）
+                </p>
+                <div class="flex gap-2">
+                  <button
+                    class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                  >
+                    払出指示
+                  </button>
+                  <button
+                    class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                    style="background: #7c2d12"
+                  >
+                    引当確定
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Production Orders -->
+            <div class="card overflow-hidden">
+              <div class="px-5 py-3 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  製造指図一覧
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        指図番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        製品
+                      </th>
+                      <th
+                        class="px-4 py-3 text-right text-[11px] font-semibold text-gray-500"
+                      >
+                        数量
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        開始日
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        完了予定
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        材料引当
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        MO-2026-0089
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        油圧プレスユニット HP-200
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        4
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/15</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/28</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >一部欠品</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">準備中</span>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        MO-2026-0088
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        コンベア駆動ユニット CV-100
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        2
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/08</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/20</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >引当済</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >製造中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 text-[12px] loc-cell"
+                        style="color: #7c2d12"
+                      >
+                        MO-2026-0087
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        精密研磨治具 JIG-50A
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] text-right text-gray-700"
+                      >
+                        10
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/03</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">03/12</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >引当済</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-purple-50 text-purple-700"
+                          >検査中</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 分析・レポート ==================== -->
+          <div id="page-analysis" class="page">
+            <div class="flex gap-0 border-b mb-5">
+              <button class="tab-b tab-a" onclick="switchAnalTab(0)">
+                ABC分析
+              </button>
+              <button class="tab-b tab-i" onclick="switchAnalTab(1)">
+                回転率分析
+              </button>
+              <button class="tab-b tab-i" onclick="switchAnalTab(2)">
+                精度トレンド
+              </button>
+            </div>
+
+            <!-- Tab 0: ABC Analysis -->
+            <div id="analTab0">
+              <div class="grid grid-cols-2 gap-4 mb-5">
+                <div class="card p-5">
+                  <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                    在庫金額 ABC分類
+                  </h3>
+                  <div style="height: 280px">
+                    <canvas id="abcChart"></canvas>
+                  </div>
+                </div>
+                <div class="card p-5">
+                  <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                    ABC分類サマリ
+                  </h3>
+                  <div class="space-y-4 mt-4">
+                    <div
+                      class="flex items-center justify-between p-3 bg-red-50/50 rounded-lg border border-red-100"
+                    >
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-[13px] font-bold"
+                          >A</span
+                        >
+                        <div>
+                          <p class="text-[13px] font-medium text-gray-700">
+                            Aランク（上位20%）
+                          </p>
+                          <p class="text-[11px] text-gray-500">
+                            142 SKU — 毎日カウント推奨
+                          </p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-[14px] font-bold text-gray-800">
+                          ¥1.47億
+                        </p>
+                        <p class="text-[11px] text-gray-400">全体の79.8%</p>
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 bg-amber-50/50 rounded-lg border border-amber-100"
+                    >
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-[13px] font-bold"
+                          >B</span
+                        >
+                        <div>
+                          <p class="text-[13px] font-medium text-gray-700">
+                            Bランク（次の30%）
+                          </p>
+                          <p class="text-[11px] text-gray-500">
+                            569 SKU — 週次カウント推奨
+                          </p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-[14px] font-bold text-gray-800">
+                          ¥2,760万
+                        </p>
+                        <p class="text-[11px] text-gray-400">全体の15.0%</p>
+                      </div>
+                    </div>
+                    <div
+                      class="flex items-center justify-between p-3 bg-blue-50/50 rounded-lg border border-blue-100"
+                    >
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-[13px] font-bold"
+                          >C</span
+                        >
+                        <div>
+                          <p class="text-[13px] font-medium text-gray-700">
+                            Cランク（残り50%）
+                          </p>
+                          <p class="text-[11px] text-gray-500">
+                            2,136 SKU — 月次カウント
+                          </p>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-[14px] font-bold text-gray-800">
+                          ¥960万
+                        </p>
+                        <p class="text-[11px] text-gray-400">全体の5.2%</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dead Stock -->
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  デッドストック候補（180日以上出庫なし）
+                </h3>
+                <div class="border rounded-lg overflow-hidden">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          品目
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          在庫数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          在庫金額
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          最終出庫日
+                        </th>
+                        <th
+                          class="px-4 py-2 text-right text-[11px] font-semibold text-gray-500"
+                        >
+                          滞留日数
+                        </th>
+                        <th
+                          class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                        >
+                          対応
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-t">
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          旧型モーターブラケット MB-v1
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          45
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-600"
+                        >
+                          ¥675,000
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-500">
+                          2025/06/12
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-600"
+                        >
+                          271日
+                        </td>
+                        <td class="px-4 py-2">
+                          <button
+                            class="px-2 py-1 rounded text-[11px] border text-gray-600 cursor-pointer hover:bg-gray-50"
+                          >
+                            廃棄検討
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-t">
+                        <td class="px-4 py-2 text-[13px] text-gray-700">
+                          特注ガスケット GK-SP12
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-gray-600"
+                        >
+                          200
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-600"
+                        >
+                          ¥340,000
+                        </td>
+                        <td class="px-4 py-2 text-[13px] text-gray-500">
+                          2025/08/03
+                        </td>
+                        <td
+                          class="px-4 py-2 text-[13px] text-right text-red-600"
+                        >
+                          219日
+                        </td>
+                        <td class="px-4 py-2">
+                          <button
+                            class="px-2 py-1 rounded text-[11px] border text-gray-600 cursor-pointer hover:bg-gray-50"
+                          >
+                            転用検討
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 1: Turnover -->
+            <div id="analTab1" style="display: none">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  カテゴリ別 在庫回転率
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="turnoverChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Accuracy Trend -->
+            <div id="analTab2" style="display: none">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  在庫精度・棚卸差異金額 推移
+                </h3>
+                <div style="height: 300px">
+                  <canvas id="accuracyTrend"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "在庫精度・入出庫・棚卸差異の全体状況",
+        },
+        {
+          id: "inout",
+          title: "入出庫管理",
+          desc: "入荷検品・出庫ピッキング・履歴管理",
+        },
+        {
+          id: "stock",
+          title: "在庫一覧",
+          desc: "リアルタイム在庫・ロケーション・ステータス",
+        },
+        {
+          id: "count",
+          title: "棚卸管理",
+          desc: "循環棚卸・差異調査・原因分析",
+        },
+        {
+          id: "order",
+          title: "発注・仕入",
+          desc: "発注点管理・自動発注・入荷予定",
+        },
+        {
+          id: "production",
+          title: "生産連携",
+          desc: "BOM・所要量計算・材料引当",
+        },
+        {
+          id: "analysis",
+          title: "分析・レポート",
+          desc: "ABC分析・回転率・精度トレンド",
+        },
+      ];
+
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const cfg = pageConfig.find((p) => p.id === id);
+        if (cfg) {
+          document.getElementById("pageTitle").textContent = cfg.title;
+          document.getElementById("pageDesc").textContent = cfg.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      function switchInoutTab(i) {
+        for (let t = 0; t < 3; t++) {
+          const e = document.getElementById("inoutTab" + t);
+          if (e) e.style.display = t === i ? "block" : "none";
+        }
+        const bs = document.querySelectorAll("#page-inout .tab-b");
+        bs.forEach((b, j) => {
+          b.classList.toggle("tab-a", j === i);
+          b.classList.toggle("tab-i", j !== i);
+        });
+      }
+      function switchCountTab(i) {
+        for (let t = 0; t < 3; t++) {
+          const e = document.getElementById("countTab" + t);
+          if (e) e.style.display = t === i ? "block" : "none";
+        }
+        const bs = document.querySelectorAll("#page-count .tab-b");
+        bs.forEach((b, j) => {
+          b.classList.toggle("tab-a", j === i);
+          b.classList.toggle("tab-i", j !== i);
+        });
+      }
+      function switchAnalTab(i) {
+        for (let t = 0; t < 3; t++) {
+          const e = document.getElementById("analTab" + t);
+          if (e) e.style.display = t === i ? "block" : "none";
+        }
+        const bs = document.querySelectorAll("#page-analysis .tab-b");
+        bs.forEach((b, j) => {
+          b.classList.toggle("tab-a", j === i);
+          b.classList.toggle("tab-i", j !== i);
+        });
+      }
+
+      const C1 = "#7c2d12",
+        C2 = "#ea580c",
+        C3 = "#ffedd5";
+
+      // Dashboard: Accuracy trend
+      charts.push(
+        new Chart(document.getElementById("dAccuracy"), {
+          type: "line",
+          data: {
+            labels: ["9月", "10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "在庫精度(%)",
+                data: [82.3, 85.1, 88.4, 91.2, 93.5, 94.7, 96.8],
+                borderColor: C1,
+                backgroundColor: C1 + "15",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                yAxisID: "y",
+              },
+              {
+                label: "棚卸差異(万円)",
+                data: [580, 520, 410, 380, 310, 280, 234],
+                borderColor: "#ef4444",
+                borderDash: [5, 5],
+                tension: 0.3,
+                pointRadius: 3,
+                yAxisID: "y1",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                min: 75,
+                max: 100,
+                position: "left",
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+              },
+              y1: {
+                beginAtZero: true,
+                position: "right",
+                grid: { display: false },
+                ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Dashboard: Category breakdown
+      charts.push(
+        new Chart(document.getElementById("dCategory"), {
+          type: "doughnut",
+          data: {
+            labels: [
+              "鋼材",
+              "非鉄金属",
+              "締結部品",
+              "油圧部品",
+              "電子部品",
+              "機械部品",
+              "消耗品",
+            ],
+            datasets: [
+              {
+                data: [5800, 2400, 1200, 3200, 1800, 2600, 1400],
+                backgroundColor: [
+                  "#7c2d12",
+                  "#ea580c",
+                  "#f97316",
+                  "#fb923c",
+                  "#fdba74",
+                  "#fed7aa",
+                  "#ffedd5",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "55%",
+            plugins: {
+              legend: {
+                position: "right",
+                labels: { font: { size: 11 }, usePointStyle: true, padding: 8 },
+              },
+            },
+          },
+        }),
+      );
+
+      // Count history
+      charts.push(
+        new Chart(document.getElementById("countHistory"), {
+          type: "bar",
+          data: {
+            labels: ["9月", "10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "カウントSKU数",
+                data: [400, 520, 680, 780, 850, 920, 1936],
+                backgroundColor: C1,
+                borderRadius: 4,
+                barPercentage: 0.6,
+                yAxisID: "y",
+              },
+              {
+                label: "差異件数",
+                data: [48, 42, 35, 28, 22, 18, 14],
+                type: "line",
+                borderColor: "#ef4444",
+                tension: 0.3,
+                pointRadius: 4,
+                yAxisID: "y1",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 } },
+              },
+              y1: {
+                beginAtZero: true,
+                position: "right",
+                grid: { display: false },
+                ticks: { font: { size: 11 } },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // ABC chart
+      charts.push(
+        new Chart(document.getElementById("abcChart"), {
+          type: "bar",
+          data: {
+            labels: [
+              "Aランク\n(142 SKU)",
+              "Bランク\n(569 SKU)",
+              "Cランク\n(2,136 SKU)",
+            ],
+            datasets: [
+              {
+                label: "在庫金額(万円)",
+                data: [14700, 2760, 960],
+                backgroundColor: [C1, C2, "#fdba74"],
+                borderRadius: 4,
+                barPercentage: 0.5,
+                yAxisID: "y",
+              },
+              {
+                label: "SKU構成比(%)",
+                data: [5, 20, 75],
+                type: "line",
+                borderColor: "#6b7280",
+                borderDash: [4, 4],
+                tension: 0.3,
+                pointRadius: 4,
+                yAxisID: "y1",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+              },
+              y1: {
+                beginAtZero: true,
+                max: 100,
+                position: "right",
+                grid: { display: false },
+                ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Turnover chart
+      charts.push(
+        new Chart(document.getElementById("turnoverChart"), {
+          type: "bar",
+          data: {
+            labels: [
+              "電子部品",
+              "締結部品",
+              "消耗品",
+              "機械部品",
+              "鋼材",
+              "油圧部品",
+              "非鉄金属",
+            ],
+            datasets: [
+              {
+                label: "在庫回転率(回/年)",
+                data: [14.2, 12.8, 11.5, 8.4, 6.2, 5.1, 4.8],
+                backgroundColor: [C1, C1, C1, C2, C2, "#fdba74", "#fdba74"],
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "回" },
+              },
+              y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Accuracy trend (analysis page)
+      charts.push(
+        new Chart(document.getElementById("accuracyTrend"), {
+          type: "line",
+          data: {
+            labels: ["2025/Q1", "2025/Q2", "2025/Q3", "2025/Q4", "2026/Q1"],
+            datasets: [
+              {
+                label: "在庫精度(%)",
+                data: [78.5, 82.3, 88.4, 93.5, 96.8],
+                borderColor: C1,
+                backgroundColor: C1 + "15",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                yAxisID: "y",
+              },
+              {
+                label: "棚卸差異(万円)",
+                data: [820, 580, 410, 310, 234],
+                borderColor: "#ef4444",
+                tension: 0.3,
+                pointRadius: 5,
+                yAxisID: "y1",
+              },
+              {
+                label: "目標精度",
+                data: [99, 99, 99, 99, 99],
+                borderColor: "#10b981",
+                borderDash: [3, 3],
+                pointRadius: 0,
+                yAxisID: "y",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                min: 70,
+                max: 100,
+                position: "left",
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+              },
+              y1: {
+                beginAtZero: true,
+                position: "right",
+                grid: { display: false },
+                ticks: { font: { size: 11 }, callback: (v) => v + "万" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
