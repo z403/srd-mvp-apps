@@ -1,104 +1,3037 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>運転日報の紙管理 | 運輸業・物流業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>DriveLog — デジタル運転日報システム | SRD MVP Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family:
+          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      .card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge-green {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .badge-yellow {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .btn-primary {
+        background: #065f46;
+        color: #fff;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-primary:hover {
+        background: #047857;
+      }
+      .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-secondary:hover {
+        background: #e5e7eb;
+      }
+      .btn-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+      }
+      .btn-danger:hover {
+        background: #fecaca;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      th {
+        background: #f8fafc;
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+      td {
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #374151;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+      }
+      tr:hover td {
+        background: #f8fafc;
+      }
+      input,
+      select,
+      textarea {
+        font-size: 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 7px 10px;
+        outline: none;
+        transition: border-color 0.15s;
+        width: 100%;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      }
+      .sidebar-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .compliance-ok {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .compliance-warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .compliance-ng {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #065f46;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-60 h-screen flex flex-col text-white flex-shrink-0"
+      style="background: #0c4a6e"
+    >
+      <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center"
+            style="background: #10b981"
+          >
+            <i data-lucide="truck" class="w-4 h-4 text-white"></i>
+          </div>
+          <div>
+            <div class="font-bold text-sm tracking-tight">DriveLog</div>
+            <div class="text-[10px] text-white/50">
+              デジタル運転日報システム
+            </div>
+          </div>
+        </div>
+      </div>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#065f46">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">運転日報の紙管理</p>
-<p class="text-[11px] opacity-50 truncate">運輸業・物流業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="columns" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ボード</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="panel-left" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="pencil" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">登録・編集</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <nav class="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
+        <a
+          href="#"
+          class="nav-item active flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="dashboard"
+          onclick="navigate('dashboard')"
+        >
+          <i data-lucide="layout-dashboard" class="sidebar-icon"></i>
+          ダッシュボード
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="entry"
+          onclick="navigate('entry')"
+        >
+          <i data-lucide="file-edit" class="sidebar-icon"></i>
+          日報入力
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="list"
+          onclick="navigate('list')"
+        >
+          <i data-lucide="list" class="sidebar-icon"></i>
+          日報一覧
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="performance"
+          onclick="navigate('performance')"
+        >
+          <i data-lucide="bar-chart-3" class="sidebar-icon"></i>
+          運行実績
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="compliance"
+          onclick="navigate('compliance')"
+        >
+          <i data-lucide="shield-check" class="sidebar-icon"></i>
+          法定管理
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="analytics"
+          onclick="navigate('analytics')"
+        >
+          <i data-lucide="pie-chart" class="sidebar-icon"></i>
+          分析
+        </a>
+        <a
+          href="#"
+          class="nav-item flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/90"
+          data-page="settings"
+          onclick="navigate('settings')"
+        >
+          <i data-lucide="settings" class="sidebar-icon"></i>
+          設定
+        </a>
+      </nav>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">統計サマリー</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#d1fae5;color:#065f46">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6"><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#065f4615"><i data-lucide="clipboard-list" class="w-7 h-7" style="color:#065f46"></i></div><div><div class="text-3xl font-bold" style="color:#065f46">40件</div><div class="text-[13px] text-gray-500 mt-1">進行中タスク</div><div class="text-[11px] text-gray-400 mt-0.5">+7</div></div></div><div class="card p-6 flex items-center gap-5 transition-shadow"><div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:#10b98115"><i data-lucide="check-circle" class="w-7 h-7" style="color:#10b981"></i></div><div><div class="text-3xl font-bold" style="color:#10b981">90%</div><div class="text-[13px] text-gray-500 mt-1">完了率</div><div class="text-[11px] text-gray-400 mt-0.5">+7pt</div></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">運転日報の紙種別構成</h3><div style="height:240px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次運転日報の紙推移</h3><div style="height:240px"><canvas id="dC2"></canvas></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="kSearch" type="text" placeholder="タスクを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="plus" class="w-4 h-4"></i>新規タスク</button></div><div class="flex gap-4 overflow-x-auto pb-4"><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#94a3b8"></div><span class="text-[13px] font-semibold text-gray-700">未着手</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">5</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/26</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">渡</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/21</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">佐</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク8</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/13</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">伊</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク1</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/1</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">高</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#065f46"></div><span class="text-[13px] font-semibold text-gray-700">進行中</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">4</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/11</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">伊</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク2</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">中</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/27</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">加</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/22</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">渡</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/21</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">小</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div><span class="text-[13px] font-semibold text-gray-700">レビュー</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">4</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク3</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/8</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">小</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク5</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/16</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">渡</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">3/14</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">山</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク7</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/12</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">鈴</div></div></div></div></div></div><div class="kanban-col min-w-[260px] flex-1"><div class="flex items-center gap-2 mb-3"><div class="w-2 h-2 rounded-full" style="background:#10b981"></div><span class="text-[13px] font-semibold text-gray-700">完了</span><span class="text-[11px] bg-gray-100 text-gray-500 px-1.5 rounded-full">3</span></div><div class="kanban-cards space-y-2.5 min-h-[200px] p-1"><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク4</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/18</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">小</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク6</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">高</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">1/10</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">中</div></div></div></div><div class="bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move" draggable="true"><p class="text-[13px] font-medium text-gray-700">運転日報の紙タスク7</p><div class="flex items-center justify-between mt-2"><span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">低</span><div class="flex items-center gap-1"><span class="text-[11px] text-gray-400">2/11</span><div class="w-5 h-5 rounded-full text-white text-[9px] flex items-center justify-center" style="background:#065f46">加</div></div></div></div></div></div></div></div>
-<div id="page-data" class="page"><div class="grid grid-cols-1 lg:grid-cols-5 gap-0 card overflow-hidden" style="height:calc(100vh - 180px)"><div class="lg:col-span-2 border-r overflow-y-auto"><div class="p-3 border-b"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="splitSearch" type="text" placeholder="検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div id="splitList"><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors border-l-2" style="border-left-color:#065f46" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400">#5743 · 2026/01/02</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400">#5930 · 2026/02/25</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">鈴木運行管理者</p><p class="text-[11px] text-gray-400">#5661 · 2026/03/28</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">山田倉庫管理</p><p class="text-[11px] text-gray-400">#3240 · 2026/01/01</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">高橋経理</p><p class="text-[11px] text-gray-400">#8752 · 2026/03/23</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">配送中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">伊藤営業</p><p class="text-[11px] text-gray-400">#8822 · 2026/01/16</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">渡辺整備管理</p><p class="text-[11px] text-gray-400">#3166 · 2026/01/07</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">中村安全管理者</p><p class="text-[11px] text-gray-400">#9981 · 2026/03/18</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">小林荷役担当</p><p class="text-[11px] text-gray-400">#5136 · 2026/03/16</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">配送中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">加藤事務</p><p class="text-[11px] text-gray-400">#6909 · 2026/01/11</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">佐藤配車担当</p><p class="text-[11px] text-gray-400">#5479 · 2026/01/22</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">待機中</span></div><div class="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer transition-colors " style="" onclick="selectItem(this,'#065f46')"><div><p class="text-[13px] font-medium text-gray-700">田中ドライバー</p><p class="text-[11px] text-gray-400">#5482 · 2026/02/23</p></div><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">遅延</span></div></div></div><div class="lg:col-span-3 overflow-y-auto"><div class="p-5"><div class="flex items-center gap-3 mb-6"><div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style="background:#065f46">佐</div><div><p class="text-[15px] font-bold text-gray-800">佐藤配車担当</p><p class="text-[12px] text-gray-400">#5743 · 管理課</p></div></div><div class="grid grid-cols-2 gap-4"><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">ステータス</span><span class="text-[13px] font-medium">完了</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">金額</span><span class="text-[13px] font-medium" style="color:#065f46">¥793万</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">更新日</span><span class="text-[13px] font-medium">2026/01/02</span></div><div class="p-3 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block">部門</span><span class="text-[13px] font-medium">管理課</span></div></div><div class="mt-5 pt-5 border-t"><h4 class="text-[13px] font-semibold text-gray-700 mb-3">アクティビティ</h4><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤配車担当</span> の運転日報の紙を完了</p><p class="text-[11px] text-gray-400">30時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中ドライバー</span> に運転日報の紙を報告</p><p class="text-[11px] text-gray-400">14時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木運行管理者</span> の運転日報の紙を作成</p><p class="text-[11px] text-gray-400">47時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#065f46">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田倉庫管理</span> に運転日報の紙をコメント</p><p class="text-[11px] text-gray-400">35時間前</p></div></div></div></div></div></div></div></div>
-<div id="page-detail" class="page"><div class="max-w-3xl"><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4" style="color:#065f46"></i>基本情報</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">名称</label><input type="text" name="名称" placeholder="入力してください" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">カテゴリ</label><select name="カテゴリ" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">日付</label><input type="date" name="日付" placeholder="" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">担当者</label><input type="text" name="担当者" placeholder="担当者名" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div></div></div><div class="card p-6 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4" style="color:#065f46"></i>詳細情報</h3><div class="space-y-4"><label class="block text-[12px] font-medium text-gray-600 mb-1.5">説明</label><textarea name="説明" rows="3" placeholder="詳細を入力" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">金額</label><input type="number" name="金額" placeholder="0" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">備考</label><textarea name="備考" rows="3" placeholder="その他" class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea></div></div><div class="flex items-center justify-between"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#6b7280;border-color:#6b7280">キャンセル</button><div class="flex gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#065f46;border-color:#065f46"><i data-lucide="save" class="w-4 h-4"></i>下書き保存</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="check" class="w-4 h-4"></i>保存</button></div></div></div></div>
-<div id="page-report" class="page"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">進行中タスク</span><i data-lucide="clipboard-list" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">40件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +7</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">完了率</span><i data-lucide="check-circle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">90%</div><div class="text-[11px] mt-2 text-emerald-600">↑ +7pt</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">遅延件数</span><i data-lucide="alert-triangle" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">0件</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">メンバー数</span><i data-lucide="users" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#065f46">17名</div></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">進行中タスクトレンド分析</h3><div style="height:320px"><canvas id="rpC1"></canvas></div></div><div class="card p-5 mt-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-3">分析サマリー</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div class="p-3 rounded-lg bg-emerald-50"><p class="text-[11px] text-emerald-600 font-medium mb-1">好調指標</p><p class="text-[13px] text-emerald-700">進行中タスクが前月比改善</p></div><div class="p-3 rounded-lg bg-amber-50"><p class="text-[11px] text-amber-600 font-medium mb-1">注意指標</p><p class="text-[13px] text-amber-700">完了率が変動傾向</p></div><div class="p-3 rounded-lg" style="background:#d1fae5"><p class="text-[11px] font-medium mb-1" style="color:#065f46">予測</p><p class="text-[13px]" style="color:#065f46">Q2目標達成見込み</p></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#065f46"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#065f46"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#065f46"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#065f46"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+      <div class="p-4 border-t border-white/10">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold"
+          >
+            管
+          </div>
+          <div>
+            <div class="text-xs font-semibold">管理者</div>
+            <div class="text-[10px] text-white/50">運行管理システム</div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "統計サマリー"}, {"id": "feature", "title": "ボード", "desc": "タスク管理"}, {"id": "data", "title": "データ一覧", "desc": "リスト・詳細表示"}, {"id": "detail", "title": "登録・編集", "desc": "データ入力"}, {"id": "report", "title": "レポート", "desc": "トレンド分析"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <!-- Header -->
+      <header
+        class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10"
+      >
+        <div>
+          <h1 id="pageTitle" class="text-lg font-bold text-gray-800">
+            ダッシュボード
+          </h1>
+          <p id="pageDesc" class="text-xs text-gray-400">運行状況の概要</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <button class="p-2 rounded-lg hover:bg-gray-100 relative">
+              <i data-lucide="bell" class="w-4 h-4 text-gray-500"></i>
+              <span
+                class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center"
+                >3</span
+              >
+            </button>
+          </div>
+          <div class="text-xs text-gray-400">2026年3月10日（火）</div>
+        </div>
+      </header>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "doughnut", "data": {"labels": ["燃料費", "高速代", "人件費", "車両費", "その他"], "datasets": [{"data": [32, 40, 36, 24, 22], "backgroundColor": ["#065f46", "#10b981", "#065f4680", "#10b98180", "#e5e7eb"], "borderWidth": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}}}));
-charts.push(new Chart(document.getElementById("dC2"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "実績", "data": [84, 70, 63, 34, 89, 23], "backgroundColor": "#065f46", "borderRadius": 6}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+      <div class="p-6">
+        <!-- ============ PAGE: Dashboard ============ -->
+        <div id="page-dashboard" class="page active">
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span
+                  class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                  >本日提出率</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style="background: #d1fae5"
+                >
+                  <i
+                    data-lucide="file-check"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">
+                87.5<span class="text-sm font-normal text-gray-400 ml-1"
+                  >%</span
+                >
+              </div>
+              <div class="text-xs text-green-600 mt-1">
+                <i data-lucide="trending-up" class="w-3 h-3 inline"></i> +5.2%
+                vs 先週
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span
+                  class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                  >平均走行距離</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style="background: #dbeafe"
+                >
+                  <i data-lucide="map-pin" class="w-4 h-4 text-blue-700"></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">
+                248<span class="text-sm font-normal text-gray-400 ml-1"
+                  >km</span
+                >
+              </div>
+              <div class="text-xs text-gray-400 mt-1">1人あたり平均</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span
+                  class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                  >総稼働時間</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style="background: #fef3c7"
+                >
+                  <i data-lucide="clock" class="w-4 h-4 text-yellow-700"></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">
+                142.5<span class="text-sm font-normal text-gray-400 ml-1"
+                  >h</span
+                >
+              </div>
+              <div class="text-xs text-gray-400 mt-1">全ドライバー合計</div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span
+                  class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                  >違反件数</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style="background: #fee2e2"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-red-600"
+                  ></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-gray-800">
+                2<span class="text-sm font-normal text-gray-400 ml-1">件</span>
+              </div>
+              <div class="text-xs text-red-500 mt-1">
+                <i data-lucide="trending-down" class="w-3 h-3 inline"></i> -1件
+                vs 先週
+              </div>
+            </div>
+          </div>
 
-// feature
+          <!-- Charts Row -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                日報提出率推移
+              </h3>
+              <canvas id="chartSubmissionRate" height="200"></canvas>
+            </div>
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                ドライバー別走行距離
+              </h3>
+              <canvas id="chartDriverDistance" height="200"></canvas>
+            </div>
+          </div>
 
-document.querySelectorAll('[draggable]').forEach(c=>{c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text',c.innerHTML);c.classList.add('opacity-40')});c.addEventListener('dragend',()=>c.classList.remove('opacity-40'))});
-document.querySelectorAll('.kanban-cards').forEach(col=>{col.addEventListener('dragover',e=>e.preventDefault());col.addEventListener('drop',e=>{e.preventDefault();const d=document.createElement('div');d.className='bg-white rounded-lg p-3 border shadow-sm hover:shadow-md transition-shadow cursor-move';d.draggable=true;d.innerHTML=e.dataTransfer.getData('text');col.appendChild(d)})});
+          <!-- Recent Activity & Alerts -->
+          <div class="grid grid-cols-3 gap-4">
+            <div class="card p-5 col-span-2">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">最近の提出</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>時刻</th>
+                    <th>ドライバー</th>
+                    <th>車番</th>
+                    <th>走行距離</th>
+                    <th>ステータス</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>09:45</td>
+                    <td class="font-medium">田中 太郎</td>
+                    <td>品川 100 あ 12-34</td>
+                    <td>285 km</td>
+                    <td><span class="badge badge-green">提出済</span></td>
+                  </tr>
+                  <tr>
+                    <td>09:32</td>
+                    <td class="font-medium">佐藤 一郎</td>
+                    <td>足立 200 か 56-78</td>
+                    <td>312 km</td>
+                    <td><span class="badge badge-green">承認済</span></td>
+                  </tr>
+                  <tr>
+                    <td>09:15</td>
+                    <td class="font-medium">鈴木 健二</td>
+                    <td>練馬 300 さ 90-12</td>
+                    <td>198 km</td>
+                    <td><span class="badge badge-yellow">確認中</span></td>
+                  </tr>
+                  <tr>
+                    <td>08:58</td>
+                    <td class="font-medium">高橋 誠</td>
+                    <td>品川 100 い 34-56</td>
+                    <td>267 km</td>
+                    <td><span class="badge badge-green">承認済</span></td>
+                  </tr>
+                  <tr>
+                    <td>08:42</td>
+                    <td class="font-medium">渡辺 洋一</td>
+                    <td>足立 200 く 78-90</td>
+                    <td>221 km</td>
+                    <td><span class="badge badge-red">差戻し</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">アラート</h3>
+              <div class="space-y-3">
+                <div class="p-3 rounded-lg bg-red-50 border border-red-100">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i
+                      data-lucide="alert-circle"
+                      class="w-3.5 h-3.5 text-red-500"
+                    ></i>
+                    <span class="text-xs font-semibold text-red-700"
+                      >連続運転超過</span
+                    >
+                  </div>
+                  <p class="text-xs text-red-600">山田 花子 — 連続4h30m運転</p>
+                </div>
+                <div
+                  class="p-3 rounded-lg bg-yellow-50 border border-yellow-100"
+                >
+                  <div class="flex items-center gap-2 mb-1">
+                    <i
+                      data-lucide="clock"
+                      class="w-3.5 h-3.5 text-yellow-600"
+                    ></i>
+                    <span class="text-xs font-semibold text-yellow-700"
+                      >拘束時間注意</span
+                    >
+                  </div>
+                  <p class="text-xs text-yellow-600">
+                    佐藤 一郎 — 月間拘束280h超
+                  </p>
+                </div>
+                <div
+                  class="p-3 rounded-lg bg-yellow-50 border border-yellow-100"
+                >
+                  <div class="flex items-center gap-2 mb-1">
+                    <i
+                      data-lucide="file-x"
+                      class="w-3.5 h-3.5 text-yellow-600"
+                    ></i>
+                    <span class="text-xs font-semibold text-yellow-700"
+                      >未提出</span
+                    >
+                  </div>
+                  <p class="text-xs text-yellow-600">2名が本日分未提出</p>
+                </div>
+                <div class="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
+                    <span class="text-xs font-semibold text-blue-700"
+                      >差戻し対応</span
+                    >
+                  </div>
+                  <p class="text-xs text-blue-600">
+                    渡辺 洋一 — 走行距離の再確認
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <!-- ============ PAGE: Entry ============ -->
+        <div id="page-entry" class="page">
+          <div class="card p-6 mb-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4">基本情報</h3>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1"
+                  >日付</label
+                >
+                <input type="date" id="entryDate" value="2026-03-10" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1"
+                  >ドライバー名</label
+                >
+                <select id="entryDriver">
+                  <option value="">選択してください</option>
+                  <option value="田中太郎">田中 太郎</option>
+                  <option value="佐藤一郎">佐藤 一郎</option>
+                  <option value="鈴木健二">鈴木 健二</option>
+                  <option value="高橋誠">高橋 誠</option>
+                  <option value="渡辺洋一">渡辺 洋一</option>
+                  <option value="山田花子">山田 花子</option>
+                  <option value="伊藤大輔">伊藤 大輔</option>
+                  <option value="小林正樹">小林 正樹</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1"
+                  >車番</label
+                >
+                <select id="entryVehicle">
+                  <option value="">選択してください</option>
+                  <option value="v1">品川 100 あ 12-34（4t車）</option>
+                  <option value="v2">足立 200 か 56-78（10t車）</option>
+                  <option value="v3">練馬 300 さ 90-12（4t車）</option>
+                  <option value="v4">品川 100 い 34-56（大型）</option>
+                  <option value="v5">足立 200 く 78-90（10t車）</option>
+                  <option value="v6">練馬 300 た 11-22（4t車）</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-// data
+          <div class="card p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-gray-700">運行記録</h3>
+              <button
+                onclick="addTripRow()"
+                class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> 運行追加
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table id="tripTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>出発時刻</th>
+                    <th>到着時刻</th>
+                    <th>出発地</th>
+                    <th>到着地</th>
+                    <th>走行距離(km)</th>
+                    <th>荷物名</th>
+                    <th>積載量(t)</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tripBody">
+                  <tr>
+                    <td class="text-center font-medium">1</td>
+                    <td><input type="time" value="06:00" class="w-28" /></td>
+                    <td><input type="time" value="08:30" class="w-28" /></td>
+                    <td>
+                      <input type="text" value="東京営業所" class="w-28" />
+                    </td>
+                    <td><input type="text" value="横浜倉庫" class="w-28" /></td>
+                    <td>
+                      <input
+                        type="number"
+                        value="45"
+                        class="w-20 trip-distance"
+                        onchange="calcTotals()"
+                      />
+                    </td>
+                    <td><input type="text" value="食品原料" class="w-24" /></td>
+                    <td>
+                      <input
+                        type="number"
+                        value="3.2"
+                        class="w-20"
+                        step="0.1"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        onclick="removeTripRow(this)"
+                        class="btn-danger text-xs py-1 px-2"
+                      >
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center font-medium">2</td>
+                    <td><input type="time" value="09:00" class="w-28" /></td>
+                    <td><input type="time" value="11:15" class="w-28" /></td>
+                    <td><input type="text" value="横浜倉庫" class="w-28" /></td>
+                    <td>
+                      <input
+                        type="text"
+                        value="川崎配送センター"
+                        class="w-28"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value="32"
+                        class="w-20 trip-distance"
+                        onchange="calcTotals()"
+                      />
+                    </td>
+                    <td><input type="text" value="飲料" class="w-24" /></td>
+                    <td>
+                      <input
+                        type="number"
+                        value="4.0"
+                        class="w-20"
+                        step="0.1"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        onclick="removeTripRow(this)"
+                        class="btn-danger text-xs py-1 px-2"
+                      >
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center font-medium">3</td>
+                    <td><input type="time" value="12:00" class="w-28" /></td>
+                    <td><input type="time" value="14:30" class="w-28" /></td>
+                    <td>
+                      <input
+                        type="text"
+                        value="川崎配送センター"
+                        class="w-28"
+                      />
+                    </td>
+                    <td>
+                      <input type="text" value="東京営業所" class="w-28" />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value="38"
+                        class="w-20 trip-distance"
+                        onchange="calcTotals()"
+                      />
+                    </td>
+                    <td>
+                      <input type="text" value="空車（帰庫）" class="w-24" />
+                    </td>
+                    <td>
+                      <input type="number" value="0" class="w-20" step="0.1" />
+                    </td>
+                    <td>
+                      <button
+                        onclick="removeTripRow(this)"
+                        class="btn-danger text-xs py-1 px-2"
+                      >
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-function selectItem(el,color){document.querySelectorAll('#splitList > div').forEach(d=>{d.classList.remove('border-l-2');d.style.borderLeftColor=''});
-el.classList.add('border-l-2');el.style.borderLeftColor=color;}
+          <div class="card p-6 mb-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4">休憩記録</h3>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>開始時刻</th>
+                    <th>終了時刻</th>
+                    <th>休憩時間</th>
+                    <th>場所</th>
+                  </tr>
+                </thead>
+                <tbody id="restBody">
+                  <tr>
+                    <td class="text-center font-medium">1</td>
+                    <td><input type="time" value="08:30" class="w-28" /></td>
+                    <td><input type="time" value="09:00" class="w-28" /></td>
+                    <td class="font-medium">30分</td>
+                    <td>
+                      <input type="text" value="横浜倉庫 休憩室" class="w-40" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center font-medium">2</td>
+                    <td><input type="time" value="11:15" class="w-28" /></td>
+                    <td><input type="time" value="12:00" class="w-28" /></td>
+                    <td class="font-medium">45分</td>
+                    <td><input type="text" value="川崎PA" class="w-40" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
+          <!-- Totals and Submit -->
+          <div class="card p-6 mb-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4">集計</h3>
+            <div class="grid grid-cols-4 gap-4">
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-xs text-gray-400 mb-1">運行回数</div>
+                <div id="totalTrips" class="text-xl font-bold text-gray-800">
+                  3
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-xs text-gray-400 mb-1">総走行距離</div>
+                <div id="totalDistance" class="text-xl font-bold text-gray-800">
+                  115 km
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-xs text-gray-400 mb-1">総稼働時間</div>
+                <div id="totalWorkTime" class="text-xl font-bold text-gray-800">
+                  8h 30m
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-xs text-gray-400 mb-1">総休憩時間</div>
+                <div id="totalRestTime" class="text-xl font-bold text-gray-800">
+                  1h 15m
+                </div>
+              </div>
+            </div>
+          </div>
 
-// report
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [84, 70, 63, 34, 89, 23, 48, 36, 84, 26, 90, 29], "borderColor": "#065f46", "tension": 0.4, "pointRadius": 4, "pointBackgroundColor": "#065f46"}, {"label": "予測", "data": [84, 70, 63, 34, 89, 23, 48, 36, null, null, null, null], "borderColor": "#d1d5db", "borderDash": [5, 5], "tension": 0.4, "pointRadius": 0}, {"label": "目標", "data": [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60], "borderColor": "#f59e0b", "borderDash": [2, 4], "pointRadius": 0}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": true, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-gray-400">
+              ※ 提出後の修正は管理者の承認が必要です
+            </div>
+            <div class="flex gap-3">
+              <button
+                class="btn-secondary"
+                onclick="showToast('下書きを保存しました')"
+              >
+                下書き保存
+              </button>
+              <button
+                class="btn-primary"
+                onclick="showToast('日報を提出しました')"
+              >
+                <i data-lucide="send" class="w-3.5 h-3.5 inline mr-1"></i>提出
+              </button>
+            </div>
+          </div>
+        </div>
 
-</script>
-</body></html>
+        <!-- ============ PAGE: List ============ -->
+        <div id="page-list" class="page">
+          <!-- Filters -->
+          <div class="card p-4 mb-4">
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-semibold text-gray-500">期間</label>
+                <input type="date" value="2026-03-01" class="w-36 text-xs" />
+                <span class="text-gray-400">〜</span>
+                <input type="date" value="2026-03-10" class="w-36 text-xs" />
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-semibold text-gray-500"
+                  >ドライバー</label
+                >
+                <select class="w-36 text-xs">
+                  <option>全員</option>
+                  <option>田中 太郎</option>
+                  <option>佐藤 一郎</option>
+                  <option>鈴木 健二</option>
+                  <option>高橋 誠</option>
+                  <option>渡辺 洋一</option>
+                  <option>山田 花子</option>
+                  <option>伊藤 大輔</option>
+                  <option>小林 正樹</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2 flex-1">
+                <label class="text-xs font-semibold text-gray-500">検索</label>
+                <input
+                  type="text"
+                  placeholder="ドライバー名、車番で検索..."
+                  class="text-xs"
+                />
+              </div>
+              <button class="btn-primary text-xs py-1.5 px-4">絞り込み</button>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card overflow-hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>ドライバー</th>
+                  <th>車番</th>
+                  <th>運行回数</th>
+                  <th>総走行距離</th>
+                  <th>総稼働時間</th>
+                  <th>提出時刻</th>
+                  <th>ステータス</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2026/03/10</td>
+                  <td class="font-medium">田中 太郎</td>
+                  <td>品川 100 あ 12-34</td>
+                  <td>3</td>
+                  <td>285 km</td>
+                  <td>9h 15m</td>
+                  <td>09:45</td>
+                  <td><span class="badge badge-green">提出済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/10</td>
+                  <td class="font-medium">佐藤 一郎</td>
+                  <td>足立 200 か 56-78</td>
+                  <td>4</td>
+                  <td>312 km</td>
+                  <td>10h 00m</td>
+                  <td>09:32</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/10</td>
+                  <td class="font-medium">鈴木 健二</td>
+                  <td>練馬 300 さ 90-12</td>
+                  <td>2</td>
+                  <td>198 km</td>
+                  <td>7h 30m</td>
+                  <td>09:15</td>
+                  <td><span class="badge badge-yellow">確認中</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/10</td>
+                  <td class="font-medium">高橋 誠</td>
+                  <td>品川 100 い 34-56</td>
+                  <td>3</td>
+                  <td>267 km</td>
+                  <td>8h 45m</td>
+                  <td>08:58</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/10</td>
+                  <td class="font-medium">渡辺 洋一</td>
+                  <td>足立 200 く 78-90</td>
+                  <td>3</td>
+                  <td>221 km</td>
+                  <td>8h 00m</td>
+                  <td>08:42</td>
+                  <td><span class="badge badge-red">差戻し</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/09</td>
+                  <td class="font-medium">田中 太郎</td>
+                  <td>品川 100 あ 12-34</td>
+                  <td>4</td>
+                  <td>302 km</td>
+                  <td>9h 45m</td>
+                  <td>08:30</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/09</td>
+                  <td class="font-medium">山田 花子</td>
+                  <td>練馬 300 た 11-22</td>
+                  <td>3</td>
+                  <td>245 km</td>
+                  <td>8h 30m</td>
+                  <td>09:10</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/09</td>
+                  <td class="font-medium">伊藤 大輔</td>
+                  <td>品川 100 い 34-56</td>
+                  <td>2</td>
+                  <td>178 km</td>
+                  <td>7h 15m</td>
+                  <td>09:25</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/09</td>
+                  <td class="font-medium">小林 正樹</td>
+                  <td>足立 200 か 56-78</td>
+                  <td>3</td>
+                  <td>289 km</td>
+                  <td>9h 00m</td>
+                  <td>08:55</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/08</td>
+                  <td class="font-medium">佐藤 一郎</td>
+                  <td>足立 200 か 56-78</td>
+                  <td>4</td>
+                  <td>335 km</td>
+                  <td>10h 30m</td>
+                  <td>09:05</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/08</td>
+                  <td class="font-medium">鈴木 健二</td>
+                  <td>練馬 300 さ 90-12</td>
+                  <td>3</td>
+                  <td>256 km</td>
+                  <td>8h 45m</td>
+                  <td>08:48</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/08</td>
+                  <td class="font-medium">高橋 誠</td>
+                  <td>品川 100 い 34-56</td>
+                  <td>3</td>
+                  <td>278 km</td>
+                  <td>9h 00m</td>
+                  <td>09:20</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/07</td>
+                  <td class="font-medium">渡辺 洋一</td>
+                  <td>足立 200 く 78-90</td>
+                  <td>3</td>
+                  <td>234 km</td>
+                  <td>8h 15m</td>
+                  <td>09:00</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/07</td>
+                  <td class="font-medium">山田 花子</td>
+                  <td>練馬 300 た 11-22</td>
+                  <td>2</td>
+                  <td>189 km</td>
+                  <td>7h 45m</td>
+                  <td>09:35</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/07</td>
+                  <td class="font-medium">伊藤 大輔</td>
+                  <td>品川 100 い 34-56</td>
+                  <td>4</td>
+                  <td>310 km</td>
+                  <td>10h 00m</td>
+                  <td>08:40</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/06</td>
+                  <td class="font-medium">田中 太郎</td>
+                  <td>品川 100 あ 12-34</td>
+                  <td>3</td>
+                  <td>275 km</td>
+                  <td>9h 00m</td>
+                  <td>08:55</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2026/03/06</td>
+                  <td class="font-medium">小林 正樹</td>
+                  <td>足立 200 か 56-78</td>
+                  <td>3</td>
+                  <td>298 km</td>
+                  <td>9h 30m</td>
+                  <td>09:15</td>
+                  <td><span class="badge badge-green">承認済</span></td>
+                  <td>
+                    <button
+                      class="text-xs text-blue-600 hover:underline"
+                      onclick="navigate('entry')"
+                    >
+                      詳細
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <div class="text-xs text-gray-400">全17件中 1-17件を表示</div>
+            <div class="flex gap-1">
+              <button
+                class="px-3 py-1 text-xs rounded bg-emerald-700 text-white font-semibold"
+              >
+                1
+              </button>
+              <button
+                class="px-3 py-1 text-xs rounded bg-gray-100 text-gray-500 hover:bg-gray-200"
+              >
+                2
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: Performance ============ -->
+        <div id="page-performance" class="page">
+          <!-- Driver Performance Table -->
+          <div class="card overflow-hidden mb-6">
+            <div class="p-5 border-b border-gray-100">
+              <h3 class="text-sm font-bold text-gray-700">
+                ドライバー別実績（2026年3月）
+              </h3>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>ドライバー名</th>
+                  <th>稼働日数</th>
+                  <th>総走行距離</th>
+                  <th>平均走行距離/日</th>
+                  <th>燃費</th>
+                  <th>安全スコア</th>
+                  <th>評価</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-medium">田中 太郎</td>
+                  <td>8日</td>
+                  <td>2,180 km</td>
+                  <td>272.5 km</td>
+                  <td>4.2 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 92%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-green-600"
+                        >92</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-green">優良</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">佐藤 一郎</td>
+                  <td>8日</td>
+                  <td>2,456 km</td>
+                  <td>307.0 km</td>
+                  <td>3.8 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          style="width: 78%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-yellow-600"
+                        >78</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-yellow">注意</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">鈴木 健二</td>
+                  <td>7日</td>
+                  <td>1,750 km</td>
+                  <td>250.0 km</td>
+                  <td>4.5 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 95%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-green-600"
+                        >95</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-green">優良</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">高橋 誠</td>
+                  <td>8日</td>
+                  <td>2,120 km</td>
+                  <td>265.0 km</td>
+                  <td>4.0 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 88%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-green-600"
+                        >88</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-green">良好</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">渡辺 洋一</td>
+                  <td>7日</td>
+                  <td>1,620 km</td>
+                  <td>231.4 km</td>
+                  <td>4.3 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 85%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-green-600"
+                        >85</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-green">良好</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">山田 花子</td>
+                  <td>7日</td>
+                  <td>1,580 km</td>
+                  <td>225.7 km</td>
+                  <td>4.6 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-red-500 h-1.5 rounded-full"
+                          style="width: 68%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-red-500">68</span>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-red">要改善</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">伊藤 大輔</td>
+                  <td>6日</td>
+                  <td>1,450 km</td>
+                  <td>241.7 km</td>
+                  <td>4.1 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 90%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-green-600"
+                        >90</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-green">優良</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">小林 正樹</td>
+                  <td>7日</td>
+                  <td>1,890 km</td>
+                  <td>270.0 km</td>
+                  <td>3.9 km/L</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          style="width: 75%"
+                        ></div>
+                      </div>
+                      <span class="text-xs font-semibold text-yellow-600"
+                        >75</span
+                      >
+                    </div>
+                  </td>
+                  <td><span class="badge badge-yellow">注意</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Charts -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                月別走行距離推移
+              </h3>
+              <canvas id="chartMonthlyDistance" height="220"></canvas>
+            </div>
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                ドライバー比較
+              </h3>
+              <canvas id="chartDriverComparison" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: Compliance ============ -->
+        <div id="page-compliance" class="page">
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="card p-5">
+              <div class="text-xs font-semibold text-gray-400 mb-2">
+                対象ドライバー
+              </div>
+              <div class="text-2xl font-bold text-gray-800">
+                8<span class="text-sm text-gray-400 ml-1">名</span>
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="text-xs font-semibold text-gray-400 mb-2">適合</div>
+              <div class="text-2xl font-bold text-green-600">
+                5<span class="text-sm text-gray-400 ml-1">名</span>
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="text-xs font-semibold text-gray-400 mb-2">注意</div>
+              <div class="text-2xl font-bold text-yellow-600">
+                2<span class="text-sm text-gray-400 ml-1">名</span>
+              </div>
+            </div>
+            <div class="card p-5">
+              <div class="text-xs font-semibold text-gray-400 mb-2">違反</div>
+              <div class="text-2xl font-bold text-red-600">
+                1<span class="text-sm text-gray-400 ml-1">名</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compliance Table -->
+          <div class="card overflow-hidden mb-6">
+            <div class="p-5 border-b border-gray-100">
+              <h3 class="text-sm font-bold text-gray-700">
+                改善基準告示チェック（2026年3月）
+              </h3>
+              <p class="text-xs text-gray-400 mt-1">
+                拘束時間上限: 月間293h / 1日13h以内 / 連続運転4h以内 /
+                休息期間8h以上
+              </p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>ドライバー名</th>
+                  <th>拘束時間（月間）</th>
+                  <th>運転時間（1日最大）</th>
+                  <th>連続運転時間</th>
+                  <th>休息期間（最短）</th>
+                  <th>判定</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-medium">田中 太郎</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>245h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 83%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >9h 15m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 45m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >9h 00m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-green">適合</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">佐藤 一郎</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>280h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          style="width: 95%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-warn px-2 py-0.5 rounded text-xs font-semibold"
+                      >12h 30m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 50m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-warn px-2 py-0.5 rounded text-xs font-semibold"
+                      >8h 10m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-yellow">注意</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">鈴木 健二</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>220h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 75%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >8h 45m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 30m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >10h 00m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-green">適合</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">高橋 誠</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>252h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 86%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >9h 00m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 55m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >9h 30m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-green">適合</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">渡辺 洋一</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>238h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 81%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >8h 00m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 20m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >10h 30m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-green">適合</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">山田 花子</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>262h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          style="width: 89%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-warn px-2 py-0.5 rounded text-xs font-semibold"
+                      >11h 45m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ng px-2 py-0.5 rounded text-xs font-semibold"
+                      >4h 30m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-warn px-2 py-0.5 rounded text-xs font-semibold"
+                      >8h 15m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-red">違反</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">伊藤 大輔</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>215h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-green-500 h-1.5 rounded-full"
+                          style="width: 73%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >10h 00m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 40m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >9h 45m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-green">適合</span></td>
+                </tr>
+                <tr>
+                  <td class="font-medium">小林 正樹</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span>270h</span>
+                      <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div
+                          class="bg-yellow-500 h-1.5 rounded-full"
+                          style="width: 92%"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-warn px-2 py-0.5 rounded text-xs font-semibold"
+                      >12h 00m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >3h 55m</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="compliance-ok px-2 py-0.5 rounded text-xs font-semibold"
+                      >8h 45m</span
+                    >
+                  </td>
+                  <td><span class="badge badge-yellow">注意</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Violation Alerts -->
+          <div class="card p-5">
+            <h3 class="text-sm font-bold text-gray-700 mb-4">
+              違反・注意アラート履歴
+            </h3>
+            <div class="space-y-3">
+              <div
+                class="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-100"
+              >
+                <div
+                  class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                >
+                  <i
+                    data-lucide="alert-octagon"
+                    class="w-4 h-4 text-red-500"
+                  ></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-bold text-red-700"
+                      >連続運転時間超過</span
+                    >
+                    <span class="text-[10px] text-red-400"
+                      >2026/03/09 14:30</span
+                    >
+                  </div>
+                  <p class="text-xs text-red-600">
+                    山田 花子 — 連続運転4h30m（基準:
+                    4h以内）。休憩なしで東京→静岡間を走行。
+                  </p>
+                  <div class="mt-2">
+                    <button
+                      class="text-xs text-red-700 font-semibold hover:underline"
+                    >
+                      対応記録を確認 →
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100"
+              >
+                <div
+                  class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-yellow-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-bold text-yellow-700"
+                      >拘束時間超過警告</span
+                    >
+                    <span class="text-[10px] text-yellow-500"
+                      >2026/03/10 09:00</span
+                    >
+                  </div>
+                  <p class="text-xs text-yellow-600">
+                    佐藤 一郎 —
+                    月間拘束時間280h（上限293hまで残り13h）。今月の残り稼働を要調整。
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100"
+              >
+                <div
+                  class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-yellow-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-bold text-yellow-700"
+                      >1日運転時間注意</span
+                    >
+                    <span class="text-[10px] text-yellow-500"
+                      >2026/03/08 18:00</span
+                    >
+                  </div>
+                  <p class="text-xs text-yellow-600">
+                    小林 正樹 — 1日運転時間12h00m（基準:
+                    13h以内、残余裕1h）。シフト調整を推奨。
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100"
+              >
+                <div
+                  class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0 mt-0.5"
+                >
+                  <i
+                    data-lucide="alert-triangle"
+                    class="w-4 h-4 text-yellow-600"
+                  ></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-bold text-yellow-700"
+                      >休息期間短縮</span
+                    >
+                    <span class="text-[10px] text-yellow-500"
+                      >2026/03/07 22:00</span
+                    >
+                  </div>
+                  <p class="text-xs text-yellow-600">
+                    佐藤 一郎 — 休息期間8h10m（基準:
+                    8h以上）。余裕が少ないため翌日の出発時刻を遅延推奨。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: Analytics ============ -->
+        <div id="page-analytics" class="page">
+          <!-- Insight Cards -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style="background: #d1fae5"
+                >
+                  <i
+                    data-lucide="trending-up"
+                    class="w-4 h-4"
+                    style="color: #065f46"
+                  ></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">効率改善</span>
+              </div>
+              <p class="text-xs text-gray-500 leading-relaxed">
+                先月比で平均走行距離が<span class="font-bold text-green-600"
+                  >+8.3%</span
+                >向上。ルート最適化の効果が出ています。
+              </p>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50"
+                >
+                  <i data-lucide="clock" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700"
+                  >ピーク時間帯</span
+                >
+              </div>
+              <p class="text-xs text-gray-500 leading-relaxed">
+                運行が最も集中するのは<span class="font-bold text-blue-600"
+                  >6:00-9:00</span
+                >。出発時刻の分散でさらに効率化が可能。
+              </p>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50"
+                >
+                  <i data-lucide="fuel" class="w-4 h-4 text-amber-600"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">燃費推移</span>
+              </div>
+              <p class="text-xs text-gray-500 leading-relaxed">
+                全車両平均燃費<span class="font-bold text-amber-600"
+                  >4.18 km/L</span
+                >。前月4.05 km/Lから改善傾向。
+              </p>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                時間帯別運行数
+              </h3>
+              <canvas id="chartHourlyOps" height="220"></canvas>
+            </div>
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                曜日別走行距離
+              </h3>
+              <canvas id="chartWeekdayDistance" height="220"></canvas>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">ルート別頻度</h3>
+              <canvas id="chartRouteFrequency" height="220"></canvas>
+            </div>
+            <div class="card p-5">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">燃費トレンド</h3>
+              <canvas id="chartFuelTrend" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PAGE: Settings ============ -->
+        <div id="page-settings" class="page">
+          <!-- Tabs -->
+          <div class="flex gap-1 mb-6 border-b border-gray-200">
+            <button
+              class="settings-tab active px-4 py-2 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700"
+              onclick="switchSettingsTab(this, 'driver-master')"
+            >
+              ドライバーマスタ
+            </button>
+            <button
+              class="settings-tab px-4 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600"
+              onclick="switchSettingsTab(this, 'vehicle-master')"
+            >
+              車両マスタ
+            </button>
+            <button
+              class="settings-tab px-4 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600"
+              onclick="switchSettingsTab(this, 'route-master')"
+            >
+              運行ルートマスタ
+            </button>
+            <button
+              class="settings-tab px-4 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600"
+              onclick="switchSettingsTab(this, 'approval-flow')"
+            >
+              承認フロー設定
+            </button>
+          </div>
+
+          <!-- Driver Master -->
+          <div id="settings-driver-master" class="settings-panel">
+            <div class="card overflow-hidden">
+              <div
+                class="p-4 border-b border-gray-100 flex items-center justify-between"
+              >
+                <h3 class="text-sm font-bold text-gray-700">
+                  登録ドライバー一覧
+                </h3>
+                <button
+                  class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
+                  onclick="showToast('ドライバー追加ダイアログを開きました')"
+                >
+                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> 新規追加
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>氏名</th>
+                    <th>免許種別</th>
+                    <th>入社日</th>
+                    <th>所属</th>
+                    <th>ステータス</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>D001</td>
+                    <td class="font-medium">田中 太郎</td>
+                    <td>大型</td>
+                    <td>2018/04/01</td>
+                    <td>第1運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D002</td>
+                    <td class="font-medium">佐藤 一郎</td>
+                    <td>大型</td>
+                    <td>2019/07/15</td>
+                    <td>第1運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D003</td>
+                    <td class="font-medium">鈴木 健二</td>
+                    <td>中型</td>
+                    <td>2020/01/10</td>
+                    <td>第2運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D004</td>
+                    <td class="font-medium">高橋 誠</td>
+                    <td>大型</td>
+                    <td>2017/10/01</td>
+                    <td>第1運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D005</td>
+                    <td class="font-medium">渡辺 洋一</td>
+                    <td>大型</td>
+                    <td>2021/04/01</td>
+                    <td>第2運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D006</td>
+                    <td class="font-medium">山田 花子</td>
+                    <td>中型</td>
+                    <td>2022/06/15</td>
+                    <td>第2運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D007</td>
+                    <td class="font-medium">伊藤 大輔</td>
+                    <td>大型</td>
+                    <td>2020/09/01</td>
+                    <td>第1運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>D008</td>
+                    <td class="font-medium">小林 正樹</td>
+                    <td>大型</td>
+                    <td>2019/03/01</td>
+                    <td>第1運行課</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                    <td>
+                      <button class="text-xs text-blue-600 hover:underline">
+                        編集
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Vehicle Master -->
+          <div
+            id="settings-vehicle-master"
+            class="settings-panel"
+            style="display: none"
+          >
+            <div class="card overflow-hidden">
+              <div
+                class="p-4 border-b border-gray-100 flex items-center justify-between"
+              >
+                <h3 class="text-sm font-bold text-gray-700">登録車両一覧</h3>
+                <button
+                  class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
+                  onclick="showToast('車両追加ダイアログを開きました')"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新規追加
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>車両ID</th>
+                    <th>車番</th>
+                    <th>車種</th>
+                    <th>最大積載量</th>
+                    <th>年式</th>
+                    <th>次回車検</th>
+                    <th>ステータス</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>V001</td>
+                    <td class="font-medium">品川 100 あ 12-34</td>
+                    <td>4t ウイング車</td>
+                    <td>4.0 t</td>
+                    <td>2022年</td>
+                    <td>2026/08/15</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                  </tr>
+                  <tr>
+                    <td>V002</td>
+                    <td class="font-medium">足立 200 か 56-78</td>
+                    <td>10t 冷凍車</td>
+                    <td>10.0 t</td>
+                    <td>2021年</td>
+                    <td>2026/05/20</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                  </tr>
+                  <tr>
+                    <td>V003</td>
+                    <td class="font-medium">練馬 300 さ 90-12</td>
+                    <td>4t バン車</td>
+                    <td>4.0 t</td>
+                    <td>2023年</td>
+                    <td>2027/01/10</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                  </tr>
+                  <tr>
+                    <td>V004</td>
+                    <td class="font-medium">品川 100 い 34-56</td>
+                    <td>大型 ウイング車</td>
+                    <td>13.5 t</td>
+                    <td>2020年</td>
+                    <td>2026/04/01</td>
+                    <td><span class="badge badge-yellow">車検間近</span></td>
+                  </tr>
+                  <tr>
+                    <td>V005</td>
+                    <td class="font-medium">足立 200 く 78-90</td>
+                    <td>10t 平ボディ</td>
+                    <td>10.0 t</td>
+                    <td>2022年</td>
+                    <td>2026/11/30</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                  </tr>
+                  <tr>
+                    <td>V006</td>
+                    <td class="font-medium">練馬 300 た 11-22</td>
+                    <td>4t 冷蔵車</td>
+                    <td>3.5 t</td>
+                    <td>2023年</td>
+                    <td>2027/03/15</td>
+                    <td><span class="badge badge-green">稼働中</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Route Master -->
+          <div
+            id="settings-route-master"
+            class="settings-panel"
+            style="display: none"
+          >
+            <div class="card overflow-hidden">
+              <div
+                class="p-4 border-b border-gray-100 flex items-center justify-between"
+              >
+                <h3 class="text-sm font-bold text-gray-700">登録ルート一覧</h3>
+                <button
+                  class="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
+                  onclick="showToast('ルート追加ダイアログを開きました')"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新規追加
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ルートID</th>
+                    <th>ルート名</th>
+                    <th>出発地</th>
+                    <th>到着地</th>
+                    <th>距離</th>
+                    <th>標準所要時間</th>
+                    <th>使用頻度</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>R001</td>
+                    <td class="font-medium">東京→横浜 定期便</td>
+                    <td>東京営業所</td>
+                    <td>横浜倉庫</td>
+                    <td>45 km</td>
+                    <td>1h 30m</td>
+                    <td><span class="badge badge-green">高</span></td>
+                  </tr>
+                  <tr>
+                    <td>R002</td>
+                    <td class="font-medium">横浜→川崎 配送</td>
+                    <td>横浜倉庫</td>
+                    <td>川崎配送センター</td>
+                    <td>32 km</td>
+                    <td>1h 00m</td>
+                    <td><span class="badge badge-green">高</span></td>
+                  </tr>
+                  <tr>
+                    <td>R003</td>
+                    <td class="font-medium">東京→埼玉 幹線</td>
+                    <td>東京営業所</td>
+                    <td>埼玉物流センター</td>
+                    <td>55 km</td>
+                    <td>1h 45m</td>
+                    <td><span class="badge badge-blue">中</span></td>
+                  </tr>
+                  <tr>
+                    <td>R004</td>
+                    <td class="font-medium">東京→千葉 定期便</td>
+                    <td>東京営業所</td>
+                    <td>千葉港倉庫</td>
+                    <td>62 km</td>
+                    <td>2h 00m</td>
+                    <td><span class="badge badge-blue">中</span></td>
+                  </tr>
+                  <tr>
+                    <td>R005</td>
+                    <td class="font-medium">東京→静岡 長距離</td>
+                    <td>東京営業所</td>
+                    <td>静岡配送拠点</td>
+                    <td>180 km</td>
+                    <td>3h 30m</td>
+                    <td><span class="badge badge-gray">低</span></td>
+                  </tr>
+                  <tr>
+                    <td>R006</td>
+                    <td class="font-medium">川崎→東京 帰庫</td>
+                    <td>川崎配送センター</td>
+                    <td>東京営業所</td>
+                    <td>38 km</td>
+                    <td>1h 15m</td>
+                    <td><span class="badge badge-green">高</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Approval Flow -->
+          <div
+            id="settings-approval-flow"
+            class="settings-panel"
+            style="display: none"
+          >
+            <div class="card p-6">
+              <h3 class="text-sm font-bold text-gray-700 mb-4">
+                承認フロー設定
+              </h3>
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 mb-2"
+                    >承認ステップ</label
+                  >
+                  <div class="space-y-3">
+                    <div
+                      class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div
+                        class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold"
+                      >
+                        1
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-700">
+                          ドライバー提出
+                        </div>
+                        <div class="text-xs text-gray-400">
+                          日報入力後、ドライバーが提出ボタンを押下
+                        </div>
+                      </div>
+                      <span class="badge badge-green">有効</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div
+                        class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold"
+                      >
+                        2
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-700">
+                          運行管理者確認
+                        </div>
+                        <div class="text-xs text-gray-400">
+                          運行管理者が日報内容を確認し、承認または差戻し
+                        </div>
+                      </div>
+                      <span class="badge badge-green">有効</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div
+                        class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold"
+                      >
+                        3
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-700">
+                          営業所長最終承認
+                        </div>
+                        <div class="text-xs text-gray-400">
+                          営業所長による最終確認（オプション）
+                        </div>
+                      </div>
+                      <span class="badge badge-gray">無効</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      class="block text-xs font-semibold text-gray-500 mb-2"
+                      >自動リマインド</label
+                    >
+                    <div class="space-y-2">
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" checked class="rounded" />
+                        未提出者へ17:00に通知
+                      </label>
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" checked class="rounded" />
+                        差戻し時に即時通知
+                      </label>
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" class="rounded" />
+                        承認完了時に通知
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      class="block text-xs font-semibold text-gray-500 mb-2"
+                      >法定チェック</label
+                    >
+                    <div class="space-y-2">
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" checked class="rounded" />
+                        連続運転時間の自動チェック
+                      </label>
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" checked class="rounded" />
+                        拘束時間超過の警告
+                      </label>
+                      <label
+                        class="flex items-center gap-2 text-sm text-gray-600"
+                      >
+                        <input type="checkbox" checked class="rounded" />
+                        休息期間不足の検知
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <button
+                    class="btn-primary"
+                    onclick="showToast('設定を保存しました')"
+                  >
+                    設定を保存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+      // ====== Navigation ======
+      const pageTitles = {
+        dashboard: ["ダッシュボード", "運行状況の概要"],
+        entry: ["日報入力", "デジタル運転日報の入力・提出"],
+        list: ["日報一覧", "提出された日報の確認・承認"],
+        performance: ["運行実績", "ドライバー別の運行パフォーマンス"],
+        compliance: ["法定管理", "改善基準告示の遵守状況"],
+        analytics: ["分析", "運行データの分析・インサイト"],
+        settings: ["設定", "マスタデータ・承認フローの管理"],
+      };
+
+      let chartInstances = {};
+
+      function navigate(page) {
+        // Update active page
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document.getElementById("page-" + page).classList.add("active");
+
+        // Update nav
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document
+          .querySelector(`.nav-item[data-page="${page}"]`)
+          .classList.add("active");
+
+        // Update header
+        const [title, desc] = pageTitles[page];
+        document.getElementById("pageTitle").textContent = title;
+        document.getElementById("pageDesc").textContent = desc;
+
+        // Init charts if needed
+        setTimeout(() => {
+          if (page === "dashboard") initDashboardCharts();
+          if (page === "performance") initPerformanceCharts();
+          if (page === "analytics") initAnalyticsCharts();
+        }, 50);
+
+        return false;
+      }
+
+      // ====== Toast ======
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      // ====== Entry Page: Trip Row Management ======
+      let tripCount = 3;
+
+      function addTripRow() {
+        tripCount++;
+        const tbody = document.getElementById("tripBody");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="text-center font-medium">${tripCount}</td>
+          <td><input type="time" class="w-28" /></td>
+          <td><input type="time" class="w-28" /></td>
+          <td><input type="text" placeholder="出発地" class="w-28" /></td>
+          <td><input type="text" placeholder="到着地" class="w-28" /></td>
+          <td><input type="number" placeholder="0" class="w-20 trip-distance" onchange="calcTotals()" /></td>
+          <td><input type="text" placeholder="荷物名" class="w-24" /></td>
+          <td><input type="number" placeholder="0" class="w-20" step="0.1" /></td>
+          <td><button onclick="removeTripRow(this)" class="btn-danger text-xs py-1 px-2"><i data-lucide="trash-2" class="w-3 h-3"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+        lucide.createIcons();
+        calcTotals();
+      }
+
+      function removeTripRow(btn) {
+        const row = btn.closest("tr");
+        row.remove();
+        // Renumber
+        const rows = document.querySelectorAll("#tripBody tr");
+        rows.forEach((r, i) => {
+          r.querySelector("td").textContent = i + 1;
+        });
+        tripCount = rows.length;
+        calcTotals();
+      }
+
+      function calcTotals() {
+        const distances = document.querySelectorAll(".trip-distance");
+        let total = 0;
+        distances.forEach((d) => {
+          total += parseFloat(d.value) || 0;
+        });
+        const rows = document.querySelectorAll("#tripBody tr");
+        document.getElementById("totalTrips").textContent = rows.length;
+        document.getElementById("totalDistance").textContent = total + " km";
+      }
+
+      // ====== Settings Tabs ======
+      function switchSettingsTab(btn, panelId) {
+        document.querySelectorAll(".settings-tab").forEach((t) => {
+          t.classList.remove("active");
+          t.classList.remove("border-emerald-600", "text-emerald-700");
+          t.classList.add("border-transparent", "text-gray-400");
+        });
+        btn.classList.add("active", "border-emerald-600", "text-emerald-700");
+        btn.classList.remove("border-transparent", "text-gray-400");
+
+        document
+          .querySelectorAll(".settings-panel")
+          .forEach((p) => (p.style.display = "none"));
+        document.getElementById("settings-" + panelId).style.display = "block";
+      }
+
+      // ====== Charts ======
+      const chartColors = {
+        primary: "#065f46",
+        secondary: "#10b981",
+        accent: "#0c4a6e",
+        light: "#d1fae5",
+        grid: "#f1f5f9",
+      };
+
+      const defaultChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: chartColors.grid },
+            ticks: { font: { size: 11 } },
+          },
+          y: {
+            grid: { color: chartColors.grid },
+            ticks: { font: { size: 11 } },
+          },
+        },
+      };
+
+      function destroyChart(id) {
+        if (chartInstances[id]) {
+          chartInstances[id].destroy();
+          delete chartInstances[id];
+        }
+      }
+
+      function initDashboardCharts() {
+        // Submission Rate Line Chart
+        destroyChart("chartSubmissionRate");
+        const ctx1 = document.getElementById("chartSubmissionRate");
+        if (!ctx1) return;
+        chartInstances["chartSubmissionRate"] = new Chart(ctx1, {
+          type: "line",
+          data: {
+            labels: [
+              "3/1",
+              "3/2",
+              "3/3",
+              "3/4",
+              "3/5",
+              "3/6",
+              "3/7",
+              "3/8",
+              "3/9",
+              "3/10",
+            ],
+            datasets: [
+              {
+                label: "提出率(%)",
+                data: [
+                  75, 81.3, 87.5, 93.8, 87.5, 81.3, 93.8, 87.5, 93.8, 87.5,
+                ],
+                borderColor: chartColors.secondary,
+                backgroundColor: chartColors.light,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: chartColors.secondary,
+                pointBorderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                min: 50,
+                max: 100,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => v + "%",
+                },
+              },
+            },
+          },
+        });
+
+        // Driver Distance Bar Chart
+        destroyChart("chartDriverDistance");
+        const ctx2 = document.getElementById("chartDriverDistance");
+        if (!ctx2) return;
+        chartInstances["chartDriverDistance"] = new Chart(ctx2, {
+          type: "bar",
+          data: {
+            labels: [
+              "田中",
+              "佐藤",
+              "鈴木",
+              "高橋",
+              "渡辺",
+              "山田",
+              "伊藤",
+              "小林",
+            ],
+            datasets: [
+              {
+                label: "走行距離(km)",
+                data: [285, 312, 198, 267, 221, 245, 178, 289],
+                backgroundColor: [
+                  chartColors.secondary,
+                  chartColors.primary,
+                  chartColors.secondary,
+                  chartColors.primary,
+                  chartColors.secondary,
+                  chartColors.primary,
+                  chartColors.secondary,
+                  chartColors.primary,
+                ],
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => v + "km",
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function initPerformanceCharts() {
+        // Monthly Distance Line Chart
+        destroyChart("chartMonthlyDistance");
+        const ctx3 = document.getElementById("chartMonthlyDistance");
+        if (!ctx3) return;
+        chartInstances["chartMonthlyDistance"] = new Chart(ctx3, {
+          type: "line",
+          data: {
+            labels: [
+              "2025/10",
+              "2025/11",
+              "2025/12",
+              "2026/01",
+              "2026/02",
+              "2026/03",
+            ],
+            datasets: [
+              {
+                label: "全体平均",
+                data: [5800, 6200, 5500, 6100, 6400, 6800],
+                borderColor: chartColors.primary,
+                backgroundColor: "transparent",
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: chartColors.primary,
+                pointBorderWidth: 2,
+              },
+              {
+                label: "目標",
+                data: [6000, 6000, 6000, 6000, 6000, 6000],
+                borderColor: "#94a3b8",
+                borderDash: [5, 5],
+                backgroundColor: "transparent",
+                tension: 0,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: { font: { size: 11 }, boxWidth: 12 },
+              },
+            },
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => (v / 1000).toFixed(1) + "k km",
+                },
+              },
+            },
+          },
+        });
+
+        // Driver Comparison Horizontal Bar
+        destroyChart("chartDriverComparison");
+        const ctx4 = document.getElementById("chartDriverComparison");
+        if (!ctx4) return;
+        chartInstances["chartDriverComparison"] = new Chart(ctx4, {
+          type: "bar",
+          data: {
+            labels: [
+              "佐藤 一郎",
+              "田中 太郎",
+              "小林 正樹",
+              "高橋 誠",
+              "鈴木 健二",
+              "渡辺 洋一",
+              "山田 花子",
+              "伊藤 大輔",
+            ],
+            datasets: [
+              {
+                label: "総走行距離(km)",
+                data: [2456, 2180, 1890, 2120, 1750, 1620, 1580, 1450],
+                backgroundColor: chartColors.secondary,
+                borderRadius: 4,
+              },
+              {
+                label: "安全スコア(x20)",
+                data: [1560, 1840, 1500, 1760, 1900, 1700, 1360, 1800],
+                backgroundColor: chartColors.accent,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            indexAxis: "y",
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: { font: { size: 11 }, boxWidth: 12 },
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: chartColors.grid },
+                ticks: { font: { size: 10 } },
+              },
+              y: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+              },
+            },
+          },
+        });
+      }
+
+      function initAnalyticsCharts() {
+        // Hourly Operations Bar
+        destroyChart("chartHourlyOps");
+        const ctx5 = document.getElementById("chartHourlyOps");
+        if (!ctx5) return;
+        chartInstances["chartHourlyOps"] = new Chart(ctx5, {
+          type: "bar",
+          data: {
+            labels: [
+              "5時",
+              "6時",
+              "7時",
+              "8時",
+              "9時",
+              "10時",
+              "11時",
+              "12時",
+              "13時",
+              "14時",
+              "15時",
+              "16時",
+              "17時",
+              "18時",
+              "19時",
+            ],
+            datasets: [
+              {
+                label: "運行数",
+                data: [2, 8, 12, 15, 10, 8, 6, 3, 7, 9, 11, 8, 5, 3, 1],
+                backgroundColor: chartColors.secondary,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                beginAtZero: true,
+                ticks: { font: { size: 11 } },
+              },
+            },
+          },
+        });
+
+        // Weekday Distance Bar
+        destroyChart("chartWeekdayDistance");
+        const ctx6 = document.getElementById("chartWeekdayDistance");
+        if (!ctx6) return;
+        chartInstances["chartWeekdayDistance"] = new Chart(ctx6, {
+          type: "bar",
+          data: {
+            labels: ["月", "火", "水", "木", "金", "土"],
+            datasets: [
+              {
+                label: "平均走行距離(km)",
+                data: [1850, 2100, 1950, 2200, 2050, 980],
+                backgroundColor: [
+                  chartColors.primary,
+                  chartColors.secondary,
+                  chartColors.primary,
+                  chartColors.secondary,
+                  chartColors.primary,
+                  "#94a3b8",
+                ],
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => v + "km",
+                },
+              },
+            },
+          },
+        });
+
+        // Route Frequency Horizontal Bar
+        destroyChart("chartRouteFrequency");
+        const ctx7 = document.getElementById("chartRouteFrequency");
+        if (!ctx7) return;
+        chartInstances["chartRouteFrequency"] = new Chart(ctx7, {
+          type: "bar",
+          data: {
+            labels: [
+              "東京→横浜",
+              "横浜→川崎",
+              "川崎→東京(帰庫)",
+              "東京→埼玉",
+              "東京→千葉",
+              "東京→静岡",
+            ],
+            datasets: [
+              {
+                label: "運行回数",
+                data: [48, 42, 45, 28, 22, 8],
+                backgroundColor: chartColors.secondary,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            indexAxis: "y",
+            scales: {
+              x: {
+                grid: { color: chartColors.grid },
+                ticks: { font: { size: 11 } },
+                beginAtZero: true,
+              },
+              y: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } },
+              },
+            },
+          },
+        });
+
+        // Fuel Trend Line
+        destroyChart("chartFuelTrend");
+        const ctx8 = document.getElementById("chartFuelTrend");
+        if (!ctx8) return;
+        chartInstances["chartFuelTrend"] = new Chart(ctx8, {
+          type: "line",
+          data: {
+            labels: [
+              "2025/10",
+              "2025/11",
+              "2025/12",
+              "2026/01",
+              "2026/02",
+              "2026/03",
+            ],
+            datasets: [
+              {
+                label: "全車両平均(km/L)",
+                data: [3.92, 3.98, 3.85, 4.02, 4.05, 4.18],
+                borderColor: chartColors.secondary,
+                backgroundColor: chartColors.light,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: "#fff",
+                pointBorderColor: chartColors.secondary,
+                pointBorderWidth: 2,
+              },
+              {
+                label: "目標(km/L)",
+                data: [4.0, 4.0, 4.0, 4.0, 4.0, 4.0],
+                borderColor: "#94a3b8",
+                borderDash: [5, 5],
+                backgroundColor: "transparent",
+                tension: 0,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            ...defaultChartOptions,
+            plugins: {
+              legend: {
+                display: true,
+                position: "top",
+                labels: { font: { size: 11 }, boxWidth: 12 },
+              },
+            },
+            scales: {
+              ...defaultChartOptions.scales,
+              y: {
+                ...defaultChartOptions.scales.y,
+                min: 3.5,
+                max: 4.5,
+                ticks: {
+                  font: { size: 11 },
+                  callback: (v) => v.toFixed(1) + " km/L",
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // ====== Init ======
+      document.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+        initDashboardCharts();
+      });
+    </script>
+  </body>
+</html>
