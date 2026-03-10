@@ -1,124 +1,2210 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>図面管理の属人化 | 製造業 | SRD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter','Hiragino Kaku Gothic ProN',sans-serif}
-.page{display:none}.page.active{display:block;animation:fadeIn .25s ease-out}
-.nav-item.active{background:rgba(255,255,255,.15);font-weight:600}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
-input,select,textarea{font-family:inherit}
-</style>
-</head>
-<body class="bg-gray-50">
-<div class="flex h-screen overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>図面管理の属人化 | 製造業 | SRD MVP Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.13);
+        font-weight: 600;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 3px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      }
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+      }
+      .sb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .ta {
+        border-bottom: 2px solid #7c2d12;
+        color: #7c2d12;
+        font-weight: 600;
+      }
+      .ti {
+        border-bottom: 2px solid transparent;
+        color: #9ca3af;
+      }
+      .tb {
+        cursor: pointer;
+        transition: all 0.15s;
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+      .dnum {
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+      .drawing-thumb {
+        width: 100%;
+        aspect-ratio: 1.414;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .drawing-thumb .grid-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(#e5e7eb 1px, transparent 1px),
+          linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+        background-size: 20px 20px;
+        opacity: 0.3;
+      }
+      .ver-line {
+        border-left: 2px solid #e5e7eb;
+        margin-left: 11px;
+        padding-left: 16px;
+      }
+      .ver-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: absolute;
+        left: -22px;
+        top: 6px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+      <aside
+        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
+        style="background: #3d1f0a"
+      >
+        <div class="p-4 border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+            >
+              <i data-lucide="drafting-compass" class="w-5 h-5"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-[13px] truncate">DrawingHub</p>
+              <p class="text-[11px] opacity-50 truncate">
+                図面版数管理システム
+              </p>
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
+          <a
+            data-page="dashboard"
+            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('dashboard')"
+          >
+            <i
+              data-lucide="layout-dashboard"
+              class="w-[18px] h-[18px] shrink-0"
+            ></i
+            ><span>ダッシュボード</span></a
+          >
+          <a
+            data-page="drawings"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('drawings')"
+          >
+            <i data-lucide="file-image" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>図面台帳</span></a
+          >
+          <a
+            data-page="versions"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('versions')"
+          >
+            <i data-lucide="git-branch" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>版数管理</span></a
+          >
+          <a
+            data-page="ecn"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('ecn')"
+          >
+            <i data-lucide="replace" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>設計変更(ECN)</span></a
+          >
+          <a
+            data-page="workflow"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('workflow')"
+          >
+            <i data-lucide="check-square" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>承認ワークフロー</span></a
+          >
+          <a
+            data-page="viewer"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('viewer')"
+          >
+            <i data-lucide="maximize-2" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>ビューア・検索</span></a
+          >
+          <a
+            data-page="distribute"
+            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+            onclick="navigate('distribute')"
+          >
+            <i data-lucide="send" class="w-[18px] h-[18px] shrink-0"></i
+            ><span>配布・出力管理</span></a
+          >
+        </nav>
+        <div class="p-3 border-t border-white/10">
+          <div class="flex items-center gap-2 px-1">
+            <div
+              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+            >
+              松
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] font-medium">松本 設計課長</p>
+              <p class="text-[10px] opacity-40">matsumoto@example.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-<aside class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden" style="background:#7c2d12">
-<div class="p-4 border-b border-white/10">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-<div class="min-w-0"><p class="font-semibold text-[13px] truncate">図面管理の属人化</p>
-<p class="text-[11px] opacity-50 truncate">製造業</p></div>
-</div></div>
-<nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto"><a data-page="dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('dashboard')"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">ダッシュボード</span></a>
-<a data-page="feature" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('feature')"><i data-lucide="folder" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">文書管理</span></a>
-<a data-page="data" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('data')"><i data-lucide="list" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">データ一覧</span></a>
-<a data-page="detail" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('detail')"><i data-lucide="eye" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">詳細</span></a>
-<a data-page="report" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('report')"><i data-lucide="table" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">レポート</span></a>
-<a data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10" onclick="navigate('settings')"><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i><span class="truncate">設定</span></a>
-</nav>
-<div class="p-3 border-t border-white/10">
-<div class="flex items-center gap-2 px-1">
-<div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]">管</div>
-<div class="min-w-0"><p class="text-[11px] font-medium">管理者</p>
-<p class="text-[10px] opacity-40">admin@example.com</p></div>
-</div></div>
-</aside>
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+        >
+          <div>
+            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
+              ダッシュボード
+            </h1>
+            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
+              図面管理・版数・設計変更の全体状況
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-orange-50 text-orange-700"
+              >製造業 設計部門</span
+            >
+            <span
+              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-amber-50 text-amber-700"
+              >MVP Demo</span
+            >
+          </div>
+        </header>
 
-<div class="flex-1 flex flex-col overflow-hidden">
-<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
-<div><h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">ダッシュボード</h1>
-<p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">KPIと最新状況</p></div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] px-2.5 py-1 rounded-full font-medium" style="background:#ffedd5;color:#7c2d12">MVP Demo</span>
-</div></header>
-<main class="flex-1 overflow-auto p-5"><div id="page-dashboard" class="page active"><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">文書総数</span><i data-lucide="file-text" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">272件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +31</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">未承認</span><i data-lucide="clock" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">3件</div><div class="text-[11px] mt-2 text-red-500">↓ -2</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">今月更新</span><i data-lucide="refresh-cw" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">19件</div><div class="text-[11px] mt-2 text-emerald-600">↑ +3</div></div><div class="card p-5 transition-shadow cursor-pointer"><div class="flex items-center justify-between mb-3"><span class="text-[13px] text-gray-500">カテゴリ数</span><i data-lucide="folder" class="w-[18px] h-[18px] text-gray-300"></i></div><div class="text-2xl font-bold" style="color:#7c2d12">12種</div></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-5"><div class="card p-5 lg:col-span-2"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次図面管理推移</h3><div style="height:260px"><canvas id="dC1"></canvas></div></div><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">図面管理の最新状況</h3><div class="space-y-4"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">47時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の図面管理を承認</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">17時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">33時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">26時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤購買担当</span> の図面管理を更新</p><p class="text-[11px] text-gray-400">26時間前</p></div></div></div></div></div></div>
-<div id="page-feature" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="docSearch" type="text" placeholder="文書を検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="upload" class="w-4 h-4"></i>アップロード</button></div><div class="flex gap-2 mb-4"><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">全て</button><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">製造指示書</button><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">検査報告書</button><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">品質記録</button><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">設備台帳</button><button class="text-[12px] px-3 py-1.5 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">図面</button></div><div id="docList" class="space-y-2"><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="製造指示書 文書1"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">製造指示書_2024_11_1</p><p class="text-[11px] text-gray-400">製造指示書 · 145KB · 10/8更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="検査報告書 文書2"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">検査報告書_2026_08_2</p><p class="text-[11px] text-gray-400">検査報告書 · 395KB · 22/8更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="検査報告書 文書3"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">検査報告書_2026_03_3</p><p class="text-[11px] text-gray-400">検査報告書 · 77KB · 17/10更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="製造指示書 文書4"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">製造指示書_2026_09_4</p><p class="text-[11px] text-gray-400">製造指示書 · 351KB · 27/8更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="品質記録 文書5"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">品質記録_2026_02_5</p><p class="text-[11px] text-gray-400">品質記録 · 431KB · 25/2更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="製造指示書 文書6"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">製造指示書_2025_12_6</p><p class="text-[11px] text-gray-400">製造指示書 · 163KB · 24/9更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="品質記録 文書7"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">品質記録_2024_05_7</p><p class="text-[11px] text-gray-400">品質記録 · 416KB · 24/1更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="図面 文書8"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">図面_2025_03_8</p><p class="text-[11px] text-gray-400">図面 · 109KB · 5/6更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="図面 文書9"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">図面_2025_04_9</p><p class="text-[11px] text-gray-400">図面 · 175KB · 23/2更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div><div class="card p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4" data-search="図面 文書10"><div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style="background:#ffedd5"><i data-lucide="file" class="w-5 h-5" style="color:#7c2d12"></i></div><div class="flex-1 min-w-0"><p class="text-[13px] font-medium text-gray-700 truncate">図面_2024_01_10</p><p class="text-[11px] text-gray-400">図面 · 150KB · 3/1更新</p></div><i data-lucide="download" class="w-4 h-4 text-gray-300 hover:text-gray-600 cursor-pointer shrink-0"></i></div></div></div>
-<div id="page-data" class="page"><div class="flex items-center justify-between mb-5 gap-3"><div class="flex-1 max-w-md"><div class="relative"><i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input id="dataSearch" type="text" placeholder="データを検索..." class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"></div></div><div class="flex items-center gap-2"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="filter" class="w-4 h-4"></i>フィルタ</button><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="plus" class="w-4 h-4"></i>新規追加</button></div></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="dataTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',0)">文書番号 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',1)">文書名 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',2)">種別 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',3)">担当者 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',4)">状況 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('dataTbl',5)">更新日 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#3278</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤工場長</td><td class="px-4 py-3 text-[13px]  text-gray-700">品質管理課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/16</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥725万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5997</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中製造課長</td><td class="px-4 py-3 text-[13px]  text-gray-700">購買課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/01/28</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥987万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2186</td><td class="px-4 py-3 text-[13px]  text-gray-700">鈴木品質管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造2課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/20</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥980万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#9220</td><td class="px-4 py-3 text-[13px]  text-gray-700">山田生産管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">購買課</td><td class="px-4 py-3 text-[13px]"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700">完了</span></td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/12</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥159万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#7960</td><td class="px-4 py-3 text-[13px]  text-gray-700">高橋設備保全</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/08</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥690万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#5240</td><td class="px-4 py-3 text-[13px]  text-gray-700">伊藤購買担当</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/17</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥572万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#6846</td><td class="px-4 py-3 text-[13px]  text-gray-700">渡辺設計者</td><td class="px-4 py-3 text-[13px]  text-gray-700">購買課</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥801万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2148</td><td class="px-4 py-3 text-[13px]  text-gray-700">中村品質検査員</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産技術課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/02/15</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥985万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#8569</td><td class="px-4 py-3 text-[13px]  text-gray-700">小林ライン長</td><td class="px-4 py-3 text-[13px]  text-gray-700">品質管理課</td><td class="px-4 py-3 text-[13px]  text-gray-700">停止中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/09</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥318万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#7162</td><td class="px-4 py-3 text-[13px]  text-gray-700">加藤倉庫管理</td><td class="px-4 py-3 text-[13px]  text-gray-700">品質管理課</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/05</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥323万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#4724</td><td class="px-4 py-3 text-[13px]  text-gray-700">佐藤工場長</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造1課</td><td class="px-4 py-3 text-[13px]  text-gray-700">検査中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/28</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥343万</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">#2288</td><td class="px-4 py-3 text-[13px]  text-gray-700">田中製造課長</td><td class="px-4 py-3 text-[13px]  text-gray-700">製造2課</td><td class="px-4 py-3 text-[13px]  text-gray-700">生産中</td><td class="px-4 py-3 text-[13px]  text-gray-700">2026/03/22</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥863万</td></tr></tbody></table></div></div><div class="flex items-center justify-between mt-4"><span class="text-[12px] text-gray-400">12件</span><div class="flex gap-1"><button class="w-8 h-8 rounded-lg text-[12px] font-bold text-white cursor-pointer transition-colors" style=background:#7c2d12>1</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >2</button><button class="w-8 h-8 rounded-lg text-[12px] text-gray-400 hover:bg-gray-100 cursor-pointer transition-colors" >3</button></div></div></div>
-<div id="page-detail" class="page"><div class="card p-5"><div class="flex gap-0 border-b mb-4"><button class="tab-btn px-4 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer" style="border-b-2;border-color:#7c2d12" data-tab="dtlTab-0" onclick="switchTab('dtlTab',0,'#7c2d12')">基本情報</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-1" onclick="switchTab('dtlTab',1,'#7c2d12')">履歴</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-2" onclick="switchTab('dtlTab',2,'#7c2d12')">添付ファイル</button><button class="tab-btn px-4 py-2.5 text-[13px] text-gray-400 transition-colors cursor-pointer" style="border-b-2 border-transparent" data-tab="dtlTab-3" onclick="switchTab('dtlTab',3,'#7c2d12')">コメント</button></div><div data-panel="dtlTab-0" style="display:block"><div class="grid grid-cols-2 gap-4"><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">ID</span><span class="text-[14px] font-medium">#3278</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">担当</span><span class="text-[14px] font-medium">佐藤工場長</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">状態</span><span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700">完了</span></div><div class="p-4 rounded-lg bg-gray-50"><span class="text-[11px] text-gray-400 block mb-1">金額</span><span class="text-[14px] font-bold" style="color:#7c2d12">¥725万</span></div></div></div><div data-panel="dtlTab-1" style="display:none"><div class="space-y-3"><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">佐</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">佐藤工場長</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">47時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">田</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">田中製造課長</span> の図面管理を承認</p><p class="text-[11px] text-gray-400">13時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">鈴</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">鈴木品質管理</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">17時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">山</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">山田生産管理</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">33時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">高</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">高橋設備保全</span> に図面管理をコメント</p><p class="text-[11px] text-gray-400">26時間前</p></div></div><div class="flex gap-3 items-start"><div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style="background:#7c2d12">伊</div><div class="min-w-0"><p class="text-[13px] text-gray-700"><span class="font-medium">伊藤購買担当</span> の図面管理を更新</p><p class="text-[11px] text-gray-400">26時間前</p></div></div></div></div><div data-panel="dtlTab-2" style="display:none"><div class="text-center py-16"><i data-lucide="paperclip" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i><p class="text-[13px] text-gray-400">添付ファイルはありません</p></div></div><div data-panel="dtlTab-3" style="display:none"><div class="space-y-4"><div class="flex gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px]" style="background:#7c2d12">管</div><div class="flex-1 card p-3"><p class="text-[13px] text-gray-700">問題ありません。承認します。</p><p class="text-[11px] text-gray-400 mt-1">2時間前</p></div></div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">コメント追加</label><textarea name="コメント追加" rows="3" placeholder="コメントを入力..." class="w-full px-3 py-2.5 text-[13px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"></textarea><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="send" class="w-4 h-4"></i>送信</button></div></div></div></div>
-<div id="page-report" class="page"><div class="flex items-center justify-between mb-5"><h3 class="font-semibold text-[14px] text-gray-700">月次図面管理推移レポート</h3><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 rounded-lg text-[13px] font-medium border transition-all hover:bg-gray-50 cursor-pointer" style="color:#7c2d12;border-color:#7c2d12"><i data-lucide="download" class="w-4 h-4"></i>エクスポート</button></div><div class="card overflow-hidden"><div class="overflow-x-auto"><table id="rpTbl" class="w-full"><thead class="bg-gray-50/80 border-b"><tr><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',0)">月 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',1)">件数 <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',2)">売上(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',3)">原価(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',4)">粗利(万) <span class="text-gray-300">↕</span></th><th class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-800" onclick="sortTbl('rpTbl',5)">粗利率 <span class="text-gray-300">↕</span></th></tr></thead><tbody><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">1月</td><td class="px-4 py-3 text-[13px]  text-gray-700">25</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥258</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥160</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥98</td><td class="px-4 py-3 text-[13px]  text-gray-700">38.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">2月</td><td class="px-4 py-3 text-[13px]  text-gray-700">23</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥571</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥228</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥343</td><td class="px-4 py-3 text-[13px]  text-gray-700">60.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">3月</td><td class="px-4 py-3 text-[13px]  text-gray-700">30</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥812</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥447</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥365</td><td class="px-4 py-3 text-[13px]  text-gray-700">45.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">4月</td><td class="px-4 py-3 text-[13px]  text-gray-700">6</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥332</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥159</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥173</td><td class="px-4 py-3 text-[13px]  text-gray-700">52.1%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">5月</td><td class="px-4 py-3 text-[13px]  text-gray-700">28</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥260</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥164</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥96</td><td class="px-4 py-3 text-[13px]  text-gray-700">36.9%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">6月</td><td class="px-4 py-3 text-[13px]  text-gray-700">18</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥532</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥218</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥314</td><td class="px-4 py-3 text-[13px]  text-gray-700">59.0%</td></tr><tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"><td class="px-4 py-3 text-[13px] font-medium text-gray-700">合計</td><td class="px-4 py-3 text-[13px]  text-gray-700">130</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥2,765</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,376</td><td class="px-4 py-3 text-[13px]  text-gray-700">¥1,389</td><td class="px-4 py-3 text-[13px]  text-gray-700">50.2%</td></tr></tbody></table></div></div><div class="mt-5"><div class="card p-5"><h3 class="font-semibold text-[13px] text-gray-700 mb-4">月次図面管理推移</h3><div style="height:240px"><canvas id="rpC1"></canvas></div></div></div></div>
-<div id="page-settings" class="page"><div class="max-w-2xl"><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4" style="color:#7c2d12"></i>通知設定</h3><div class="divide-y"><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">メール通知</p><p class="text-[11px] text-gray-400 mt-0.5">新しいタスクが割り当てられた時</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">Slack連携</p><p class="text-[11px] text-gray-400 mt-0.5">ステータス変更時に通知</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">自動バックアップ</p><p class="text-[11px] text-gray-400 mt-0.5">日次でデータをバックアップ</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div><div class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"><div><p class="text-[13px] font-medium text-gray-700">ダークモード</p><p class="text-[11px] text-gray-400 mt-0.5">画面表示をダークテーマに変更</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox"  class="sr-only peer"><div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" style="peer-checked:background:#7c2d12"></div></label></div></div></div><div class="card p-5 mb-5"><h3 class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4" style="color:#7c2d12"></i>表示設定</h3><div class="space-y-4"><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">表示件数</label><select name="表示件数" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">言語</label><select name="言語" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="日本語">日本語</option><option value="English">English</option></select></div><div><label class="block text-[12px] font-medium text-gray-600 mb-1.5">タイムゾーン</label><select name="タイムゾーン" class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"><option value="">選択してください</option><option value="Asia/Tokyo">Asia/Tokyo</option><option value="UTC">UTC</option></select></div></div></div><div class="flex justify-end"><button onclick="" class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer" style="background:#7c2d12"><i data-lucide="save" class="w-4 h-4"></i>保存</button></div></div></div>
-</main>
-</div>
-</div>
+        <main class="flex-1 overflow-auto p-5">
+          <!-- ==================== Dashboard ==================== -->
+          <div id="page-dashboard" class="page active">
+            <div
+              class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-center gap-3"
+            >
+              <i
+                data-lucide="alert-triangle"
+                class="w-5 h-5 text-red-500 shrink-0"
+              ></i>
+              <div class="flex-1">
+                <p class="text-[13px] font-medium text-red-700">
+                  旧版使用アラート:
+                  製造ラインで旧版図面（Rev.B）が使用されています
+                </p>
+                <p class="text-[12px] text-red-600 mt-0.5">
+                  DWG-HP200-003 油圧プレスフレーム —
+                  最新版はRev.D（03/05承認済）。製造2ラインに未配布。
+                </p>
+              </div>
+              <button
+                class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-red-500"
+              >
+                最新版を配布
+              </button>
+            </div>
 
-<script>
-const charts=[];
-const pageConfig=[{"id": "dashboard", "title": "ダッシュボード", "desc": "KPIと最新状況"}, {"id": "feature", "title": "文書管理", "desc": "ファイル・書類管理"}, {"id": "data", "title": "データ一覧", "desc": "検索・並べ替え"}, {"id": "detail", "title": "詳細", "desc": "タブ切替表示"}, {"id": "report", "title": "レポート", "desc": "月次実績"}, {"id": "settings", "title": "設定", "desc": "アプリ設定"}];
-function navigate(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-const el=document.getElementById('page-'+id);
-if(el){el.classList.add('active')}
-document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
-const cfg=pageConfig.find(p=>p.id===id);
-if(cfg){document.getElementById('pageTitle').textContent=cfg.title;
-document.getElementById('pageDesc').textContent=cfg.desc}
-history.replaceState(null,null,'#'+id);
-setTimeout(()=>{charts.forEach(c=>c.resize());if(typeof lucide!=='undefined')lucide.createIcons()},60);
-}
-window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
-document.addEventListener('DOMContentLoaded',()=>{
-navigate(location.hash.slice(1)||pageConfig[0].id);
-if(typeof lucide!=='undefined')lucide.createIcons();
-});
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">管理図面総数</span>
+                  <i
+                    data-lucide="file-image"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-800">
+                  4,283<span class="text-base">件</span>
+                </div>
+                <div class="text-[11px] mt-2 text-gray-400">
+                  うち有効版 3,912件
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500"
+                    >チェックアウト中</span
+                  >
+                  <i
+                    data-lucide="lock"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold" style="color: #7c2d12">
+                  18<span class="text-base">件</span>
+                </div>
+                <div class="text-[11px] mt-2 text-amber-600">
+                  3件が7日以上未返却
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">承認待ち</span>
+                  <i
+                    data-lucide="clock"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-orange-600">
+                  7<span class="text-base">件</span>
+                </div>
+                <div class="text-[11px] mt-2 text-red-500">2件が期限超過</div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[13px] text-gray-500">図面検索時間</span>
+                  <i
+                    data-lucide="search"
+                    class="w-[18px] h-[18px] text-gray-300"
+                  ></i>
+                </div>
+                <div class="text-2xl font-bold text-emerald-600">
+                  12<span class="text-base">秒</span>
+                </div>
+                <div class="text-[11px] mt-2 text-emerald-600">
+                  導入前: 平均23分 → 99%短縮
+                </div>
+              </div>
+            </div>
 
-// dashboard
-charts.push(new Chart(document.getElementById("dC1"),{"type": "line", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], "datasets": [{"label": "実績", "data": [32, 45, 49, 36, 45, 61, 20, 85, 58, 61, 55, 62], "borderColor": "#7c2d12", "backgroundColor": "#7c2d1215", "fill": true, "tension": 0.4, "pointRadius": 3, "pointBackgroundColor": "#7c2d12"}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                導入効果 — 「最新版がどこにあるか分からない」からの脱却
+              </h3>
+              <div class="grid grid-cols-2 gap-6">
+                <div class="bg-red-50/50 rounded-xl p-4 border border-red-100">
+                  <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
+                    <span class="text-[13px] font-semibold text-red-700"
+                      >Before: 個人PC + 共有サーバ分散</span
+                    >
+                  </div>
+                  <div class="space-y-2 text-[12px] text-gray-600">
+                    <div class="flex justify-between">
+                      <span>最新版の所在確認</span
+                      ><span class="font-medium text-red-600"
+                        >担当者に口頭確認（不在時停止）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>図面検索</span
+                      ><span class="font-medium text-red-600"
+                        >平均23分（見つからない事も）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>旧版使用事故</span
+                      ><span class="font-medium text-red-600"
+                        >年間8件（手戻り¥2,400万）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>版数管理</span
+                      ><span class="font-medium text-red-600"
+                        >ファイル名_最新_v3_final2.dwg</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>設計変更の伝達</span
+                      ><span class="font-medium text-red-600"
+                        >口頭 + メール（見落とし頻発）</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100"
+                >
+                  <div class="flex items-center gap-2 mb-3">
+                    <i
+                      data-lucide="check-circle-2"
+                      class="w-4 h-4 text-emerald-500"
+                    ></i>
+                    <span class="text-[13px] font-semibold text-emerald-700"
+                      >After: DrawingHub導入</span
+                    >
+                  </div>
+                  <div class="space-y-2 text-[12px] text-gray-600">
+                    <div class="flex justify-between">
+                      <span>最新版の所在確認</span
+                      ><span class="font-medium text-emerald-600"
+                        >常に最新版を自動表示</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>図面検索</span
+                      ><span class="font-medium text-emerald-600"
+                        >12秒（図番・品名・全文）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>旧版使用事故</span
+                      ><span class="font-medium text-emerald-600"
+                        >0件（配布管理+アラート）</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>版数管理</span
+                      ><span class="font-medium text-emerald-600"
+                        >自動採番+差分比較</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span>設計変更の伝達</span
+                      ><span class="font-medium text-emerald-600"
+                        >ECN→承認→自動配布</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// feature
-document.getElementById("docSearch").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("#docList [data-search]").forEach(el=>{el.style.display=el.dataset.search.toLowerCase().includes(q)?"":"none"});});
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  月次 図面登録・改訂推移
+                </h3>
+                <div style="height: 260px"><canvas id="dTrend"></canvas></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                  図面種別 構成比
+                </h3>
+                <div style="height: 260px"><canvas id="dType"></canvas></div>
+              </div>
+            </div>
 
-// data
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                直近のアクティビティ
+              </h3>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-[11px] text-emerald-700 font-medium shrink-0"
+                  >
+                    承
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">村上部長</span> が
+                      <span class="dnum">DWG-CV100-012</span> Rev.C を承認
+                    </p>
+                    <p class="text-[11px] text-gray-400">20分前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[11px] text-blue-700 font-medium shrink-0"
+                  >
+                    登
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">田辺</span> が
+                      <span class="dnum">DWG-JIG50A-005</span>
+                      新規図面を登録（検図待ち）
+                    </p>
+                    <p class="text-[11px] text-gray-400">1時間前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-[11px] text-amber-700 font-medium shrink-0"
+                  >
+                    変
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">松本</span> が
+                      ECN-2026-042「HP-200 フレーム板厚変更」を起票
+                    </p>
+                    <p class="text-[11px] text-gray-400">3時間前</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-[11px] text-purple-700 font-medium shrink-0"
+                  >
+                    配
+                  </div>
+                  <div>
+                    <p class="text-[13px] text-gray-700">
+                      <span class="font-medium">システム</span> が
+                      <span class="dnum">DWG-HP200-008</span> Rev.E
+                      を製造1ラインに自動配布
+                    </p>
+                    <p class="text-[11px] text-gray-400">5時間前</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ==================== 図面台帳 ==================== -->
+          <div id="page-drawings" class="page">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    placeholder="図番・品名・担当者で検索..."
+                    class="pl-10 pr-4 py-2 text-[13px] bg-white border rounded-lg w-[300px] focus:outline-none focus:ring-2 focus:ring-orange-100"
+                  />
+                </div>
+                <select
+                  class="text-[13px] border rounded-lg px-3 py-2 bg-white focus:outline-none"
+                >
+                  <option>全種別</option>
+                  <option>組立図</option>
+                  <option>部品図</option>
+                  <option>配管図</option>
+                  <option>電気図</option>
+                  <option>治具図</option>
+                </select>
+                <select
+                  class="text-[13px] border rounded-lg px-3 py-2 bg-white focus:outline-none"
+                >
+                  <option>全ステータス</option>
+                  <option>有効</option>
+                  <option>改訂中</option>
+                  <option>廃止</option>
+                  <option>検図待ち</option>
+                </select>
+              </div>
+              <button
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[13px] font-medium cursor-pointer hover:opacity-90 transition"
+                style="background: #7c2d12"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>新規図面登録
+              </button>
+            </div>
 
+            <div class="card overflow-hidden mb-5">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        図面番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        図面名称
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        種別
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        最新版
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        サイズ
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        設計者
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        最終更新
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        ステータス
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase"
+                      >
+                        操作
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-HP200-001
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        油圧プレスHP-200 総組立図
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">組立図</span>
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.E
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">松本</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/05
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >有効</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer bg-amber-50/20"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-HP200-003
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        HP-200 フレーム部品図
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >部品図</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.D
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A2</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">松本</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/05
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >配布未完</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-HP200-008
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        HP-200 油圧回路図
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-purple-50 text-purple-700"
+                          >配管図</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.E
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">田辺</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/08
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >有効</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-CV100-012
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        コンベアCV-100 駆動部組立図
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">組立図</span>
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.C
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">中西</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >有効</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-JIG50A-005
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        精密研磨治具 JIG-50A 本体
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >治具図</span
+                        >
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.A
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A2</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">田辺</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/03/10
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700"
+                          >検図待ち</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    >
+                      <td
+                        class="px-4 py-3 dnum font-medium"
+                        style="color: #7c2d12"
+                      >
+                        DWG-HP200-015
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        HP-200 電装配線図
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-rose-50 text-rose-700">電気図</span>
+                      </td>
+                      <td
+                        class="px-4 py-3 text-[13px] font-medium text-gray-700"
+                      >
+                        Rev.C
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">A1</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">岡田</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        2026/02/18
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >有効</span
+                        >
+                      </td>
+                      <td class="px-4 py-3">
+                        <button
+                          class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                        >
+                          閲覧
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-// detail
+            <div
+              class="text-[12px] text-gray-400 flex items-center justify-between"
+            >
+              <span>1-6 / 4,283件を表示</span>
+              <div class="flex gap-1">
+                <button
+                  class="px-3 py-1 rounded border text-gray-500 cursor-pointer hover:bg-gray-50"
+                >
+                  前へ
+                </button>
+                <button
+                  class="px-3 py-1 rounded border text-white cursor-pointer"
+                  style="background: #7c2d12"
+                >
+                  1
+                </button>
+                <button
+                  class="px-3 py-1 rounded border text-gray-500 cursor-pointer hover:bg-gray-50"
+                >
+                  2
+                </button>
+                <button
+                  class="px-3 py-1 rounded border text-gray-500 cursor-pointer hover:bg-gray-50"
+                >
+                  3
+                </button>
+                <button
+                  class="px-3 py-1 rounded border text-gray-500 cursor-pointer hover:bg-gray-50"
+                >
+                  次へ
+                </button>
+              </div>
+            </div>
+          </div>
 
-function switchTab(gid,idx,color){
-document.querySelectorAll('[data-tab^="'+gid+'"]').forEach((b,i)=>{
-b.style.borderColor=i===idx?color:'transparent';
-b.classList.toggle('font-semibold',i===idx);b.classList.toggle('text-gray-400',i!==idx);});
-document.querySelectorAll('[data-panel^="'+gid+'"]').forEach((p,i)=>{
-p.style.display=i===idx?'block':'none';});}
+          <!-- ==================== 版数管理 ==================== -->
+          <div id="page-versions" class="page">
+            <div class="card p-5 mb-5">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="font-semibold text-[14px] text-gray-800">
+                    DWG-HP200-003 HP-200 フレーム部品図
+                  </h3>
+                  <p class="text-[12px] text-gray-400 mt-1">
+                    設計者: 松本 | サイズ: A2 | 作成日: 2025/04/12
+                  </p>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                  >
+                    <i data-lucide="git-compare" class="w-3.5 h-3.5"></i
+                    >版間比較
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                    style="background: #7c2d12"
+                  >
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>チェックアウト
+                  </button>
+                </div>
+              </div>
 
+              <!-- Version Timeline -->
+              <div class="space-y-0">
+                <div class="relative ver-line py-3">
+                  <div class="ver-dot" style="background: #7c2d12"></div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[13px] font-semibold text-gray-800"
+                          >Rev.D</span
+                        ><span class="sb bg-emerald-50 text-emerald-700"
+                          >最新・有効</span
+                        ><span class="sb bg-amber-50 text-amber-700"
+                          >配布未完</span
+                        >
+                      </div>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        フレーム板厚 t12→t16に変更（ECN-2026-042）
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        2026/03/05 — 松本 → 検図:中西 → 承認:村上
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <button
+                        class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                      >
+                        閲覧
+                      </button>
+                      <button
+                        class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                      >
+                        DL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="relative ver-line py-3">
+                  <div class="ver-dot" style="background: #d1d5db"></div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[13px] font-semibold text-gray-600"
+                          >Rev.C</span
+                        ><span class="sb bg-gray-100 text-gray-500">旧版</span>
+                      </div>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        リブ追加（強度不足対応 ECN-2025-128）
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        2025/11/20 — 松本 → 検図:田辺 → 承認:村上
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <button
+                        class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                      >
+                        閲覧
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="relative ver-line py-3">
+                  <div class="ver-dot" style="background: #d1d5db"></div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[13px] font-semibold text-gray-600"
+                          >Rev.B</span
+                        ><span class="sb bg-red-50 text-red-600"
+                          >旧版（製造で使用中⚠）</span
+                        >
+                      </div>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        加工公差修正（±0.1→±0.05）
+                      </p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        2025/08/14 — 松本 → 検図:中西 → 承認:村上
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <button
+                        class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                      >
+                        閲覧
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="relative ver-line py-3">
+                  <div class="ver-dot" style="background: #d1d5db"></div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[13px] font-semibold text-gray-600"
+                          >Rev.A</span
+                        ><span class="sb bg-gray-100 text-gray-500">初版</span>
+                      </div>
+                      <p class="text-[12px] text-gray-500 mt-1">初版発行</p>
+                      <p class="text-[11px] text-gray-400 mt-0.5">
+                        2025/04/12 — 松本 → 検図:中西 → 承認:村上
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <button
+                        class="px-2 py-1 rounded text-[11px] border text-gray-500 cursor-pointer hover:bg-gray-50"
+                      >
+                        閲覧
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-// report
+            <!-- Checkout Status -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                チェックアウト中の図面（18件）
+              </h3>
+              <div class="border rounded-lg overflow-hidden">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        図面番号
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        図面名称
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        担当者
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        チェックアウト日
+                      </th>
+                      <th
+                        class="px-4 py-2 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        経過日数
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-t bg-red-50/20">
+                      <td class="px-4 py-2 dnum" style="color: #7c2d12">
+                        DWG-HP200-022
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        HP-200 カバー部品図
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-600">岡田</td>
+                      <td class="px-4 py-2 text-[13px] text-gray-500">
+                        2026/02/28
+                      </td>
+                      <td
+                        class="px-4 py-2 text-[13px] text-red-600 font-medium"
+                      >
+                        10日 ⚠
+                      </td>
+                    </tr>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 dnum" style="color: #7c2d12">
+                        DWG-CV100-018
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        CV-100 ベルトテンショナー
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-600">中西</td>
+                      <td class="px-4 py-2 text-[13px] text-gray-500">
+                        2026/03/07
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-500">3日</td>
+                    </tr>
+                    <tr class="border-t">
+                      <td class="px-4 py-2 dnum" style="color: #7c2d12">
+                        DWG-JIG50A-003
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-700">
+                        JIG-50A クランプ部品図
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-600">田辺</td>
+                      <td class="px-4 py-2 text-[13px] text-gray-500">
+                        2026/03/09
+                      </td>
+                      <td class="px-4 py-2 text-[13px] text-gray-500">1日</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-function sortTbl(id,col){const t=document.getElementById(id);const b=t.querySelector('tbody');
-const rows=Array.from(b.querySelectorAll('tr'));const asc=t.dataset.sc!==col+'a';
-t.dataset.sc=asc?col+'a':col+'d';
-rows.sort((a,b)=>{const av=a.cells[col]?.textContent.trim()||'';const bv=b.cells[col]?.textContent.trim()||'';
-const an=parseFloat(av.replace(/[^0-9.-]/g,''));const bn=parseFloat(bv.replace(/[^0-9.-]/g,''));
-if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?av.localeCompare(bv,'ja'):bv.localeCompare(av,'ja');});
-rows.forEach(r=>b.appendChild(r));}
+          <!-- ==================== 設計変更(ECN) ==================== -->
+          <div id="page-ecn" class="page">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">ECN発行（今期）</span>
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  42<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">承認済</span>
+                <div class="text-xl font-bold text-emerald-600 mt-1">
+                  36<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">審議中</span>
+                <div class="text-xl font-bold text-orange-600 mt-1">
+                  4<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">却下</span>
+                <div class="text-xl font-bold text-gray-500 mt-1">
+                  2<span class="text-sm">件</span>
+                </div>
+              </div>
+            </div>
 
-charts.push(new Chart(document.getElementById("rpC1"),{"type": "bar", "data": {"labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "datasets": [{"label": "売上", "data": [258, 571, 812, 332, 260, 532], "backgroundColor": "#7c2d12", "borderRadius": 4}]}, "options": {"responsive": true, "maintainAspectRatio": false, "plugins": {"legend": {"display": false, "position": "bottom", "labels": {"font": {"size": 11, "family": "Inter"}, "usePointStyle": true, "padding": 14}}}, "scales": {"y": {"beginAtZero": true, "grid": {"color": "#f3f4f6"}, "ticks": {"font": {"size": 11}}}, "x": {"grid": {"display": false}, "ticks": {"font": {"size": 11}}}}}}));
+            <!-- ECN Detail -->
+            <div class="card p-5 mb-5">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="dnum text-[14px] font-bold"
+                      style="color: #7c2d12"
+                      >ECN-2026-042</span
+                    >
+                    <span class="sb bg-amber-50 text-amber-700">審議中</span>
+                  </div>
+                  <p class="text-[13px] font-medium text-gray-700 mt-1">
+                    HP-200 フレーム板厚変更（t12→t16）
+                  </p>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                  >
+                    コメント
+                  </button>
+                  <button
+                    class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-emerald-600"
+                  >
+                    承認
+                  </button>
+                  <button
+                    class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-red-500"
+                  >
+                    却下
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <h4
+                    class="text-[12px] font-semibold text-gray-500 uppercase mb-2"
+                  >
+                    変更内容
+                  </h4>
+                  <div class="space-y-2 text-[12px] text-gray-600">
+                    <div
+                      class="flex justify-between border-b border-gray-50 pb-1"
+                    >
+                      <span class="text-gray-500">起票者</span
+                      ><span>松本 設計課長</span>
+                    </div>
+                    <div
+                      class="flex justify-between border-b border-gray-50 pb-1"
+                    >
+                      <span class="text-gray-500">起票日</span
+                      ><span>2026/03/08</span>
+                    </div>
+                    <div
+                      class="flex justify-between border-b border-gray-50 pb-1"
+                    >
+                      <span class="text-gray-500">変更理由</span
+                      ><span>客先要求の耐荷重増加（200kN→250kN）</span>
+                    </div>
+                    <div
+                      class="flex justify-between border-b border-gray-50 pb-1"
+                    >
+                      <span class="text-gray-500">緊急度</span
+                      ><span class="sb bg-red-50 text-red-600">高</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500">原価影響</span
+                      ><span>+¥18,000/台（材料費増）</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4
+                    class="text-[12px] font-semibold text-gray-500 uppercase mb-2"
+                  >
+                    影響範囲
+                  </h4>
+                  <div class="space-y-2">
+                    <div class="border rounded-lg p-3">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        影響図面（3件）
+                      </p>
+                      <div class="mt-1 space-y-1 text-[12px] text-gray-500">
+                        <p class="dnum">
+                          DWG-HP200-003 フレーム部品図 → Rev.C→D
+                        </p>
+                        <p class="dnum">DWG-HP200-001 総組立図 → Rev.D→E</p>
+                        <p class="dnum">
+                          DWG-HP200-008 油圧回路図 → Rev.D→E（取付穴変更）
+                        </p>
+                      </div>
+                    </div>
+                    <div class="border rounded-lg p-3">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        影響BOM
+                      </p>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        SUS304板材 t12→t16に変更（BOM単位重量 +33%）
+                      </p>
+                    </div>
+                    <div class="border rounded-lg p-3">
+                      <p class="text-[12px] font-medium text-gray-700">
+                        影響工程
+                      </p>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        レーザー切断: 加工プログラム変更要。溶接:
+                        入熱量見直し要。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-</script>
-</body></html>
+            <!-- ECN List -->
+            <div class="card overflow-hidden">
+              <div class="px-5 py-3 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  設計変更履歴
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ECN番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        件名
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        変更理由
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        影響図面数
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        起票者
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        ECN-2026-042
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        HP-200 フレーム板厚変更
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        客先要求
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">3件</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">松本</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700"
+                          >審議中</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        ECN-2026-041
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        CV-100 駆動モーター変更
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        部品廃番対応
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">5件</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">中西</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        ECN-2026-040
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        JIG-50A 位置決めピン径変更
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        品質改善
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">2件</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">田辺</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >承認済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="border-b border-gray-50 hover:bg-gray-50/50 cursor-pointer"
+                    >
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        ECN-2026-039
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-700">
+                        HP-200 制御盤端子台変更
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        コスト削減
+                      </td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">4件</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">岡田</td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-gray-100 text-gray-500">却下</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== 承認ワークフロー ==================== -->
+          <div id="page-workflow" class="page">
+            <div class="grid grid-cols-3 gap-4 mb-5">
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">承認待ち（自分）</span>
+                <div class="text-xl font-bold text-orange-600 mt-1">
+                  3<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">検図待ち</span>
+                <div class="text-xl font-bold text-blue-700 mt-1">
+                  4<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">平均承認日数</span>
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  2.3<span class="text-sm">日</span>
+                </div>
+                <div class="text-[11px] text-emerald-600 mt-1">
+                  導入前: 8.5日 → 73%短縮
+                </div>
+              </div>
+            </div>
+
+            <!-- Approval Queue -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                承認待ちキュー
+              </h3>
+              <div class="space-y-3">
+                <div
+                  class="border rounded-xl p-4 hover:bg-gray-50/50 transition cursor-pointer"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <span class="dnum font-medium" style="color: #7c2d12"
+                        >DWG-JIG50A-005</span
+                      >
+                      <span class="text-[13px] text-gray-700"
+                        >精密研磨治具 JIG-50A 本体</span
+                      >
+                      <span class="sb bg-blue-50 text-blue-700">検図待ち</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-emerald-600"
+                      >
+                        承認
+                      </button>
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        差戻し
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-6 text-[12px] text-gray-500"
+                  >
+                    <span
+                      >設計: 田辺 →
+                      <span class="font-medium text-orange-600"
+                        >検図: 松本（あなた）</span
+                      >
+                      → 承認: 村上</span
+                    >
+                    <span>申請日: 03/10</span>
+                    <span>Rev.A 新規発行</span>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-xl p-4 bg-red-50/20 border-red-100 hover:bg-red-50/40 transition cursor-pointer"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <span class="dnum font-medium" style="color: #7c2d12"
+                        >DWG-HP200-025</span
+                      >
+                      <span class="text-[13px] text-gray-700"
+                        >HP-200 操作パネル意匠図</span
+                      >
+                      <span class="sb bg-red-50 text-red-600">期限超過</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-emerald-600"
+                      >
+                        承認
+                      </button>
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        差戻し
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-6 text-[12px] text-gray-500"
+                  >
+                    <span
+                      >設計: 岡田 → 検図: 中西✓ →
+                      <span class="font-medium text-red-600"
+                        >承認: 松本（あなた）3日超過</span
+                      ></span
+                    >
+                    <span>申請日: 03/04</span>
+                    <span>Rev.B</span>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-xl p-4 hover:bg-gray-50/50 transition cursor-pointer"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <span class="dnum font-medium" style="color: #7c2d12"
+                        >ECN-2026-042</span
+                      >
+                      <span class="text-[13px] text-gray-700"
+                        >HP-200 フレーム板厚変更</span
+                      >
+                      <span class="sb bg-amber-50 text-amber-700">ECN審議</span>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-emerald-600"
+                      >
+                        承認
+                      </button>
+                      <button
+                        class="px-3 py-1.5 rounded-lg text-[12px] border text-gray-600 cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        却下
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center gap-6 text-[12px] text-gray-500"
+                  >
+                    <span
+                      >起票: 松本 →
+                      <span class="font-medium text-orange-600"
+                        >審議: 設計部・製造部・品証部</span
+                      >
+                      → 最終承認: 村上</span
+                    >
+                    <span>起票日: 03/08</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Workflow Chart -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                承認リードタイム推移
+              </h3>
+              <div style="height: 260px"><canvas id="wfChart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- ==================== ビューア・検索 ==================== -->
+          <div id="page-viewer" class="page">
+            <!-- Search Bar -->
+            <div class="card p-5 mb-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-3">
+                図面検索（全文・属性・類似検索）
+              </h3>
+              <div class="flex gap-3">
+                <div class="flex-1 relative">
+                  <i
+                    data-lucide="search"
+                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  ></i>
+                  <input
+                    type="text"
+                    value="HP-200 フレーム"
+                    placeholder="図番・品名・材質・寸法で検索..."
+                    class="w-full pl-10 pr-4 py-3 text-[14px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+                  />
+                </div>
+                <button
+                  class="px-5 py-3 rounded-lg text-white text-[13px] font-medium cursor-pointer hover:opacity-90 transition"
+                  style="background: #7c2d12"
+                >
+                  検索
+                </button>
+              </div>
+              <div class="flex gap-2 mt-3 text-[12px] text-gray-400">
+                <span>検索ヒント:</span>
+                <button
+                  class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 cursor-pointer hover:bg-gray-200 transition"
+                >
+                  SUS304
+                </button>
+                <button
+                  class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 cursor-pointer hover:bg-gray-200 transition"
+                >
+                  油圧
+                </button>
+                <button
+                  class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 cursor-pointer hover:bg-gray-200 transition"
+                >
+                  φ50
+                </button>
+                <button
+                  class="px-2 py-0.5 rounded bg-gray-100 text-gray-600 cursor-pointer hover:bg-gray-200 transition"
+                >
+                  t12以上
+                </button>
+              </div>
+            </div>
+
+            <!-- Search Results as Thumbnails -->
+            <div class="grid grid-cols-3 gap-4 mb-5">
+              <div
+                class="card overflow-hidden cursor-pointer hover:ring-2 hover:ring-orange-200 transition"
+              >
+                <div class="drawing-thumb">
+                  <div class="grid-bg"></div>
+                  <div class="text-center z-10">
+                    <i
+                      data-lucide="file-image"
+                      class="w-12 h-12 text-gray-300 mx-auto"
+                    ></i>
+                    <p class="text-[11px] text-gray-400 mt-2">部品図 A2</p>
+                  </div>
+                  <div class="absolute top-2 right-2">
+                    <span class="sb bg-emerald-50 text-emerald-700">Rev.D</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <p class="dnum text-[12px]" style="color: #7c2d12">
+                    DWG-HP200-003
+                  </p>
+                  <p class="text-[13px] font-medium text-gray-700 mt-0.5">
+                    HP-200 フレーム部品図
+                  </p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    松本 | 2026/03/05 | SUS304 t16
+                  </p>
+                </div>
+              </div>
+              <div
+                class="card overflow-hidden cursor-pointer hover:ring-2 hover:ring-orange-200 transition"
+              >
+                <div class="drawing-thumb">
+                  <div class="grid-bg"></div>
+                  <div class="text-center z-10">
+                    <i
+                      data-lucide="file-image"
+                      class="w-12 h-12 text-gray-300 mx-auto"
+                    ></i>
+                    <p class="text-[11px] text-gray-400 mt-2">組立図 A1</p>
+                  </div>
+                  <div class="absolute top-2 right-2">
+                    <span class="sb bg-emerald-50 text-emerald-700">Rev.E</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <p class="dnum text-[12px]" style="color: #7c2d12">
+                    DWG-HP200-001
+                  </p>
+                  <p class="text-[13px] font-medium text-gray-700 mt-0.5">
+                    HP-200 総組立図
+                  </p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    松本 | 2026/03/05 | フレーム含む
+                  </p>
+                </div>
+              </div>
+              <div
+                class="card overflow-hidden cursor-pointer hover:ring-2 hover:ring-orange-200 transition"
+              >
+                <div class="drawing-thumb">
+                  <div class="grid-bg"></div>
+                  <div class="text-center z-10">
+                    <i
+                      data-lucide="file-image"
+                      class="w-12 h-12 text-gray-300 mx-auto"
+                    ></i>
+                    <p class="text-[11px] text-gray-400 mt-2">部品図 A3</p>
+                  </div>
+                  <div class="absolute top-2 right-2">
+                    <span class="sb bg-emerald-50 text-emerald-700">Rev.B</span>
+                  </div>
+                </div>
+                <div class="p-3">
+                  <p class="dnum text-[12px]" style="color: #7c2d12">
+                    DWG-HP200-004
+                  </p>
+                  <p class="text-[13px] font-medium text-gray-700 mt-0.5">
+                    HP-200 フレーム補強リブ
+                  </p>
+                  <p class="text-[11px] text-gray-400 mt-1">
+                    松本 | 2025/11/20 | SUS304 t6
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-[12px] text-gray-400">
+              3件ヒット（検索時間: 0.12秒）
+            </div>
+          </div>
+
+          <!-- ==================== 配布・出力管理 ==================== -->
+          <div id="page-distribute" class="page">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">配布待ち</span>
+                <div class="text-xl font-bold text-orange-600 mt-1">
+                  4<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">旧版未回収</span>
+                <div class="text-xl font-bold text-red-600 mt-1">
+                  2<span class="text-sm">件</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">今月印刷枚数</span>
+                <div class="text-xl font-bold text-gray-800 mt-1">
+                  86<span class="text-sm">枚</span>
+                </div>
+              </div>
+              <div class="card p-4">
+                <span class="text-[12px] text-gray-500">電子配布率</span>
+                <div class="text-xl font-bold text-emerald-600 mt-1">
+                  78<span class="text-sm">%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distribution Queue -->
+            <div class="card p-5 mb-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  配布待ちキュー
+                </h3>
+                <button
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                  style="background: #7c2d12"
+                >
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>一括配布
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div class="border rounded-xl p-4 bg-red-50/20 border-red-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="dnum font-medium" style="color: #7c2d12"
+                          >DWG-HP200-003</span
+                        >
+                        <span class="text-[13px] text-gray-700"
+                          >HP-200 フレーム部品図</span
+                        >
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >Rev.D</span
+                        >
+                      </div>
+                      <p class="text-[12px] text-red-600 mt-1">
+                        製造2ラインで旧版 Rev.B が使用中 — 即時差替え必要
+                      </p>
+                    </div>
+                    <button
+                      class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition bg-red-500"
+                    >
+                      緊急配布
+                    </button>
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-2">
+                    配布先:
+                    <span class="sb bg-gray-100 text-gray-600"
+                      >製造1ライン ✓</span
+                    >
+                    <span class="sb bg-red-50 text-red-600">製造2ライン ✗</span>
+                    <span class="sb bg-gray-100 text-gray-600">品質管理 ✓</span>
+                    <span class="sb bg-gray-100 text-gray-600">購買 ✓</span>
+                  </div>
+                </div>
+                <div class="border rounded-xl p-4">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="dnum font-medium" style="color: #7c2d12"
+                          >DWG-CV100-012</span
+                        >
+                        <span class="text-[13px] text-gray-700"
+                          >CV-100 駆動部組立図</span
+                        >
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >Rev.C</span
+                        >
+                      </div>
+                      <p class="text-[12px] text-gray-500 mt-1">
+                        本日承認完了 → 配布対象4部門
+                      </p>
+                    </div>
+                    <button
+                      class="px-3 py-1.5 rounded-lg text-[12px] text-white font-medium cursor-pointer hover:opacity-90 transition"
+                      style="background: #7c2d12"
+                    >
+                      配布実行
+                    </button>
+                  </div>
+                  <div class="text-[12px] text-gray-500 mt-2">
+                    配布先:
+                    <span class="sb bg-amber-50 text-amber-700"
+                      >製造1ライン</span
+                    >
+                    <span class="sb bg-amber-50 text-amber-700"
+                      >製造2ライン</span
+                    >
+                    <span class="sb bg-amber-50 text-amber-700">品質管理</span>
+                    <span class="sb bg-amber-50 text-amber-700">購買</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distribution Log -->
+            <div class="card overflow-hidden mb-5">
+              <div class="px-5 py-3 border-b">
+                <h3 class="font-semibold text-[13px] text-gray-700">
+                  配布履歴
+                </h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50/80 border-b">
+                    <tr>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        日時
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        図面番号
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        版
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        配布先
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        方法
+                      </th>
+                      <th
+                        class="px-4 py-3 text-left text-[11px] font-semibold text-gray-500"
+                      >
+                        旧版回収
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b border-gray-50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/10 08:30
+                      </td>
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        DWG-HP200-008
+                      </td>
+                      <td class="px-4 py-3 text-[13px]">Rev.E</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        製造1ライン
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">電子</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >回収済</span
+                        >
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/09 14:15
+                      </td>
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        DWG-JIG50A-002
+                      </td>
+                      <td class="px-4 py-3 text-[13px]">Rev.A</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        製造2ライン
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-amber-50 text-amber-700">印刷</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-gray-100 text-gray-500">初版</span>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-gray-50">
+                      <td class="px-4 py-3 text-[13px] text-gray-500">
+                        03/08 16:40
+                      </td>
+                      <td class="px-4 py-3 dnum" style="color: #7c2d12">
+                        DWG-HP200-003
+                      </td>
+                      <td class="px-4 py-3 text-[13px]">Rev.D</td>
+                      <td class="px-4 py-3 text-[13px] text-gray-600">
+                        製造1ライン
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-blue-50 text-blue-700">電子</span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="sb bg-emerald-50 text-emerald-700"
+                          >回収済</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Print/Output Chart -->
+            <div class="card p-5">
+              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
+                配布方法推移（電子 vs 印刷）
+              </h3>
+              <div style="height: 260px"><canvas id="distChart"></canvas></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const charts = [];
+      const pageConfig = [
+        {
+          id: "dashboard",
+          title: "ダッシュボード",
+          desc: "図面管理・版数・設計変更の全体状況",
+        },
+        {
+          id: "drawings",
+          title: "図面台帳",
+          desc: "全図面の一覧・検索・ステータス管理",
+        },
+        {
+          id: "versions",
+          title: "版数管理",
+          desc: "版数履歴・チェックイン/アウト・差分比較",
+        },
+        {
+          id: "ecn",
+          title: "設計変更(ECN)",
+          desc: "設計変更通知の起票・審議・影響分析",
+        },
+        {
+          id: "workflow",
+          title: "承認ワークフロー",
+          desc: "検図・承認の進捗管理",
+        },
+        {
+          id: "viewer",
+          title: "ビューア・検索",
+          desc: "全文検索・サムネイル表示・属性検索",
+        },
+        {
+          id: "distribute",
+          title: "配布・出力管理",
+          desc: "配布先管理・旧版回収・印刷ログ",
+        },
+      ];
+      function navigate(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        const el = document.getElementById("page-" + id);
+        if (el) el.classList.add("active");
+        document
+          .querySelector('[data-page="' + id + '"]')
+          ?.classList.add("active");
+        const c = pageConfig.find((p) => p.id === id);
+        if (c) {
+          document.getElementById("pageTitle").textContent = c.title;
+          document.getElementById("pageDesc").textContent = c.desc;
+        }
+        history.replaceState(null, null, "#" + id);
+        setTimeout(() => {
+          charts.forEach((c) => c.resize());
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }, 60);
+      }
+      window.addEventListener("hashchange", () =>
+        navigate(location.hash.slice(1)),
+      );
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(location.hash.slice(1) || pageConfig[0].id);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      });
+
+      const C1 = "#7c2d12",
+        C2 = "#ea580c";
+
+      // Dashboard: Registration trend
+      charts.push(
+        new Chart(document.getElementById("dTrend"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "新規登録",
+                data: [28, 35, 22, 31, 26, 19],
+                backgroundColor: "#ea580c",
+                borderRadius: 4,
+                barPercentage: 0.6,
+              },
+              {
+                label: "改訂",
+                data: [42, 38, 56, 48, 52, 45],
+                backgroundColor: C1,
+                borderRadius: 4,
+                barPercentage: 0.6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 } },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Dashboard: Type breakdown
+      charts.push(
+        new Chart(document.getElementById("dType"), {
+          type: "doughnut",
+          data: {
+            labels: [
+              "部品図",
+              "組立図",
+              "配管図",
+              "電気図",
+              "治具図",
+              "その他",
+            ],
+            datasets: [
+              {
+                data: [1820, 680, 420, 380, 280, 703],
+                backgroundColor: [
+                  C1,
+                  "#ea580c",
+                  "#f97316",
+                  "#fb923c",
+                  "#fdba74",
+                  "#e5e7eb",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "55%",
+            plugins: {
+              legend: {
+                position: "right",
+                labels: { font: { size: 11 }, usePointStyle: true, padding: 8 },
+              },
+            },
+          },
+        }),
+      );
+
+      // Workflow: Lead time
+      charts.push(
+        new Chart(document.getElementById("wfChart"), {
+          type: "line",
+          data: {
+            labels: ["9月", "10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "承認リードタイム(日)",
+                data: [8.5, 7.2, 5.8, 4.5, 3.6, 2.8, 2.3],
+                borderColor: C1,
+                backgroundColor: C1 + "15",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+              },
+              {
+                label: "目標",
+                data: [3, 3, 3, 3, 3, 3, 3],
+                borderColor: "#10b981",
+                borderDash: [3, 3],
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "日" },
+              },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        }),
+      );
+
+      // Distribution: Electronic vs Print
+      charts.push(
+        new Chart(document.getElementById("distChart"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "電子配布",
+                data: [45, 52, 68, 72, 80, 86],
+                backgroundColor: C1,
+                borderRadius: 4,
+                barPercentage: 0.6,
+              },
+              {
+                label: "紙印刷",
+                data: [120, 105, 82, 68, 42, 24],
+                backgroundColor: "#fdba74",
+                borderRadius: 4,
+                barPercentage: 0.6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  font: { size: 11 },
+                  usePointStyle: true,
+                  padding: 14,
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                grid: { color: "#f3f4f6" },
+                ticks: { font: { size: 11 }, callback: (v) => v + "枚" },
+              },
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { font: { size: 11 } },
+              },
+            },
+          },
+        }),
+      );
+    </script>
+  </body>
+</html>
