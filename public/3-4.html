@@ -3,18 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>WaitWatch — 荷待ち時間可視化・削減システム | SRD</title>
+    <title>WaitCut — 荷待ち時間削減・バース予約システム | SRD MVP Demo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              teal: {
+                50: "#f0fdfa",
+                100: "#ccfbf1",
+                200: "#99f6e4",
+                300: "#5eead4",
+                400: "#2dd4bf",
+                500: "#14b8a6",
+                600: "#0d9488",
+                700: "#0f766e",
+                800: "#115e59",
+                900: "#134e4a",
+              },
+              accent: {
+                50: "#fff7ed",
+                100: "#ffedd5",
+                200: "#fed7aa",
+                400: "#fb923c",
+                500: "#f97316",
+                600: "#ea580c",
+              },
+              danger: {
+                50: "#fef2f2",
+                100: "#fee2e2",
+                400: "#f87171",
+                500: "#ef4444",
+                600: "#dc2626",
+                700: "#b91c1c",
+              },
+              warn: {
+                50: "#fffbeb",
+                100: "#fef3c7",
+                400: "#fbbf24",
+                500: "#f59e0b",
+                600: "#d97706",
+              },
+              success: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                500: "#22c55e",
+                600: "#16a34a",
+                700: "#15803d",
+              },
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', '"Noto Sans JP"', "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
     <style>
       * {
-        font-family:
-          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
       }
       .page {
         display: none;
@@ -22,10 +76,6 @@
       .page.active {
         display: block;
         animation: fadeIn 0.25s ease-out;
-      }
-      .nav-item.active {
-        background: rgba(255, 255, 255, 0.15);
-        font-weight: 600;
       }
       @keyframes fadeIn {
         from {
@@ -37,14 +87,43 @@
           transform: none;
         }
       }
-      @keyframes pulse-glow {
+      @keyframes pulse-warn {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.25);
+        }
+        50% {
+          box-shadow: 0 0 10px 4px rgba(245, 158, 11, 0.12);
+        }
+      }
+      @keyframes pulse-danger {
         0%,
         100% {
           box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
         }
         50% {
-          box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0.15);
+          box-shadow: 0 0 10px 4px rgba(239, 68, 68, 0.15);
         }
+      }
+      @keyframes countUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 700;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
       }
       ::-webkit-scrollbar {
         width: 5px;
@@ -57,2617 +136,2245 @@
         background: #fff;
         border-radius: 12px;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
       }
       .card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
       }
-      input,
-      select,
-      textarea {
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge-green {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .badge-yellow {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-red {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-gray {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .badge-teal {
+        background: #ccfbf1;
+        color: #115e59;
+      }
+      .badge-orange {
+        background: #ffedd5;
+        color: #9a3412;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+      }
+      .btn-primary {
+        background: #0d9488;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #0f766e;
+      }
+      .btn-secondary {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+      }
+      .btn-secondary:hover {
+        background: #e2e8f0;
+      }
+      .btn-accent {
+        background: #f97316;
+        color: #fff;
+      }
+      .btn-accent:hover {
+        background: #ea580c;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+      .input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 13px;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        outline: none;
+        background: #fff;
         font-family: inherit;
       }
-      .wait-green {
-        border-left: 4px solid #10b981;
-        background: linear-gradient(90deg, #ecfdf5 0%, #fff 40%);
+      .input:focus {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
       }
-      .wait-yellow {
+      select.input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+      }
+      .stat-card {
+        background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+        border-radius: 14px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+      }
+      .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+      }
+      .tab {
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .tab.active {
+        color: #0d9488;
+        border-bottom-color: #0d9488;
+        font-weight: 600;
+      }
+      .tab:hover {
+        color: #0f766e;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      th {
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      td {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      tr:hover td {
+        background: #fafbfd;
+      }
+      .wait-ok {
+        border-left: 4px solid #22c55e;
+        background: linear-gradient(90deg, #f0fdf4 0%, #fff 30%);
+      }
+      .wait-warn {
         border-left: 4px solid #f59e0b;
-        background: linear-gradient(90deg, #fffbeb 0%, #fff 40%);
+        background: linear-gradient(90deg, #fffbeb 0%, #fff 30%);
+        animation: pulse-warn 2.5s infinite;
       }
-      .wait-red {
+      .wait-danger {
         border-left: 4px solid #ef4444;
-        background: linear-gradient(90deg, #fef2f2 0%, #fff 40%);
-        animation: pulse-glow 2s infinite;
+        background: linear-gradient(90deg, #fef2f2 0%, #fff 30%);
+        animation: pulse-danger 2s infinite;
       }
-      .toggle-on {
-        background: #065f46;
+      .berth-slot {
+        border: 2px dashed #d1d5db;
+        border-radius: 10px;
+        padding: 14px;
+        min-height: 80px;
+        transition: all 0.2s;
+        cursor: pointer;
       }
-      .toggle-off {
-        background: #d1d5db;
+      .berth-slot:hover {
+        border-color: #0d9488;
+        background: #f0fdfa;
+      }
+      .berth-slot.occupied {
+        border: 2px solid #0d9488;
+        background: #f0fdfa;
+        border-style: solid;
+      }
+      .berth-slot.overdue {
+        border-color: #ef4444;
+        background: #fef2f2;
+        border-style: solid;
+      }
+      .time-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .time-ok {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .time-warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .time-danger {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .shipper-score {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .score-a {
+        background: #dcfce7;
+        color: #15803d;
+        border: 2px solid #22c55e;
+      }
+      .score-b {
+        background: #fef3c7;
+        color: #92400e;
+        border: 2px solid #f59e0b;
+      }
+      .score-c {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 2px solid #ef4444;
       }
     </style>
   </head>
-  <body class="bg-gray-50">
+  <body class="bg-gray-50 text-gray-900 font-sans">
     <div class="flex h-screen overflow-hidden">
       <!-- Sidebar -->
       <aside
-        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
-        style="background: #0c4a6e"
+        class="w-[220px] bg-gradient-to-b from-teal-800 to-teal-900 text-white flex flex-col flex-shrink-0"
       >
-        <div class="p-4 border-b border-white/10">
-          <div class="flex items-center gap-3">
+        <div class="p-5 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
             <div
-              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+              class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center"
             >
-              <i data-lucide="timer" class="w-5 h-5"></i>
+              <i data-lucide="timer" class="w-4 h-4"></i>
             </div>
-            <div class="min-w-0">
-              <p class="font-bold text-[14px] truncate">WaitWatch</p>
-              <p class="text-[10px] opacity-50 truncate">
-                荷待ち時間可視化・削減
-              </p>
+            <div>
+              <div class="font-extrabold text-sm tracking-tight">WaitCut</div>
+              <div class="text-[10px] text-teal-300">荷待ち時間削減</div>
             </div>
           </div>
         </div>
-        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
-          <a
+        <nav
+          class="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto text-[13px]"
+          id="nav"
+        >
+          <div
+            class="nav-item active flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="dashboard"
-            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('dashboard')"
-            ><i
-              data-lucide="layout-dashboard"
-              class="w-[18px] h-[18px] shrink-0"
-            ></i
-            ><span class="truncate">ダッシュボード</span></a
           >
-          <a
+            <i data-lucide="layout-dashboard" class="w-4 h-4 opacity-70"></i
+            >ダッシュボード
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="realtime"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('realtime')"
-            ><i data-lucide="radio" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">リアルタイム状況</span></a
           >
-          <a
+            <i data-lucide="radio" class="w-4 h-4 opacity-70"></i
+            >リアルタイム監視
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
+            data-page="berth"
+          >
+            <i data-lucide="calendar-clock" class="w-4 h-4 opacity-70"></i
+            >バース予約
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="records"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('records')"
-            ><i
-              data-lucide="clipboard-list"
-              class="w-[18px] h-[18px] shrink-0"
-            ></i
-            ><span class="truncate">荷待ち記録</span></a
           >
-          <a
+            <i data-lucide="clipboard-list" class="w-4 h-4 opacity-70"></i
+            >荷待ち記録
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="shipper"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('shipper')"
-            ><i data-lucide="building-2" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">荷主分析</span></a
           >
-          <a
+            <i data-lucide="building-2" class="w-4 h-4 opacity-70"></i
+            >荷主スコアカード
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="cost"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('cost')"
-            ><i data-lucide="calculator" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">コスト分析</span></a
           >
-          <a
-            data-page="improvement"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('improvement')"
-            ><i data-lucide="trending-up" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">改善施策</span></a
+            <i data-lucide="circle-dollar-sign" class="w-4 h-4 opacity-70"></i
+            >コスト分析
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
+            data-page="compliance"
           >
-          <a
-            data-page="settings"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('settings')"
-            ><i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">設定</span></a
+            <i data-lucide="shield-check" class="w-4 h-4 opacity-70"></i
+            >2時間ルール管理
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
+            data-page="improve"
           >
+            <i data-lucide="trending-down" class="w-4 h-4 opacity-70"></i
+            >改善施策
+          </div>
         </nav>
         <div class="p-3 border-t border-white/10">
-          <div class="flex items-center gap-2 px-1">
+          <div class="flex items-center gap-2.5 px-3 py-2">
             <div
-              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+              class="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-xs font-bold"
             >
-              管
+              田中
             </div>
-            <div class="min-w-0">
-              <p class="text-[11px] font-medium">運行管理者</p>
-              <p class="text-[10px] opacity-40">admin@example.com</p>
+            <div>
+              <div class="text-xs font-semibold">田中 運行管理者</div>
+              <div class="text-[10px] text-teal-300">管理者権限</div>
             </div>
           </div>
         </div>
       </aside>
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Main -->
+      <main class="flex-1 overflow-y-auto">
         <header
-          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+          class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-3 flex items-center justify-between"
         >
           <div>
-            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
-              ダッシュボード
-            </h1>
-            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
-              荷待ち時間のKPIとトレンド
+            <h1 class="text-lg font-bold" id="page-title">ダッシュボード</h1>
+            <p class="text-xs text-gray-500" id="page-subtitle">
+              荷待ち時間の全体状況
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <span
-              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
-              style="background: #d1fae5; color: #065f46"
-              >MVP Demo</span
+          <div class="flex items-center gap-3">
+            <div
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-danger-50 border border-danger-200 rounded-lg"
             >
-            <span
-              class="text-[11px] px-2.5 py-1 rounded-full font-medium bg-red-50 text-red-600"
-              id="alertBadge"
-              >3件超過中</span
-            >
+              <i
+                data-lucide="alert-triangle"
+                class="w-3.5 h-3.5 text-danger-500"
+              ></i
+              ><span
+                class="text-xs font-semibold text-danger-600"
+                id="alert-count"
+                >3件超過中</span
+              >
+            </div>
+            <div
+              class="text-xs text-gray-500 font-medium"
+              id="current-date"
+            ></div>
           </div>
         </header>
 
-        <main class="flex-1 overflow-auto p-5">
-          <!-- ==================== PAGE 1: Dashboard ==================== -->
-          <div id="page-dashboard" class="page active">
-            <!-- KPIs -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="card p-5 transition-shadow cursor-pointer">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">平均荷待ち時間</span
-                  ><i
-                    data-lucide="clock"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  87<span class="text-sm font-medium text-gray-400 ml-1"
-                    >分</span
+        <div class="p-6">
+          <!-- ===== DASHBOARD ===== -->
+          <div class="page active" id="page-dashboard">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-5 gap-4 mb-6">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >平均荷待ち時間</span
                   >
-                </div>
-                <div class="text-[11px] mt-2 text-red-500">前月比 +5分</div>
-              </div>
-              <div class="card p-5 transition-shadow cursor-pointer">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">30分超過件数</span
-                  ><i
-                    data-lucide="alert-triangle"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  156<span class="text-sm font-medium text-gray-400 ml-1"
-                    >件</span
+                  <div
+                    class="w-8 h-8 bg-accent-100 rounded-lg flex items-center justify-center"
                   >
+                    <i data-lucide="clock" class="w-4 h-4 text-accent-500"></i>
+                  </div>
                 </div>
-                <div class="text-[11px] mt-2 text-red-500">全体の68%</div>
-              </div>
-              <div class="card p-5 transition-shadow cursor-pointer">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">荷待ちコスト</span
-                  ><i
-                    data-lucide="banknote"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
+                <div class="text-2xl font-extrabold text-accent-500">
+                  47<span class="text-sm text-gray-400 ml-1">分</span>
                 </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  342<span class="text-sm font-medium text-gray-400 ml-1"
-                    >万円/月</span
-                  >
-                </div>
-                <div class="text-[11px] mt-2 text-red-500">
-                  年間4,104万円相当
+                <div class="text-xs text-success-600 font-medium mt-1">
+                  業界平均88分比 -47%
                 </div>
               </div>
-              <div class="card p-5 transition-shadow cursor-pointer">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">前月比改善率</span
-                  ><i
-                    data-lucide="trending-down"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #10b981">
-                  +8.2<span class="text-sm font-medium text-gray-400 ml-1"
-                    >%</span
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >2時間超過率</span
                   >
+                  <div
+                    class="w-8 h-8 bg-danger-100 rounded-lg flex items-center justify-center"
+                  >
+                    <i
+                      data-lucide="alert-circle"
+                      class="w-4 h-4 text-danger-500"
+                    ></i>
+                  </div>
                 </div>
-                <div class="text-[11px] mt-2 text-emerald-600">
-                  3ヶ月連続改善中
+                <div class="text-2xl font-extrabold">
+                  4.2<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="text-xs text-success-600 font-medium mt-1">
+                  先月比 -2.1pt
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >月間荷待ちコスト</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-warn-100 rounded-lg flex items-center justify-center"
+                  >
+                    <i
+                      data-lucide="circle-dollar-sign"
+                      class="w-4 h-4 text-warn-600"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-extrabold">
+                  186<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+                <div class="text-xs text-success-600 font-medium mt-1">
+                  導入前比 -46%
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >バース予約率</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center"
+                  >
+                    <i
+                      data-lucide="calendar-check"
+                      class="w-4 h-4 text-teal-600"
+                    ></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-extrabold text-teal-600">
+                  78<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="progress-bar mt-2">
+                  <div
+                    class="progress-fill bg-teal-500"
+                    style="width: 78%"
+                  ></div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >現在荷待ち中</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-accent-100 rounded-lg flex items-center justify-center"
+                  >
+                    <i data-lucide="truck" class="w-4 h-4 text-accent-500"></i>
+                  </div>
+                </div>
+                <div class="text-2xl font-extrabold">
+                  5<span class="text-sm text-gray-400 ml-1">台</span>
+                </div>
+                <div class="text-xs text-danger-600 font-medium mt-1">
+                  うち60分超: 2台
                 </div>
               </div>
             </div>
 
             <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+            <div class="grid grid-cols-3 gap-4 mb-6">
               <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  日別平均荷待ち時間
-                </h3>
-                <div style="height: 280px">
-                  <canvas id="dashDailyBar"></canvas>
-                </div>
+                <h3 class="font-bold text-sm mb-3">日別 平均荷待ち時間推移</h3>
+                <canvas id="chart-daily" height="200"></canvas>
               </div>
               <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  荷主別荷待ち時間ワースト10
+                <h3 class="font-bold text-sm mb-3">
+                  荷主別 平均荷待ちワースト10
                 </h3>
-                <div style="height: 280px">
-                  <canvas id="dashWorst10"></canvas>
-                </div>
+                <canvas id="chart-shipper-worst" height="200"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">時間帯別 荷待ち発生分布</h3>
+                <canvas id="chart-hourly" height="200"></canvas>
               </div>
             </div>
 
-            <!-- Today Alerts -->
-            <div class="card p-5">
-              <h3
-                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
-              >
-                <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i
-                >本日の超過アラート
-              </h3>
-              <div class="space-y-2">
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50">
-                  <div
-                    class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
-                  ></div>
-                  <div class="flex-1">
-                    <span class="text-[13px] font-medium text-red-700"
-                      >車番 品川100あ1234 — ABCフーズ倉庫で92分待機中</span
-                    >
-                  </div>
-                  <span
-                    class="text-[11px] px-2 py-0.5 rounded-full bg-red-100 text-red-700"
-                    >緊急</span
-                  >
+            <!-- Live Waiting + Alerts -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-bold text-sm">現在の荷待ち状況</h3>
+                  <span class="text-xs text-gray-400">自動更新中</span>
                 </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50">
-                  <div
-                    class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
-                  ></div>
-                  <div class="flex-1">
-                    <span class="text-[13px] font-medium text-red-700"
-                      >車番 横浜200か5678 — 東京物流センターで78分待機中</span
-                    >
-                  </div>
-                  <span
-                    class="text-[11px] px-2 py-0.5 rounded-full bg-red-100 text-red-700"
-                    >緊急</span
-                  >
+                <div class="space-y-2" id="dash-live-waiting"></div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-bold text-sm">直近のアラート</h3>
                 </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-amber-50">
-                  <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-                  <div class="flex-1">
-                    <span class="text-[13px] font-medium text-amber-700"
-                      >車番 川崎300さ9012 — 関東配送センターで45分待機中</span
-                    >
-                  </div>
-                  <span
-                    class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700"
-                    >注意</span
-                  >
-                </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-amber-50">
-                  <div class="w-2 h-2 rounded-full bg-amber-500"></div>
-                  <div class="flex-1">
-                    <span class="text-[13px] font-medium text-amber-700"
-                      >車番 大宮100た3456 — サトウ食品工場で38分待機中</span
-                    >
-                  </div>
-                  <span
-                    class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700"
-                    >注意</span
-                  >
-                </div>
+                <div class="space-y-2" id="dash-alerts"></div>
               </div>
             </div>
           </div>
 
-          <!-- ==================== PAGE 2: Realtime ==================== -->
-          <div id="page-realtime" class="page">
+          <!-- ===== REALTIME ===== -->
+          <div class="page" id="page-realtime">
             <div class="flex items-center justify-between mb-5">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
-                ></div>
-                <span class="text-[13px] font-medium text-gray-600"
-                  >リアルタイム更新中</span
-                >
-                <span class="text-[11px] text-gray-400" id="rtClock"
-                  >--:--:--</span
-                >
-              </div>
-              <div class="flex items-center gap-2">
-                <span
-                  class="text-[11px] px-2 py-1 rounded-full bg-green-100 text-green-700"
-                  >正常 <span id="rtGreen">3</span></span
-                >
-                <span
-                  class="text-[11px] px-2 py-1 rounded-full bg-amber-100 text-amber-700"
-                  >注意 <span id="rtYellow">2</span></span
-                >
-                <span
-                  class="text-[11px] px-2 py-1 rounded-full bg-red-100 text-red-700"
-                  >超過 <span id="rtRed">3</span></span
-                >
-              </div>
-            </div>
-
-            <div
-              class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-              id="realtimeCards"
-            >
-              <!-- Cards generated by JS -->
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 3: Records ==================== -->
-          <div id="page-records" class="page">
-            <div class="card p-5 mb-5">
-              <div class="flex flex-wrap items-center gap-3 mb-4">
-                <div class="relative flex-1 min-w-[200px]">
-                  <i
-                    data-lucide="search"
-                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  ></i>
-                  <input
-                    id="recSearch"
-                    type="text"
-                    placeholder="車番・ドライバー名・荷主で検索..."
-                    class="w-full pl-10 pr-4 py-2.5 text-[13px] bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
-                    oninput="filterRecords()"
-                  />
+              <div class="flex gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-success-500"></span
+                  ><span class="text-xs">30分未満</span>
                 </div>
-                <select
-                  id="recReasonFilter"
-                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  onchange="filterRecords()"
-                >
-                  <option value="">全理由区分</option>
-                  <option value="荷主都合">荷主都合</option>
-                  <option value="早着">早着</option>
-                  <option value="混雑">混雑</option>
-                  <option value="設備故障">設備故障</option>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-warn-500"></span
+                  ><span class="text-xs">30〜60分</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-danger-500"></span
+                  ><span class="text-xs">60分超過</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <select class="input" style="width: 150px">
+                  <option>全荷主</option>
+                  <option>ABCフーズ</option>
+                  <option>東日本物産</option>
+                  <option>大和建材</option>
                 </select>
-                <select
-                  id="recPeriodFilter"
-                  class="px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  onchange="filterRecords()"
-                >
-                  <option value="">全期間</option>
-                  <option value="today">今日</option>
-                  <option value="week">今週</option>
-                  <option value="month">今月</option>
-                </select>
-                <button
-                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
-                  style="background: #065f46"
-                >
-                  <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+                <button class="btn btn-primary">
+                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>更新
                 </button>
               </div>
-
-              <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                  <thead>
-                    <tr class="border-b">
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        日付
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        車番
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        ドライバー
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        荷主
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        場所
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        到着
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        作業開始
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        作業終了
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        荷待ち(分)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        作業(分)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        理由区分
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="recTableBody" class="text-[13px]">
-                    <!-- Filled by JS -->
-                  </tbody>
-                </table>
-              </div>
-              <div class="flex items-center justify-between mt-4 pt-4 border-t">
-                <span class="text-[12px] text-gray-400" id="recCount"
-                  >全20件</span
-                >
-                <div class="flex items-center gap-1">
-                  <button
-                    class="px-3 py-1.5 text-[12px] rounded border bg-white hover:bg-gray-50 text-gray-600 cursor-pointer"
-                  >
-                    前へ
-                  </button>
-                  <button
-                    class="px-3 py-1.5 text-[12px] rounded border text-white font-medium cursor-pointer"
-                    style="background: #065f46"
-                  >
-                    1
-                  </button>
-                  <button
-                    class="px-3 py-1.5 text-[12px] rounded border bg-white hover:bg-gray-50 text-gray-600 cursor-pointer"
-                  >
-                    2
-                  </button>
-                  <button
-                    class="px-3 py-1.5 text-[12px] rounded border bg-white hover:bg-gray-50 text-gray-600 cursor-pointer"
-                  >
-                    次へ
-                  </button>
-                </div>
-              </div>
             </div>
+            <div class="grid grid-cols-2 gap-3" id="realtime-cards"></div>
           </div>
 
-          <!-- ==================== PAGE 4: Shipper Analysis ==================== -->
-          <div id="page-shipper" class="page">
-            <!-- Shipper Scorecard Table -->
-            <div class="card p-5 mb-5">
-              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                荷主別スコアカード
-              </h3>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                  <thead>
-                    <tr class="border-b">
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        荷主名
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        平均荷待ち(分)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        最大荷待ち(分)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        件数
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        30分超過率
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        改善傾向
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        評価
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="text-[13px]">
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">ABCフーズ</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-600 font-semibold">124</span>
-                      </td>
-                      <td class="py-3 px-3">210</td>
-                      <td class="py-3 px-3">48</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-600 font-semibold">89%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-500 text-[11px]">悪化</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600"
-                          >D</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">東京物流センター</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-600 font-semibold">108</span>
-                      </td>
-                      <td class="py-3 px-3">185</td>
-                      <td class="py-3 px-3">62</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-600 font-semibold">82%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-amber-500 text-[11px]">横ばい</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600"
-                          >D</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">関東配送センター</td>
-                      <td class="py-3 px-3">
-                        <span class="text-amber-600 font-semibold">95</span>
-                      </td>
-                      <td class="py-3 px-3">160</td>
-                      <td class="py-3 px-3">38</td>
-                      <td class="py-3 px-3">
-                        <span class="text-amber-600">76%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]">改善中</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-600"
-                          >C</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">サトウ食品工場</td>
-                      <td class="py-3 px-3">
-                        <span class="text-amber-600 font-semibold">82</span>
-                      </td>
-                      <td class="py-3 px-3">140</td>
-                      <td class="py-3 px-3">29</td>
-                      <td class="py-3 px-3">
-                        <span class="text-amber-600">71%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]">改善中</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-600"
-                          >C</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">日本ロジスティクス</td>
-                      <td class="py-3 px-3">
-                        <span class="font-semibold">68</span>
-                      </td>
-                      <td class="py-3 px-3">120</td>
-                      <td class="py-3 px-3">55</td>
-                      <td class="py-3 px-3">58%</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]">改善中</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600"
-                          >B</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">マルエツ配送</td>
-                      <td class="py-3 px-3">
-                        <span class="font-semibold">55</span>
-                      </td>
-                      <td class="py-3 px-3">95</td>
-                      <td class="py-3 px-3">41</td>
-                      <td class="py-3 px-3">45%</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]">改善中</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-600"
-                          >B</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">グリーンファーム</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600 font-semibold">32</span>
-                      </td>
-                      <td class="py-3 px-3">55</td>
-                      <td class="py-3 px-3">33</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">18%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]"
-                          >良好維持</span
-                        >
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-600"
-                          >A</span
-                        >
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                      <td class="py-3 px-3 font-medium">中央冷蔵</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600 font-semibold">28</span>
-                      </td>
-                      <td class="py-3 px-3">48</td>
-                      <td class="py-3 px-3">22</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">12%</span>
-                      </td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-500 text-[11px]"
-                          >良好維持</span
-                        >
-                      </td>
-                      <td class="py-3 px-3">
-                        <span
-                          class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-600"
-                          >A</span
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+          <!-- ===== BERTH RESERVATION ===== -->
+          <div class="page" id="page-berth">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <button class="tab active" data-tab="berth-board">
+                  バースボード
+                </button>
+                <button class="tab" data-tab="berth-list">予約一覧</button>
               </div>
-            </div>
-
-            <!-- Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  荷主別平均荷待ち時間比較
-                </h3>
-                <div style="height: 300px">
-                  <canvas id="shipperCompareBar"></canvas>
-                </div>
-              </div>
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  月別推移（上位5荷主）
-                </h3>
-                <div style="height: 300px">
-                  <canvas id="shipperTrendLine"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 5: Cost Analysis ==================== -->
-          <div id="page-cost" class="page">
-            <!-- Cost KPIs -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">月間総荷待ち時間</span
-                  ><i
-                    data-lucide="clock"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  486<span class="text-sm font-medium text-gray-400 ml-1"
-                    >時間</span
-                  >
-                </div>
-              </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500">荷待ちコスト</span
-                  ><i
-                    data-lucide="banknote"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  342<span class="text-sm font-medium text-gray-400 ml-1"
-                    >万円</span
-                  >
-                </div>
-              </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500"
-                    >ドライバー時間単価</span
-                  ><i
-                    data-lucide="user"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  3,500<span class="text-sm font-medium text-gray-400 ml-1"
-                    >円/h</span
-                  >
-                </div>
-              </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[13px] text-gray-500"
-                    >機会損失（配送可能件数）</span
-                  ><i
-                    data-lucide="truck"
-                    class="w-[18px] h-[18px] text-gray-300"
-                  ></i>
-                </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  162<span class="text-sm font-medium text-gray-400 ml-1"
-                    >件/月</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Cost Table -->
-            <div class="card p-5 mb-5">
-              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                月別コストインパクト
-              </h3>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                  <thead>
-                    <tr class="border-b">
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        月
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        総荷待ち時間(h)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        コスト(万円)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        機会損失(件)
-                      </th>
-                      <th
-                        class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide pb-3 px-3"
-                      >
-                        前月比
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="text-[13px]">
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2026年3月</td>
-                      <td class="py-3 px-3">486</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        342
-                      </td>
-                      <td class="py-3 px-3">162</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">-8.2%</span>
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2026年2月</td>
-                      <td class="py-3 px-3">530</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        372
-                      </td>
-                      <td class="py-3 px-3">177</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">-5.1%</span>
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2026年1月</td>
-                      <td class="py-3 px-3">558</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        392
-                      </td>
-                      <td class="py-3 px-3">186</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">-3.4%</span>
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2025年12月</td>
-                      <td class="py-3 px-3">578</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        406
-                      </td>
-                      <td class="py-3 px-3">193</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-500">+2.8%</span>
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2025年11月</td>
-                      <td class="py-3 px-3">562</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        395
-                      </td>
-                      <td class="py-3 px-3">187</td>
-                      <td class="py-3 px-3">
-                        <span class="text-red-500">+1.5%</span>
-                      </td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                      <td class="py-3 px-3 font-medium">2025年10月</td>
-                      <td class="py-3 px-3">554</td>
-                      <td
-                        class="py-3 px-3 font-semibold"
-                        style="color: #065f46"
-                      >
-                        389
-                      </td>
-                      <td class="py-3 px-3">185</td>
-                      <td class="py-3 px-3">
-                        <span class="text-emerald-600">-1.2%</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Cost Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  月別コスト推移
-                </h3>
-                <div style="height: 300px">
-                  <canvas id="costTrendLine"></canvas>
-                </div>
-              </div>
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  荷主別コスト構成
-                </h3>
-                <div style="height: 300px">
-                  <canvas id="costStackedBar"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 6: Improvement ==================== -->
-          <div id="page-improvement" class="page">
-            <!-- Improvement Initiatives -->
-            <div class="card p-5 mb-5">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-semibold text-[13px] text-gray-700">
-                  改善施策一覧
-                </h3>
-                <button
-                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
-                  style="background: #065f46"
-                >
-                  <i data-lucide="plus" class="w-4 h-4"></i>施策追加
+              <div class="flex gap-2">
+                <input
+                  type="date"
+                  class="input"
+                  style="width: 160px"
+                  id="berth-date"
+                />
+                <select class="input" style="width: 180px">
+                  <option>ABCフーズ 東京倉庫</option>
+                  <option>東日本物産 横浜DC</option>
+                  <option>大和建材 埼玉</option>
+                </select>
+                <button class="btn btn-primary">
+                  <i data-lucide="plus" class="w-4 h-4"></i>予約追加
                 </button>
               </div>
-              <div class="space-y-3">
-                <!-- Initiative 1 -->
-                <div
-                  class="p-4 rounded-lg border hover:border-emerald-200 transition-colors"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
-                        >実施済</span
-                      >
-                      <span class="text-[14px] font-semibold text-gray-800"
-                        >予約制バース導入</span
-                      >
-                    </div>
-                    <span class="text-[11px] text-gray-400"
-                      >対象: ABCフーズ</span
-                    >
-                  </div>
-                  <p class="text-[12px] text-gray-500 mb-3">
-                    荷主と協議の上、トラック到着時刻の予約制を導入。バースの空き状況をリアルタイムで共有。
-                  </p>
-                  <div class="grid grid-cols-3 gap-3">
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block">実施日</span
-                      ><span class="text-[12px] font-medium">2026/01/15</span>
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入前平均</span
-                      ><span class="text-[12px] font-medium text-red-600"
-                        >142分</span
-                      >
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入後平均</span
-                      ><span class="text-[12px] font-medium text-emerald-600"
-                        >98分 (-31%)</span
-                      >
-                    </div>
+            </div>
+            <div id="tab-berth-board">
+              <div class="card p-5 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-bold text-sm">
+                    ABCフーズ 東京倉庫 — バース稼働状況
+                  </h3>
+                  <div class="flex gap-2">
+                    <span class="badge badge-teal">4バース</span
+                    ><span class="badge badge-green">空き1</span
+                    ><span class="badge badge-orange">超過1</span>
                   </div>
                 </div>
-
-                <!-- Initiative 2 -->
-                <div
-                  class="p-4 rounded-lg border hover:border-emerald-200 transition-colors"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700"
-                        >実施済</span
-                      >
-                      <span class="text-[14px] font-semibold text-gray-800"
-                        >パレット化推進</span
-                      >
+                <div class="grid grid-cols-4 gap-3" id="berth-slots">
+                  <div class="berth-slot occupied">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-teal-700"
+                        >バース A</span
+                      ><span class="time-pill time-ok">22分</span>
                     </div>
-                    <span class="text-[11px] text-gray-400"
-                      >対象: 東京物流センター</span
-                    >
-                  </div>
-                  <p class="text-[12px] text-gray-500 mb-3">
-                    バラ積みからパレット積みへ変更。荷役作業時間を大幅短縮し、回転率を向上。
-                  </p>
-                  <div class="grid grid-cols-3 gap-3">
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block">実施日</span
-                      ><span class="text-[12px] font-medium">2025/12/01</span>
+                    <div class="text-sm font-semibold">品川100あ1234</div>
+                    <div class="text-xs text-gray-500">
+                      佐藤D / 予約 08:00-08:45
                     </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入前平均</span
-                      ><span class="text-[12px] font-medium text-red-600"
-                        >128分</span
-                      >
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入後平均</span
-                      ><span class="text-[12px] font-medium text-emerald-600"
-                        >88分 (-31%)</span
-                      >
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-fill bg-teal-500"
+                        style="width: 48%"
+                      ></div>
                     </div>
                   </div>
-                </div>
-
-                <!-- Initiative 3 -->
-                <div
-                  class="p-4 rounded-lg border hover:border-blue-200 transition-colors"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
-                        >進行中</span
-                      >
-                      <span class="text-[14px] font-semibold text-gray-800"
-                        >時間帯分散</span
-                      >
+                  <div class="berth-slot occupied">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-teal-700"
+                        >バース B</span
+                      ><span class="time-pill time-warn">52分</span>
                     </div>
-                    <span class="text-[11px] text-gray-400"
-                      >対象: 関東配送センター</span
-                    >
-                  </div>
-                  <p class="text-[12px] text-gray-500 mb-3">
-                    到着が集中する午前9-10時を回避し、早朝便・午後便へシフト。段階的に実施中。
-                  </p>
-                  <div class="grid grid-cols-3 gap-3">
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block">実施日</span
-                      ><span class="text-[12px] font-medium">2026/02/15</span>
+                    <div class="text-sm font-semibold">品川100い5678</div>
+                    <div class="text-xs text-gray-500">
+                      鈴木D / 予約 07:30-08:15
                     </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入前平均</span
-                      ><span class="text-[12px] font-medium text-red-600"
-                        >110分</span
-                      >
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >現在平均</span
-                      ><span class="text-[12px] font-medium text-amber-600"
-                        >95分 (-14%)</span
-                      >
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-fill bg-warn-500"
+                        style="width: 85%"
+                      ></div>
                     </div>
                   </div>
-                </div>
-
-                <!-- Initiative 4 -->
-                <div
-                  class="p-4 rounded-lg border hover:border-blue-200 transition-colors"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
-                        >進行中</span
-                      >
-                      <span class="text-[14px] font-semibold text-gray-800"
-                        >事前情報共有</span
-                      >
+                  <div class="berth-slot overdue">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-danger-600"
+                        >バース C</span
+                      ><span class="time-pill time-danger">78分</span>
                     </div>
-                    <span class="text-[11px] text-gray-400"
-                      >対象: サトウ食品工場</span
-                    >
-                  </div>
-                  <p class="text-[12px] text-gray-500 mb-3">
-                    到着30分前に荷物情報・数量を事前連絡。荷主側の準備時間を確保し荷待ちを短縮。
-                  </p>
-                  <div class="grid grid-cols-3 gap-3">
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block">実施日</span
-                      ><span class="text-[12px] font-medium">2026/03/01</span>
+                    <div class="text-sm font-semibold">足立200う9012</div>
+                    <div class="text-xs text-gray-500">
+                      高橋D / 予約 07:00-07:45
+                      <span class="text-danger-500 font-semibold">超過</span>
                     </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >導入前平均</span
-                      ><span class="text-[12px] font-medium text-red-600"
-                        >96分</span
-                      >
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >現在平均</span
-                      ><span class="text-[12px] font-medium text-amber-600"
-                        >82分 (-15%)</span
-                      >
+                    <div class="progress-bar mt-2">
+                      <div
+                        class="progress-fill bg-danger-500"
+                        style="width: 100%"
+                      ></div>
                     </div>
                   </div>
-                </div>
-
-                <!-- Initiative 5 -->
-                <div
-                  class="p-4 rounded-lg border hover:border-gray-200 transition-colors"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600"
-                        >計画中</span
-                      >
-                      <span class="text-[14px] font-semibold text-gray-800"
-                        >デジタル受付システム</span
-                      >
+                  <div class="berth-slot">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-gray-400"
+                        >バース D</span
+                      ><span class="badge badge-gray">空き</span>
                     </div>
-                    <span class="text-[11px] text-gray-400">対象: 全荷主</span>
-                  </div>
-                  <p class="text-[12px] text-gray-500 mb-3">
-                    QRコードによるドライバー受付と順番管理を自動化。待機順の可視化で不公平感を解消。
-                  </p>
-                  <div class="grid grid-cols-3 gap-3">
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >予定実施日</span
-                      ><span class="text-[12px] font-medium">2026/04/01</span>
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block"
-                        >想定効果</span
-                      ><span class="text-[12px] font-medium text-emerald-600"
-                        >-20%</span
-                      >
-                    </div>
-                    <div class="p-2 rounded bg-gray-50">
-                      <span class="text-[10px] text-gray-400 block">投資額</span
-                      ><span class="text-[12px] font-medium">150万円</span>
+                    <div class="text-sm text-gray-400">次の予約: 09:00</div>
+                    <div class="text-xs text-gray-400">
+                      中村D / 品川100お7890
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Before/After Chart -->
-            <div class="card p-5">
-              <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                施策別 Before / After 比較
-              </h3>
-              <div style="height: 320px">
-                <canvas id="improvementChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 7: Settings ==================== -->
-          <div id="page-settings" class="page">
-            <div class="max-w-3xl">
-              <!-- Shipper Master -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="building-2"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >荷主マスタ
+              <!-- Timeline -->
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-4">
+                  本日のバース予約タイムライン
                 </h3>
-                <div class="overflow-x-auto mb-4">
-                  <table class="w-full text-left">
+                <div class="overflow-x-auto">
+                  <table>
                     <thead>
-                      <tr class="border-b">
-                        <th
-                          class="text-[11px] font-semibold text-gray-500 pb-2 px-3"
-                        >
-                          荷主コード
-                        </th>
-                        <th
-                          class="text-[11px] font-semibold text-gray-500 pb-2 px-3"
-                        >
-                          荷主名
-                        </th>
-                        <th
-                          class="text-[11px] font-semibold text-gray-500 pb-2 px-3"
-                        >
-                          住所
-                        </th>
-                        <th
-                          class="text-[11px] font-semibold text-gray-500 pb-2 px-3"
-                        >
-                          バース数
-                        </th>
-                        <th
-                          class="text-[11px] font-semibold text-gray-500 pb-2 px-3"
-                        >
-                          操作
-                        </th>
+                      <tr>
+                        <th style="width: 80px">バース</th>
+                        <th>06:00</th>
+                        <th>07:00</th>
+                        <th>08:00</th>
+                        <th>09:00</th>
+                        <th>10:00</th>
+                        <th>11:00</th>
+                        <th>12:00</th>
+                        <th>13:00</th>
+                        <th>14:00</th>
+                        <th>15:00</th>
                       </tr>
                     </thead>
-                    <tbody class="text-[13px]">
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S001</td>
-                        <td class="py-2.5 px-3">ABCフーズ</td>
-                        <td class="py-2.5 px-3">東京都江東区</td>
-                        <td class="py-2.5 px-3">4</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                    <tbody>
+                      <tr>
+                        <td class="font-medium text-xs">A</td>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          佐藤D 07:00-08:45
+                        </td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          山田D
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
+                        </td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          渡辺D
+                        </td>
+                        <td
+                          colspan="3"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
                         </td>
                       </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S002</td>
-                        <td class="py-2.5 px-3">東京物流センター</td>
-                        <td class="py-2.5 px-3">東京都大田区</td>
-                        <td class="py-2.5 px-3">8</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                      <tr>
+                        <td class="font-medium text-xs">B</td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          鈴木D
+                        </td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          鈴木D
+                        </td>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          伊藤D 09:00-10:30
+                        </td>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          小林D 12:00-13:30
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
                         </td>
                       </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S003</td>
-                        <td class="py-2.5 px-3">関東配送センター</td>
-                        <td class="py-2.5 px-3">埼玉県川口市</td>
-                        <td class="py-2.5 px-3">6</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                      <tr>
+                        <td class="font-medium text-xs">C</td>
+                        <td
+                          class="bg-danger-100 text-xs text-center rounded text-danger-600 font-medium"
+                        >
+                          高橋D(超過)
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-danger-100 text-xs text-center rounded text-danger-600 font-medium"
+                        >
+                          高橋D(超過)
+                        </td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          松本D
+                        </td>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          田村D 11:00-12:30
+                        </td>
+                        <td
+                          colspan="3"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
                         </td>
                       </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S004</td>
-                        <td class="py-2.5 px-3">サトウ食品工場</td>
-                        <td class="py-2.5 px-3">千葉県船橋市</td>
-                        <td class="py-2.5 px-3">3</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                      <tr>
+                        <td class="font-medium text-xs">D</td>
+                        <td
+                          colspan="2"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
                         </td>
-                      </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S005</td>
-                        <td class="py-2.5 px-3">日本ロジスティクス</td>
-                        <td class="py-2.5 px-3">神奈川県横浜市</td>
-                        <td class="py-2.5 px-3">10</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
                         </td>
-                      </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S006</td>
-                        <td class="py-2.5 px-3">マルエツ配送</td>
-                        <td class="py-2.5 px-3">東京都板橋区</td>
-                        <td class="py-2.5 px-3">5</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          中村D
                         </td>
-                      </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S007</td>
-                        <td class="py-2.5 px-3">グリーンファーム</td>
-                        <td class="py-2.5 px-3">茨城県つくば市</td>
-                        <td class="py-2.5 px-3">3</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                        <td
+                          colspan="2"
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          佐々木D 10:00-11:30
                         </td>
-                      </tr>
-                      <tr class="border-b hover:bg-gray-50">
-                        <td class="py-2.5 px-3">S008</td>
-                        <td class="py-2.5 px-3">中央冷蔵</td>
-                        <td class="py-2.5 px-3">東京都中央区</td>
-                        <td class="py-2.5 px-3">4</td>
-                        <td class="py-2.5 px-3">
-                          <button
-                            class="text-[11px] text-blue-600 hover:underline cursor-pointer"
-                          >
-                            編集
-                          </button>
+                        <td class="bg-gray-100 text-xs text-center rounded">
+                          —
+                        </td>
+                        <td
+                          class="bg-teal-100 text-xs text-center rounded text-teal-700 font-medium"
+                        >
+                          藤田D
+                        </td>
+                        <td
+                          colspan="2"
+                          class="bg-gray-100 text-xs text-center rounded"
+                        >
+                          —
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <button
-                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg border hover:bg-gray-50 text-gray-600 font-medium transition-all cursor-pointer"
-                >
-                  <i data-lucide="plus" class="w-4 h-4"></i>荷主追加
-                </button>
               </div>
-
-              <!-- Cost Unit Settings -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="calculator"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >コスト単価設定
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >ドライバー時間単価（円/h）</label
-                    >
-                    <input
-                      type="number"
-                      value="3500"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >車両維持費単価（円/h）</label
-                    >
-                    <input
-                      type="number"
-                      value="1200"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >燃料費（アイドリング）（円/h）</label
-                    >
-                    <input
-                      type="number"
-                      value="800"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >1配送あたり平均所要時間（時間）</label
-                    >
-                    <input
-                      type="number"
-                      value="3.0"
-                      step="0.5"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Alert Threshold -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="bell"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >アラート閾値設定
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >注意アラート閾値（分）</label
-                    >
-                    <input
-                      type="number"
-                      value="30"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                    <p class="text-[11px] text-gray-400 mt-1">
-                      この時間を超えると黄色表示
-                    </p>
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >緊急アラート閾値（分）</label
-                    >
-                    <input
-                      type="number"
-                      value="60"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                    <p class="text-[11px] text-gray-400 mt-1">
-                      この時間を超えると赤色表示+通知
-                    </p>
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >月間目標平均荷待ち時間（分）</label
-                    >
-                    <input
-                      type="number"
-                      value="60"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                      >30分超過率目標（%以下）</label
-                    >
-                    <input
-                      type="number"
-                      value="30"
-                      class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Report Delivery -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="mail"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >レポート配信設定
-                </h3>
-                <div class="divide-y">
-                  <div class="flex items-center justify-between py-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        日次レポート
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        毎日18:00に日次サマリーをメール送信
-                      </p>
-                    </div>
-                    <label
-                      class="relative inline-flex items-center cursor-pointer"
-                      ><input type="checkbox" checked class="sr-only peer" />
-                      <div
-                        class="w-10 h-5 rounded-full peer toggle-off peer-checked:toggle-on after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"
-                      ></div
-                    ></label>
-                  </div>
-                  <div class="flex items-center justify-between py-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        週次レポート
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        毎週月曜9:00に荷主別分析をPDF送信
-                      </p>
-                    </div>
-                    <label
-                      class="relative inline-flex items-center cursor-pointer"
-                      ><input type="checkbox" checked class="sr-only peer" />
-                      <div
-                        class="w-10 h-5 rounded-full peer toggle-off peer-checked:toggle-on after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"
-                      ></div
-                    ></label>
-                  </div>
-                  <div class="flex items-center justify-between py-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        月次レポート
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        月初にコスト分析+改善提案レポートを送信
-                      </p>
-                    </div>
-                    <label
-                      class="relative inline-flex items-center cursor-pointer"
-                      ><input type="checkbox" checked class="sr-only peer" />
-                      <div
-                        class="w-10 h-5 rounded-full peer toggle-off peer-checked:toggle-on after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"
-                      ></div
-                    ></label>
-                  </div>
-                  <div class="flex items-center justify-between py-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        リアルタイム超過アラート
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        閾値超過時にSlack/メールで即時通知
-                      </p>
-                    </div>
-                    <label
-                      class="relative inline-flex items-center cursor-pointer"
-                      ><input type="checkbox" checked class="sr-only peer" />
-                      <div
-                        class="w-10 h-5 rounded-full peer toggle-off peer-checked:toggle-on after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"
-                      ></div
-                    ></label>
-                  </div>
-                </div>
-                <div class="mt-4">
-                  <label
-                    class="block text-[12px] font-medium text-gray-600 mb-1.5"
-                    >配信先メールアドレス</label
-                  >
-                  <input
-                    type="email"
-                    value="unkou@example.com"
-                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 mb-2"
-                  />
-                  <input
-                    type="email"
-                    value="kanri@example.com"
-                    class="w-full px-3 py-2.5 text-[13px] border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
-
-              <div class="flex justify-end">
-                <button
-                  class="inline-flex items-center gap-1.5 py-2 px-4 text-[13px] rounded-lg text-white font-medium transition-all hover:opacity-90 cursor-pointer"
-                  style="background: #065f46"
-                >
-                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
-                </button>
+            </div>
+            <div id="tab-berth-list" style="display: none">
+              <div class="card overflow-hidden">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>予約時間</th>
+                      <th>バース</th>
+                      <th>車両</th>
+                      <th>ドライバー</th>
+                      <th>荷主</th>
+                      <th>作業種別</th>
+                      <th>予定時間</th>
+                      <th>ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-xs">07:00-07:45</td>
+                      <td>C</td>
+                      <td class="text-xs">足立200う9012</td>
+                      <td>高橋D</td>
+                      <td>ABCフーズ</td>
+                      <td><span class="badge badge-blue">荷下ろし</span></td>
+                      <td>45分</td>
+                      <td><span class="badge badge-red">超過中</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-xs">07:30-08:15</td>
+                      <td>B</td>
+                      <td class="text-xs">品川100い5678</td>
+                      <td>鈴木D</td>
+                      <td>ABCフーズ</td>
+                      <td><span class="badge badge-blue">荷下ろし</span></td>
+                      <td>45分</td>
+                      <td><span class="badge badge-yellow">作業中</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-xs">08:00-08:45</td>
+                      <td>A</td>
+                      <td class="text-xs">品川100あ1234</td>
+                      <td>佐藤D</td>
+                      <td>ABCフーズ</td>
+                      <td><span class="badge badge-teal">荷積み</span></td>
+                      <td>45分</td>
+                      <td><span class="badge badge-green">作業中</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-xs">09:00-09:45</td>
+                      <td>D</td>
+                      <td class="text-xs">品川100お7890</td>
+                      <td>中村D</td>
+                      <td>ABCフーズ</td>
+                      <td><span class="badge badge-teal">荷積み</span></td>
+                      <td>45分</td>
+                      <td><span class="badge badge-gray">待機中</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-xs">09:00-10:30</td>
+                      <td>B</td>
+                      <td class="text-xs">品川100き5678</td>
+                      <td>伊藤D</td>
+                      <td>ABCフーズ</td>
+                      <td><span class="badge badge-blue">荷下ろし</span></td>
+                      <td>90分</td>
+                      <td><span class="badge badge-gray">未着</span></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+
+          <!-- ===== RECORDS ===== -->
+          <div class="page" id="page-records">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
+                <input
+                  type="date"
+                  class="input"
+                  style="width: 150px"
+                  value="2026-03-01"
+                />
+                <span class="text-gray-400 text-sm">〜</span>
+                <input
+                  type="date"
+                  class="input"
+                  style="width: 150px"
+                  value="2026-03-11"
+                />
+                <select class="input" style="width: 140px">
+                  <option>全荷主</option>
+                  <option>ABCフーズ</option>
+                  <option>東日本物産</option>
+                </select>
+                <select class="input" style="width: 120px">
+                  <option>全理由</option>
+                  <option>荷主都合</option>
+                  <option>混雑</option>
+                  <option>設備故障</option>
+                  <option>検品遅延</option>
+                </select>
+                <button class="btn btn-primary">
+                  <i data-lucide="search" class="w-4 h-4"></i>検索
+                </button>
+              </div>
+              <button class="btn btn-secondary">
+                <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+              </button>
+            </div>
+            <div class="card overflow-hidden">
+              <table>
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>車両</th>
+                    <th>ドライバー</th>
+                    <th>荷主</th>
+                    <th>場所</th>
+                    <th>到着</th>
+                    <th>荷役開始</th>
+                    <th>荷待ち</th>
+                    <th>荷役</th>
+                    <th>合計</th>
+                    <th>理由</th>
+                  </tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ===== SHIPPER SCORECARD ===== -->
+          <div class="page" id="page-shipper">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-bold text-sm">
+                荷主スコアカード — 荷待ち時間パフォーマンス評価
+              </h3>
+              <div class="flex gap-2">
+                <select class="input" style="width: 130px">
+                  <option>過去3ヶ月</option>
+                  <option>過去6ヶ月</option>
+                  <option>今月</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-5" id="shipper-cards"></div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">
+                  荷主別 月次荷待ち時間推移
+                </h3>
+                <canvas id="chart-shipper-trend" height="220"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">認識ギャップ分析</h3>
+                <div class="space-y-4 mt-3">
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">荷主側の荷待ち認識率</span
+                      ><span class="font-bold text-danger-600">20%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-danger-400"
+                        style="width: 20%"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                      出典: 国交省調査 —
+                      荷主の約80%が荷待ちの実態を把握できていない
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">運送会社側の認識率</span
+                      ><span class="font-bold text-teal-600">73%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-teal-500"
+                        style="width: 73%"
+                      ></div>
+                    </div>
+                  </div>
+                  <div
+                    class="bg-accent-50 border border-accent-200 rounded-lg p-3 mt-2"
+                  >
+                    <div class="text-xs font-semibold text-accent-700">
+                      WaitCutの役割: データで認識ギャップを埋める
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">
+                      荷主にリアルタイムデータを共有し、客観的事実に基づく改善交渉を実現
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== COST ANALYSIS ===== -->
+          <div class="page" id="page-cost">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  月間荷待ちコスト
+                </div>
+                <div class="text-xl font-extrabold text-danger-600">
+                  186<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">前月比 -23万円</div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  年間換算
+                </div>
+                <div class="text-xl font-extrabold">
+                  2,232<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+                <div class="text-xs text-success-600 mt-1">
+                  導入前 4,104万円比 -46%
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  1台平均/月
+                </div>
+                <div class="text-xl font-extrabold">
+                  15.5<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">大型車 12台保有</div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  待機時間料 回収率
+                </div>
+                <div class="text-xl font-extrabold text-teal-600">
+                  62<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="text-xs text-warn-600 mt-1">
+                  未回収: 約71万円/月
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">月別 荷待ちコスト推移</h3>
+                <canvas id="chart-cost-trend" height="220"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">
+                  荷主別 コスト内訳（今月）
+                </h3>
+                <canvas id="chart-cost-shipper" height="220"></canvas>
+              </div>
+            </div>
+            <div class="card p-5">
+              <h3 class="font-bold text-sm mb-3">コスト算出根拠</h3>
+              <div class="grid grid-cols-3 gap-4 text-xs">
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <div class="font-semibold text-gray-700 mb-2">
+                    標準待機時間料（国交省告示）
+                  </div>
+                  <table class="text-xs">
+                    <tr>
+                      <td class="pr-3">小型(2t)</td>
+                      <td class="font-bold">1,680円/30分</td>
+                    </tr>
+                    <tr>
+                      <td>中型(4t)</td>
+                      <td class="font-bold">1,760円/30分</td>
+                    </tr>
+                    <tr>
+                      <td>大型(10t)</td>
+                      <td class="font-bold">1,890円/30分</td>
+                    </tr>
+                    <tr>
+                      <td>トレーラ(20t)</td>
+                      <td class="font-bold">2,220円/30分</td>
+                    </tr>
+                  </table>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <div class="font-semibold text-gray-700 mb-2">原価ベース</div>
+                  <div>ドライバー時給: <strong>1,900円</strong> (所定内)</div>
+                  <div>時間外割増: <strong>2,375円/h</strong> (+25%)</div>
+                  <div>車両固定費: <strong>800円/h</strong> (償却+保険)</div>
+                  <div>アイドリング燃料: <strong>1.5L/h</strong></div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <div class="font-semibold text-gray-700 mb-2">
+                    2時間超 割増（2026年4月〜）
+                  </div>
+                  <div>
+                    荷待ち+荷役が2h超で
+                    <strong class="text-danger-600">5割増</strong>
+                  </div>
+                  <div>
+                    大型車: 1,890円 →
+                    <strong class="text-danger-600">2,835円/30分</strong>
+                  </div>
+                  <div class="mt-1 text-gray-500">
+                    命令違反: 100万円以下の罰金
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 2-HOUR RULE COMPLIANCE ===== -->
+          <div class="page" id="page-compliance">
+            <div
+              class="bg-accent-50 border border-accent-200 rounded-xl p-4 mb-5 flex items-start gap-3"
+            >
+              <div
+                class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="scale" class="w-4 h-4 text-white"></i>
+              </div>
+              <div>
+                <div class="font-bold text-sm text-accent-600">
+                  改正物流効率化法 —
+                  荷待ち・荷役2時間以内ルール（2026年4月施行）
+                </div>
+                <div class="text-xs text-gray-600 mt-1">
+                  1運行の荷待ち+荷役を2時間以内に。特定荷主（年9万t以上・約3,200社）は計画策定・定期報告義務。罰則:
+                  命令違反100万円以下
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  2時間以内 達成率
+                </div>
+                <div class="text-2xl font-extrabold text-teal-600">
+                  95.8<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="progress-bar mt-2">
+                  <div
+                    class="progress-fill bg-teal-500"
+                    style="width: 95.8%"
+                  ></div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  2時間超過件数
+                </div>
+                <div class="text-2xl font-extrabold text-danger-600">
+                  7<span class="text-sm text-gray-400 ml-1">件/月</span>
+                </div>
+                <div class="text-xs text-success-600 mt-1">
+                  先月12件から改善
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  1時間以内 達成率
+                </div>
+                <div class="text-2xl font-extrabold">
+                  68<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  上位目標（2h以内達成済の場合）
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  特定荷主 該当
+                </div>
+                <div class="text-2xl font-extrabold">
+                  2<span class="text-sm text-gray-400 ml-1">社</span>
+                </div>
+                <div class="text-xs text-warn-600 mt-1">
+                  計画提出期限: 2026年10月末
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card overflow-hidden">
+                <div class="p-4 border-b border-gray-100">
+                  <h3 class="font-bold text-sm">荷主別 2時間ルール遵守状況</h3>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>荷主</th>
+                      <th>総件数</th>
+                      <th>2h以内</th>
+                      <th>2h超過</th>
+                      <th>達成率</th>
+                      <th>ステータス</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="font-medium">ABCフーズ</td>
+                      <td>45</td>
+                      <td>40</td>
+                      <td class="text-danger-600 font-bold">5</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold">88.9%</span>
+                          <div class="progress-bar w-16">
+                            <div
+                              class="progress-fill bg-warn-500"
+                              style="width: 88.9%"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-yellow">要改善</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">東日本物産</td>
+                      <td>38</td>
+                      <td>37</td>
+                      <td class="text-danger-600 font-bold">1</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold">97.4%</span>
+                          <div class="progress-bar w-16">
+                            <div
+                              class="progress-fill bg-teal-500"
+                              style="width: 97.4%"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-green">良好</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">大和建材</td>
+                      <td>28</td>
+                      <td>28</td>
+                      <td>0</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold">100%</span>
+                          <div class="progress-bar w-16">
+                            <div
+                              class="progress-fill bg-success-500"
+                              style="width: 100%"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-green">優秀</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">サクラ食品</td>
+                      <td>32</td>
+                      <td>31</td>
+                      <td class="text-danger-600 font-bold">1</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold">96.9%</span>
+                          <div class="progress-bar w-16">
+                            <div
+                              class="progress-fill bg-teal-500"
+                              style="width: 96.9%"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-green">良好</span></td>
+                    </tr>
+                    <tr>
+                      <td class="font-medium">関東ロジ</td>
+                      <td>22</td>
+                      <td>22</td>
+                      <td>0</td>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold">100%</span>
+                          <div class="progress-bar w-16">
+                            <div
+                              class="progress-fill bg-success-500"
+                              style="width: 100%"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="badge badge-green">優秀</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">荷待ち+荷役時間の分布</h3>
+                <canvas id="chart-2hr-dist" height="220"></canvas>
+                <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+                  <div
+                    class="bg-success-50 border border-success-200 rounded-lg p-2 text-center"
+                  >
+                    <div class="font-bold text-success-700">1h以内</div>
+                    <div class="text-lg font-extrabold text-success-600">
+                      68%
+                    </div>
+                  </div>
+                  <div
+                    class="bg-warn-50 border border-warn-200 rounded-lg p-2 text-center"
+                  >
+                    <div class="font-bold text-warn-700">1〜2h</div>
+                    <div class="text-lg font-extrabold text-warn-600">28%</div>
+                  </div>
+                  <div
+                    class="bg-danger-50 border border-danger-200 rounded-lg p-2 text-center"
+                  >
+                    <div class="font-bold text-danger-700">2h超</div>
+                    <div class="text-lg font-extrabold text-danger-600">4%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== IMPROVEMENT ===== -->
+          <div class="page" id="page-improve">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-bold text-sm">改善施策トラッカー</h3>
+              <button class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>施策登録
+              </button>
+            </div>
+            <div class="space-y-4" id="improve-cards">
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="badge badge-green">実施中</span>
+                    <h4 class="font-bold text-sm">
+                      バース予約システム導入（ABCフーズ東京倉庫）
+                    </h4>
+                  </div>
+                  <span class="text-xs text-gray-400">2026年1月〜</span>
+                </div>
+                <div class="grid grid-cols-4 gap-4 mb-3">
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">Before</div>
+                    <div class="text-lg font-extrabold text-danger-600">
+                      92分
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">After</div>
+                    <div class="text-lg font-extrabold text-teal-600">38分</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">削減率</div>
+                    <div class="text-lg font-extrabold text-success-600">
+                      -59%
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">月間削減コスト</div>
+                    <div class="text-lg font-extrabold text-accent-500">
+                      34万円
+                    </div>
+                  </div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill bg-teal-500"
+                    style="width: 75%"
+                  ></div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  目標: 30分以内 — 現在の達成度 75%
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="badge badge-blue">計画中</span>
+                    <h4 class="font-bold text-sm">
+                      パレット化推進（ABCフーズ：バラ積み→パレット積み）
+                    </h4>
+                  </div>
+                  <span class="text-xs text-gray-400">2026年4月〜予定</span>
+                </div>
+                <div class="grid grid-cols-4 gap-4 mb-3">
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">現状 荷役時間</div>
+                    <div class="text-lg font-extrabold text-danger-600">
+                      95分
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">目標</div>
+                    <div class="text-lg font-extrabold text-teal-600">20分</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">期待削減率</div>
+                    <div class="text-lg font-extrabold text-success-600">
+                      -79%
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">投資対効果</div>
+                    <div class="text-lg font-extrabold text-accent-500">
+                      8ヶ月回収
+                    </div>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-500">
+                  出典:
+                  パレット化で積込時間75%短縮（90〜120分→15〜20分）の実績あり
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="badge badge-blue">計画中</span>
+                    <h4 class="font-bold text-sm">
+                      ASN検品レス導入（東日本物産）
+                    </h4>
+                  </div>
+                  <span class="text-xs text-gray-400">2026年Q3〜予定</span>
+                </div>
+                <div class="grid grid-cols-4 gap-4 mb-3">
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">現状 検品時間</div>
+                    <div class="text-lg font-extrabold text-danger-600">
+                      38分/車
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">目標</div>
+                    <div class="text-lg font-extrabold text-teal-600">
+                      3分/車
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">期待削減率</div>
+                    <div class="text-lg font-extrabold text-success-600">
+                      -93%
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="text-xs text-gray-500">年間効果</div>
+                    <div class="text-lg font-extrabold text-accent-500">
+                      480万円
+                    </div>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-500">
+                  出典:
+                  ASN連携による検品レスで38分/車→2.5分/車（93%削減）の実績あり
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end .p-6 -->
+      </main>
     </div>
 
     <script>
-      const charts = [];
-      const P = "#065f46",
-        S = "#10b981",
-        SIDE = "#0c4a6e";
-      const pageConfig = [
+      // === DATA ===
+      const waitingNow = [
         {
-          id: "dashboard",
-          title: "ダッシュボード",
-          desc: "荷待ち時間のKPIとトレンド",
-        },
-        {
-          id: "realtime",
-          title: "リアルタイム状況",
-          desc: "現在の荷待ち状況ボード",
-        },
-        { id: "records", title: "荷待ち記録", desc: "荷待ち実績の一覧・検索" },
-        { id: "shipper", title: "荷主分析", desc: "荷主別の荷待ち分析" },
-        { id: "cost", title: "コスト分析", desc: "荷待ちコストインパクト" },
-        {
-          id: "improvement",
-          title: "改善施策",
-          desc: "改善施策の管理と効果測定",
-        },
-        { id: "settings", title: "設定", desc: "マスタ・閾値・レポート配信" },
-      ];
-
-      function navigate(id) {
-        document
-          .querySelectorAll(".page")
-          .forEach((p) => p.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((n) => n.classList.remove("active"));
-        const el = document.getElementById("page-" + id);
-        if (el) el.classList.add("active");
-        document
-          .querySelector('[data-page="' + id + '"]')
-          ?.classList.add("active");
-        const cfg = pageConfig.find((p) => p.id === id);
-        if (cfg) {
-          document.getElementById("pageTitle").textContent = cfg.title;
-          document.getElementById("pageDesc").textContent = cfg.desc;
-        }
-        history.replaceState(null, null, "#" + id);
-        setTimeout(() => {
-          charts.forEach((c) => c.resize());
-          if (typeof lucide !== "undefined") lucide.createIcons();
-        }, 60);
-      }
-      window.addEventListener("hashchange", () =>
-        navigate(location.hash.slice(1)),
-      );
-
-      // ========== REALTIME DATA ==========
-      const realtimeData = [
-        {
-          plate: "品川100あ1234",
-          driver: "佐藤 太郎",
+          plate: "足立200う9012",
+          driver: "高橋 健太",
           shipper: "ABCフーズ",
-          arrival: "07:28",
-          elapsed: 92,
-          task: "パレット積込",
-          status: "荷待ち",
+          place: "東京倉庫 バースC",
+          arrival: "06:42",
+          elapsed: 98,
+          reason: "検品遅延",
+          status: "danger",
         },
         {
-          plate: "横浜200か5678",
-          driver: "田中 一郎",
-          shipper: "東京物流センター",
-          arrival: "07:42",
-          elapsed: 78,
-          task: "バラ荷卸し",
-          status: "荷待ち",
+          plate: "品川100い5678",
+          driver: "鈴木 一郎",
+          shipper: "ABCフーズ",
+          place: "東京倉庫 バースB",
+          arrival: "07:18",
+          elapsed: 62,
+          reason: "順番待ち",
+          status: "danger",
         },
         {
-          plate: "大宮100た3456",
-          driver: "鈴木 健一",
-          shipper: "サトウ食品工場",
-          arrival: "08:22",
-          elapsed: 38,
-          task: "冷蔵品搬入",
-          status: "荷待ち",
+          plate: "品川100え3456",
+          driver: "山田 花子",
+          shipper: "東日本物産",
+          place: "横浜DC",
+          arrival: "07:45",
+          elapsed: 35,
+          reason: "混雑",
+          status: "warn",
         },
         {
-          plate: "川崎300さ9012",
-          driver: "山田 浩二",
-          shipper: "関東配送センター",
+          plate: "足立200か1234",
+          driver: "渡辺 健",
+          shipper: "サクラ食品",
+          place: "千葉工場",
+          arrival: "08:02",
+          elapsed: 18,
+          reason: "荷主都合",
+          status: "ok",
+        },
+        {
+          plate: "品川100お7890",
+          driver: "中村 誠",
+          shipper: "ABCフーズ",
+          place: "東京倉庫 待機場",
           arrival: "08:15",
-          elapsed: 45,
-          task: "混載仕分け",
-          status: "荷待ち",
-        },
-        {
-          plate: "練馬400う7890",
-          driver: "高橋 誠",
-          shipper: "マルエツ配送",
-          arrival: "08:45",
-          elapsed: 15,
-          task: "定温品配送",
-          status: "荷待ち",
-        },
-        {
-          plate: "足立500え2345",
-          driver: "伊藤 大輔",
-          shipper: "グリーンファーム",
-          arrival: "08:55",
           elapsed: 5,
-          task: "青果積込",
-          status: "荷待ち",
-        },
-        {
-          plate: "八王子100お6789",
-          driver: "渡辺 修",
-          shipper: "日本ロジスティクス",
-          arrival: "08:50",
-          elapsed: 10,
-          task: "パレット荷卸し",
-          status: "荷待ち",
-        },
-        {
-          plate: "相模100か1111",
-          driver: "中村 亮太",
-          shipper: "ABCフーズ",
-          arrival: "07:15",
-          elapsed: 0,
-          task: "バラ積込",
-          status: "作業中",
-        },
-        {
-          plate: "横須賀200き2222",
-          driver: "小林 正樹",
-          shipper: "東京物流センター",
-          arrival: "07:30",
-          elapsed: 0,
-          task: "冷蔵荷卸し",
-          status: "作業中",
-        },
-        {
-          plate: "所沢300く3333",
-          driver: "加藤 翔",
-          shipper: "中央冷蔵",
-          arrival: "06:50",
-          elapsed: 0,
-          task: "冷凍品搬入",
-          status: "完了",
+          reason: "バース待ち",
+          status: "ok",
         },
       ];
 
-      function renderRealtimeCards() {
-        const container = document.getElementById("realtimeCards");
-        if (!container) return;
-        container.innerHTML = "";
-        let gC = 0,
-          yC = 0,
-          rC = 0;
-        realtimeData.forEach((v, i) => {
-          let colorClass = "wait-green",
-            dotColor = "bg-green-500",
-            statusBg = "bg-green-50 text-green-700",
-            elapsed = v.elapsed;
-          if (v.status === "作業中") {
-            colorClass = "";
-            dotColor = "bg-blue-500";
-            statusBg = "bg-blue-50 text-blue-700";
-            elapsed = null;
-          } else if (v.status === "完了") {
-            colorClass = "";
-            dotColor = "bg-gray-400";
-            statusBg = "bg-gray-100 text-gray-600";
-            elapsed = null;
-          } else if (elapsed > 60) {
-            colorClass = "wait-red";
-            dotColor = "bg-red-500";
-            statusBg = "bg-red-50 text-red-700";
-            rC++;
-          } else if (elapsed > 30) {
-            colorClass = "wait-yellow";
-            dotColor = "bg-amber-500";
-            statusBg = "bg-amber-50 text-amber-700";
-            yC++;
-          } else {
-            gC++;
-          }
-
-          const card = document.createElement("div");
-          card.className = `card p-4 ${colorClass} transition-all`;
-          card.innerHTML = `
-<div class="flex items-center justify-between mb-3">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full ${dotColor} ${v.status === "荷待ち" && elapsed > 60 ? "animate-pulse" : ""}"></div>
-<span class="text-[14px] font-bold text-gray-800">${v.plate}</span>
-</div>
-<span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${statusBg}">${v.status}</span>
-</div>
-<div class="grid grid-cols-2 gap-2 mb-3">
-<div><span class="text-[10px] text-gray-400 block">ドライバー</span><span class="text-[13px] font-medium">${v.driver}</span></div>
-<div><span class="text-[10px] text-gray-400 block">荷主</span><span class="text-[13px] font-medium">${v.shipper}</span></div>
-<div><span class="text-[10px] text-gray-400 block">到着時刻</span><span class="text-[13px] font-medium">${v.arrival}</span></div>
-<div><span class="text-[10px] text-gray-400 block">予定作業</span><span class="text-[13px] font-medium">${v.task}</span></div>
-</div>
-${
-  elapsed !== null
-    ? `<div class="flex items-center justify-between pt-3 border-t">
-<span class="text-[11px] text-gray-500">経過時間</span>
-<span class="text-[20px] font-bold ${elapsed > 60 ? "text-red-600" : elapsed > 30 ? "text-amber-600" : "text-emerald-600"}" data-rt-idx="${i}">${elapsed}分</span>
-</div>`
-    : `<div class="pt-3 border-t"><span class="text-[11px] text-gray-400">${v.status === "作業中" ? "作業中..." : "完了済み"}</span></div>`
-}`;
-          container.appendChild(card);
-        });
-        document.getElementById("rtGreen").textContent = gC;
-        document.getElementById("rtYellow").textContent = yC;
-        document.getElementById("rtRed").textContent = rC;
-      }
-
-      // Simulate real-time elapsed increment
-      setInterval(() => {
-        realtimeData.forEach((v) => {
-          if (v.status === "荷待ち") v.elapsed++;
-        });
-        document.querySelectorAll("[data-rt-idx]").forEach((el) => {
-          const idx = parseInt(el.dataset.rtIdx);
-          const v = realtimeData[idx];
-          if (v && v.status === "荷待ち") {
-            el.textContent = v.elapsed + "分";
-            el.className =
-              "text-[20px] font-bold " +
-              (v.elapsed > 60
-                ? "text-red-600"
-                : v.elapsed > 30
-                  ? "text-amber-600"
-                  : "text-emerald-600");
-          }
-        });
-        const now = new Date();
-        const rtClock = document.getElementById("rtClock");
-        if (rtClock) rtClock.textContent = now.toLocaleTimeString("ja-JP");
-      }, 60000);
-      // Update clock every second
-      setInterval(() => {
-        const now = new Date();
-        const rtClock = document.getElementById("rtClock");
-        if (rtClock) rtClock.textContent = now.toLocaleTimeString("ja-JP");
-      }, 1000);
-
-      // ========== RECORDS DATA ==========
-      const recordsData = [
+      const records = [
         {
-          date: "2026/03/10",
+          date: "2026-03-11",
           plate: "品川100あ1234",
           driver: "佐藤 太郎",
           shipper: "ABCフーズ",
-          place: "江東区倉庫",
-          arrival: "07:28",
-          start: "09:00",
-          end: "09:45",
-          wait: 92,
-          work: 45,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/10",
-          plate: "横浜200か5678",
-          driver: "田中 一郎",
-          shipper: "東京物流センター",
-          place: "大田区センター",
-          arrival: "07:42",
-          start: "09:00",
-          end: "09:30",
-          wait: 78,
-          work: 30,
-          reason: "混雑",
-        },
-        {
-          date: "2026/03/10",
-          plate: "川崎300さ9012",
-          driver: "山田 浩二",
-          shipper: "関東配送センター",
-          place: "川口配送場",
-          arrival: "08:15",
-          start: "09:00",
-          end: "09:40",
-          wait: 45,
-          work: 40,
-          reason: "混雑",
-        },
-        {
-          date: "2026/03/10",
-          plate: "大宮100た3456",
-          driver: "鈴木 健一",
-          shipper: "サトウ食品工場",
-          place: "船橋工場",
-          arrival: "08:22",
-          start: "09:00",
-          end: "09:25",
-          wait: 38,
-          work: 25,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/09",
-          plate: "練馬400う7890",
-          driver: "高橋 誠",
-          shipper: "マルエツ配送",
-          place: "板橋センター",
-          arrival: "08:00",
-          start: "08:25",
-          end: "09:00",
-          wait: 25,
-          work: 35,
-          reason: "早着",
-        },
-        {
-          date: "2026/03/09",
-          plate: "足立500え2345",
-          driver: "伊藤 大輔",
-          shipper: "ABCフーズ",
-          place: "江東区倉庫",
-          arrival: "09:10",
-          start: "10:55",
-          end: "11:30",
-          wait: 105,
-          work: 35,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/09",
-          plate: "八王子100お6789",
-          driver: "渡辺 修",
-          shipper: "日本ロジスティクス",
-          place: "横浜物流",
-          arrival: "07:30",
-          start: "08:40",
-          end: "09:20",
-          wait: 70,
-          work: 40,
-          reason: "混雑",
-        },
-        {
-          date: "2026/03/09",
-          plate: "相模100か1111",
-          driver: "中村 亮太",
-          shipper: "東京物流センター",
-          place: "大田区センター",
-          arrival: "08:45",
-          start: "09:50",
-          end: "10:20",
-          wait: 65,
-          work: 30,
-          reason: "設備故障",
-        },
-        {
-          date: "2026/03/08",
-          plate: "横須賀200き2222",
-          driver: "小林 正樹",
-          shipper: "グリーンファーム",
-          place: "つくば集荷場",
-          arrival: "06:30",
-          start: "06:55",
-          end: "07:30",
-          wait: 25,
-          work: 35,
-          reason: "早着",
-        },
-        {
-          date: "2026/03/08",
-          plate: "所沢300く3333",
-          driver: "加藤 翔",
-          shipper: "中央冷蔵",
-          place: "中央区冷蔵庫",
+          place: "東京倉庫",
           arrival: "07:00",
-          start: "07:20",
-          end: "07:50",
-          wait: 20,
-          work: 30,
-          reason: "早着",
+          start: "07:22",
+          wait: 22,
+          work: 43,
+          total: 65,
+          reason: "—",
         },
         {
-          date: "2026/03/08",
+          date: "2026-03-11",
+          plate: "品川100い5678",
+          driver: "鈴木 一郎",
+          shipper: "ABCフーズ",
+          place: "東京倉庫",
+          arrival: "07:18",
+          start: "—",
+          wait: 62,
+          work: 0,
+          total: 62,
+          reason: "順番待ち",
+        },
+        {
+          date: "2026-03-11",
+          plate: "足立200う9012",
+          driver: "高橋 健太",
+          shipper: "ABCフーズ",
+          place: "東京倉庫",
+          arrival: "06:42",
+          start: "—",
+          wait: 98,
+          work: 0,
+          total: 98,
+          reason: "検品遅延",
+        },
+        {
+          date: "2026-03-10",
           plate: "品川100あ1234",
           driver: "佐藤 太郎",
-          shipper: "サトウ食品工場",
-          place: "船橋工場",
-          arrival: "10:00",
-          start: "11:15",
-          end: "11:50",
-          wait: 75,
-          work: 35,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/08",
-          plate: "横浜200か5678",
-          driver: "田中 一郎",
-          shipper: "マルエツ配送",
-          place: "板橋センター",
-          arrival: "13:00",
-          start: "13:35",
-          end: "14:10",
-          wait: 35,
-          work: 35,
-          reason: "混雑",
-        },
-        {
-          date: "2026/03/07",
-          plate: "川崎300さ9012",
-          driver: "山田 浩二",
-          shipper: "ABCフーズ",
-          place: "江東区倉庫",
-          arrival: "07:00",
-          start: "09:10",
-          end: "09:50",
-          wait: 130,
-          work: 40,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/07",
-          plate: "大宮100た3456",
-          driver: "鈴木 健一",
-          shipper: "東京物流センター",
-          place: "大田区センター",
+          shipper: "東日本物産",
+          place: "横浜DC",
           arrival: "08:30",
-          start: "10:00",
-          end: "10:35",
-          wait: 90,
-          work: 35,
+          start: "08:55",
+          wait: 25,
+          work: 38,
+          total: 63,
           reason: "混雑",
         },
         {
-          date: "2026/03/07",
-          plate: "練馬400う7890",
-          driver: "高橋 誠",
-          shipper: "関東配送センター",
-          place: "川口配送場",
+          date: "2026-03-10",
+          plate: "足立200か1234",
+          driver: "渡辺 健",
+          shipper: "サクラ食品",
+          place: "千葉工場",
           arrival: "09:00",
-          start: "09:15",
-          end: "09:50",
-          wait: 15,
-          work: 35,
-          reason: "早着",
+          start: "09:12",
+          wait: 12,
+          work: 52,
+          total: 64,
+          reason: "—",
         },
         {
-          date: "2026/03/07",
-          plate: "足立500え2345",
-          driver: "伊藤 大輔",
-          shipper: "日本ロジスティクス",
-          place: "横浜物流",
-          arrival: "08:00",
-          start: "09:05",
-          end: "09:40",
-          wait: 65,
-          work: 35,
-          reason: "設備故障",
-        },
-        {
-          date: "2026/03/06",
-          plate: "八王子100お6789",
-          driver: "渡辺 修",
-          shipper: "グリーンファーム",
-          place: "つくば集荷場",
-          arrival: "06:45",
-          start: "07:10",
-          end: "07:45",
-          wait: 25,
-          work: 35,
-          reason: "早着",
-        },
-        {
-          date: "2026/03/06",
-          plate: "相模100か1111",
-          driver: "中村 亮太",
+          date: "2026-03-10",
+          plate: "品川100え3456",
+          driver: "山田 花子",
           shipper: "ABCフーズ",
-          place: "江東区倉庫",
-          arrival: "08:00",
-          start: "09:50",
-          end: "10:30",
-          wait: 110,
-          work: 40,
-          reason: "荷主都合",
-        },
-        {
-          date: "2026/03/06",
-          plate: "横須賀200き2222",
-          driver: "小林 正樹",
-          shipper: "中央冷蔵",
-          place: "中央区冷蔵庫",
+          place: "東京倉庫",
           arrival: "07:15",
-          start: "07:35",
-          end: "08:05",
-          wait: 20,
-          work: 30,
-          reason: "早着",
+          start: "08:42",
+          wait: 87,
+          work: 48,
+          total: 135,
+          reason: "荷主都合",
         },
         {
-          date: "2026/03/06",
-          plate: "所沢300く3333",
-          driver: "加藤 翔",
-          shipper: "サトウ食品工場",
-          place: "船橋工場",
-          arrival: "09:30",
-          start: "10:45",
-          end: "11:15",
-          wait: 75,
-          work: 30,
-          reason: "荷主都合",
+          date: "2026-03-09",
+          plate: "品川100お7890",
+          driver: "中村 誠",
+          shipper: "大和建材",
+          place: "埼玉資材",
+          arrival: "10:00",
+          start: "10:08",
+          wait: 8,
+          work: 55,
+          total: 63,
+          reason: "—",
+        },
+        {
+          date: "2026-03-09",
+          plate: "品川100き5678",
+          driver: "伊藤 大輔",
+          shipper: "関東ロジ",
+          place: "横浜港",
+          arrival: "06:45",
+          start: "07:20",
+          wait: 35,
+          work: 72,
+          total: 107,
+          reason: "混雑",
+        },
+        {
+          date: "2026-03-09",
+          plate: "品川100あ1234",
+          driver: "佐藤 太郎",
+          shipper: "ABCフーズ",
+          place: "東京倉庫",
+          arrival: "07:30",
+          start: "09:05",
+          wait: 95,
+          work: 50,
+          total: 145,
+          reason: "順番待ち",
+        },
+        {
+          date: "2026-03-08",
+          plate: "足立200く9012",
+          driver: "小林 裕子",
+          shipper: "東日本物産",
+          place: "横浜DC",
+          arrival: "08:00",
+          start: "08:18",
+          wait: 18,
+          work: 42,
+          total: 60,
+          reason: "—",
         },
       ];
 
-      function renderRecords(data) {
-        const tbody = document.getElementById("recTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        data.forEach((r) => {
-          const waitColor =
-            r.wait > 60
-              ? "text-red-600 font-semibold"
-              : r.wait > 30
-                ? "text-amber-600 font-semibold"
-                : "text-emerald-600";
-          const reasonColor =
-            r.reason === "荷主都合"
-              ? "bg-red-50 text-red-600"
-              : r.reason === "混雑"
-                ? "bg-amber-50 text-amber-600"
-                : r.reason === "設備故障"
-                  ? "bg-purple-50 text-purple-600"
-                  : "bg-blue-50 text-blue-600";
-          tbody.innerHTML += `<tr class="border-b hover:bg-gray-50 transition-colors">
-<td class="py-3 px-3">${r.date}</td>
-<td class="py-3 px-3 font-medium">${r.plate}</td>
-<td class="py-3 px-3">${r.driver}</td>
-<td class="py-3 px-3">${r.shipper}</td>
-<td class="py-3 px-3 text-[12px]">${r.place}</td>
-<td class="py-3 px-3">${r.arrival}</td>
-<td class="py-3 px-3">${r.start}</td>
-<td class="py-3 px-3">${r.end}</td>
-<td class="py-3 px-3 ${waitColor}">${r.wait}</td>
-<td class="py-3 px-3">${r.work}</td>
-<td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${reasonColor}">${r.reason}</span></td>
-</tr>`;
-        });
-        document.getElementById("recCount").textContent = `全${data.length}件`;
-      }
+      const shippers = [
+        {
+          name: "ABCフーズ",
+          avg: 72,
+          count: 45,
+          over2h: 5,
+          trend: "up",
+          score: "C",
+          berth: 4,
+          reservation: 65,
+        },
+        {
+          name: "東日本物産",
+          avg: 35,
+          count: 38,
+          over2h: 1,
+          trend: "down",
+          score: "A",
+          berth: 6,
+          reservation: 88,
+        },
+        {
+          name: "大和建材",
+          avg: 18,
+          count: 28,
+          over2h: 0,
+          trend: "down",
+          score: "A",
+          berth: 3,
+          reservation: 92,
+        },
+        {
+          name: "サクラ食品",
+          avg: 48,
+          count: 32,
+          over2h: 1,
+          trend: "flat",
+          score: "B",
+          berth: 2,
+          reservation: 72,
+        },
+        {
+          name: "関東ロジ",
+          avg: 28,
+          count: 22,
+          over2h: 0,
+          trend: "down",
+          score: "A",
+          berth: 5,
+          reservation: 85,
+        },
+        {
+          name: "北関東運輸",
+          avg: 55,
+          count: 18,
+          over2h: 2,
+          trend: "up",
+          score: "B",
+          berth: 2,
+          reservation: 45,
+        },
+      ];
 
-      function filterRecords() {
-        const q = (
-          document.getElementById("recSearch")?.value || ""
-        ).toLowerCase();
-        const reason = document.getElementById("recReasonFilter")?.value || "";
-        let filtered = recordsData.filter((r) => {
-          if (
-            q &&
-            !`${r.plate}${r.driver}${r.shipper}`.toLowerCase().includes(q)
-          )
-            return false;
-          if (reason && r.reason !== reason) return false;
-          return true;
-        });
-        renderRecords(filtered);
-      }
+      const alerts = [
+        {
+          time: "08:20",
+          text: "高橋D@ABCフーズ東京倉庫: 荷待ち90分超過 — 2時間ルール警告",
+          level: "danger",
+        },
+        {
+          time: "08:05",
+          text: "鈴木D@ABCフーズ東京倉庫: 荷待ち60分超過",
+          level: "warn",
+        },
+        {
+          time: "07:58",
+          text: "ABCフーズ バースC: 予約時間超過（高橋D 07:45まで→未完了）",
+          level: "danger",
+        },
+        {
+          time: "07:45",
+          text: "山田D@東日本物産: 荷待ち30分超過",
+          level: "warn",
+        },
+        {
+          time: "07:30",
+          text: "中村D: ABCフーズ東京倉庫に向け出発。予約09:00 バースD",
+          level: "info",
+        },
+      ];
 
-      // ========== INIT ==========
-      document.addEventListener("DOMContentLoaded", () => {
-        navigate(location.hash.slice(1) || pageConfig[0].id);
-        if (typeof lucide !== "undefined") lucide.createIcons();
-        renderRealtimeCards();
-        renderRecords(recordsData);
-        initCharts();
+      // === NAV ===
+      const pageTitles = {
+        dashboard: ["ダッシュボード", "荷待ち時間の全体状況"],
+        realtime: ["リアルタイム監視", "現在の荷待ち状況"],
+        berth: ["バース予約", "荷主拠点のバース管理・予約"],
+        records: ["荷待ち記録", "法定記録項目 完全対応"],
+        shipper: ["荷主スコアカード", "パフォーマンス評価・認識ギャップ分析"],
+        cost: ["コスト分析", "荷待ちの経済的影響"],
+        compliance: [
+          "2時間ルール管理",
+          "改正物流効率化法（2026年4月施行）準拠",
+        ],
+        improve: ["改善施策", "Before/After効果測定"],
+      };
+
+      document.querySelectorAll(".nav-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          document
+            .querySelectorAll(".nav-item")
+            .forEach((n) => n.classList.remove("active"));
+          item.classList.add("active");
+          const pg = item.dataset.page;
+          document
+            .querySelectorAll(".page")
+            .forEach((p) => p.classList.remove("active"));
+          document.getElementById("page-" + pg).classList.add("active");
+          const t = pageTitles[pg];
+          document.getElementById("page-title").textContent = t[0];
+          document.getElementById("page-subtitle").textContent = t[1];
+          initPageCharts(pg);
+        });
       });
 
-      function initCharts() {
-        // ---- Dashboard: Daily average wait bar ----
-        const dailyLabels = [
-          "3/1",
-          "3/2",
-          "3/3",
-          "3/4",
-          "3/5",
-          "3/6",
-          "3/7",
-          "3/8",
-          "3/9",
-          "3/10",
-        ];
-        const dailyData = [72, 85, 68, 95, 102, 78, 92, 65, 88, 87];
-        charts.push(
-          new Chart(document.getElementById("dashDailyBar"), {
-            type: "bar",
-            data: {
-              labels: dailyLabels,
-              datasets: [
-                {
-                  label: "平均荷待ち時間(分)",
-                  data: dailyData,
-                  backgroundColor: dailyData.map((v) =>
-                    v > 90 ? "#ef444480" : v > 60 ? "#f59e0b80" : S + "80",
-                  ),
-                  borderColor: dailyData.map((v) =>
-                    v > 90 ? "#ef4444" : v > 60 ? "#f59e0b" : S,
-                  ),
-                  borderWidth: 1,
-                  borderRadius: 4,
-                },
-                {
-                  label: "目標(60分)",
-                  data: Array(10).fill(60),
-                  type: "line",
-                  borderColor: "#d1d5db",
-                  borderDash: [5, 5],
-                  pointRadius: 0,
-                  fill: false,
-                  borderWidth: 2,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 14,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-              },
-            },
-          }),
-        );
+      // === TABS ===
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          const parent = this.closest(".page");
+          parent
+            .querySelectorAll(".tab")
+            .forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+          const tabId = this.dataset.tab;
+          parent.querySelectorAll('[id^="tab-"]').forEach((c) => {
+            c.style.display = c.id === "tab-" + tabId ? "block" : "none";
+          });
+        });
+      });
 
-        // ---- Dashboard: Worst 10 horizontal bar ----
-        charts.push(
-          new Chart(document.getElementById("dashWorst10"), {
-            type: "bar",
-            data: {
-              labels: [
-                "ABCフーズ",
-                "東京物流センター",
-                "関東配送センター",
-                "サトウ食品工場",
-                "日本ロジスティクス",
-                "マルエツ配送",
-                "タケダ産業",
-                "北関東倉庫",
-                "グリーンファーム",
-                "中央冷蔵",
-              ],
-              datasets: [
-                {
-                  label: "平均荷待ち時間(分)",
-                  data: [124, 108, 95, 82, 68, 55, 52, 45, 32, 28],
-                  backgroundColor: [
-                    P,
-                    P,
-                    P + "cc",
-                    P + "cc",
-                    S,
-                    S,
-                    S + "99",
-                    S + "99",
-                    S + "66",
-                    S + "66",
-                  ],
-                  borderRadius: 4,
-                },
-              ],
-            },
-            options: {
-              indexAxis: "y",
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
-                },
-                y: { grid: { display: false }, ticks: { font: { size: 11 } } },
-              },
-            },
-          }),
-        );
-
-        // ---- Shipper: Compare bar ----
-        charts.push(
-          new Chart(document.getElementById("shipperCompareBar"), {
-            type: "bar",
-            data: {
-              labels: [
-                "ABCフーズ",
-                "東京物流",
-                "関東配送",
-                "サトウ食品",
-                "日本ロジ",
-                "マルエツ",
-                "グリーンF",
-                "中央冷蔵",
-              ],
-              datasets: [
-                {
-                  label: "平均荷待ち(分)",
-                  data: [124, 108, 95, 82, 68, 55, 32, 28],
-                  backgroundColor: [124, 108, 95, 82, 68, 55, 32, 28].map(
-                    (v) =>
-                      v > 90 ? "#ef444480" : v > 60 ? "#f59e0b80" : S + "80",
-                  ),
-                  borderColor: [124, 108, 95, 82, 68, 55, 32, 28].map((v) =>
-                    v > 90 ? "#ef4444" : v > 60 ? "#f59e0b" : S,
-                  ),
-                  borderWidth: 1,
-                  borderRadius: 4,
-                },
-                {
-                  label: "目標(60分)",
-                  data: Array(8).fill(60),
-                  type: "line",
-                  borderColor: "#d1d5db",
-                  borderDash: [5, 5],
-                  pointRadius: 0,
-                  fill: false,
-                  borderWidth: 2,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 14,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-              },
-            },
-          }),
-        );
-
-        // ---- Shipper: Monthly trend line ----
-        const months = ["10月", "11月", "12月", "1月", "2月", "3月"];
-        charts.push(
-          new Chart(document.getElementById("shipperTrendLine"), {
-            type: "line",
-            data: {
-              labels: months,
-              datasets: [
-                {
-                  label: "ABCフーズ",
-                  data: [140, 135, 142, 130, 128, 124],
-                  borderColor: "#ef4444",
-                  backgroundColor: "#ef444420",
-                  tension: 0.4,
-                  pointRadius: 3,
-                },
-                {
-                  label: "東京物流",
-                  data: [115, 118, 112, 110, 108, 108],
-                  borderColor: "#f59e0b",
-                  backgroundColor: "#f59e0b20",
-                  tension: 0.4,
-                  pointRadius: 3,
-                },
-                {
-                  label: "関東配送",
-                  data: [120, 115, 110, 105, 100, 95],
-                  borderColor: "#3b82f6",
-                  backgroundColor: "#3b82f620",
-                  tension: 0.4,
-                  pointRadius: 3,
-                },
-                {
-                  label: "サトウ食品",
-                  data: [100, 98, 96, 92, 88, 82],
-                  borderColor: "#8b5cf6",
-                  backgroundColor: "#8b5cf620",
-                  tension: 0.4,
-                  pointRadius: 3,
-                },
-                {
-                  label: "日本ロジ",
-                  data: [85, 80, 78, 74, 72, 68],
-                  borderColor: S,
-                  backgroundColor: S + "20",
-                  tension: 0.4,
-                  pointRadius: 3,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 10, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 10,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: false,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-              },
-            },
-          }),
-        );
-
-        // ---- Cost: Monthly trend line ----
-        charts.push(
-          new Chart(document.getElementById("costTrendLine"), {
-            type: "line",
-            data: {
-              labels: [
-                "2025/10",
-                "2025/11",
-                "2025/12",
-                "2026/01",
-                "2026/02",
-                "2026/03",
-              ],
-              datasets: [
-                {
-                  label: "荷待ちコスト(万円)",
-                  data: [389, 395, 406, 392, 372, 342],
-                  borderColor: P,
-                  backgroundColor: P + "20",
-                  fill: true,
-                  tension: 0.4,
-                  pointRadius: 4,
-                  pointBackgroundColor: P,
-                },
-                {
-                  label: "目標",
-                  data: [350, 350, 350, 350, 350, 350],
-                  borderColor: "#d1d5db",
-                  borderDash: [5, 5],
-                  pointRadius: 0,
-                  fill: false,
-                  borderWidth: 2,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 14,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: false,
-                  min: 300,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-              },
-            },
-          }),
-        );
-
-        // ---- Cost: Stacked bar ----
-        charts.push(
-          new Chart(document.getElementById("costStackedBar"), {
-            type: "bar",
-            data: {
-              labels: [
-                "2025/10",
-                "2025/11",
-                "2025/12",
-                "2026/01",
-                "2026/02",
-                "2026/03",
-              ],
-              datasets: [
-                {
-                  label: "ABCフーズ",
-                  data: [95, 98, 102, 92, 88, 82],
-                  backgroundColor: "#ef4444",
-                  borderRadius: 2,
-                },
-                {
-                  label: "東京物流",
-                  data: [78, 82, 80, 76, 72, 68],
-                  backgroundColor: "#f59e0b",
-                  borderRadius: 2,
-                },
-                {
-                  label: "関東配送",
-                  data: [65, 62, 68, 60, 55, 48],
-                  backgroundColor: "#3b82f6",
-                  borderRadius: 2,
-                },
-                {
-                  label: "サトウ食品",
-                  data: [48, 50, 52, 48, 45, 40],
-                  backgroundColor: "#8b5cf6",
-                  borderRadius: 2,
-                },
-                {
-                  label: "その他",
-                  data: [103, 103, 104, 116, 112, 104],
-                  backgroundColor: "#d1d5db",
-                  borderRadius: 2,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 10, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 10,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  stacked: true,
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
-                },
-                x: {
-                  stacked: true,
-                  grid: { display: false },
-                  ticks: { font: { size: 11 } },
-                },
-              },
-            },
-          }),
-        );
-
-        // ---- Improvement: Before/After ----
-        charts.push(
-          new Chart(document.getElementById("improvementChart"), {
-            type: "bar",
-            data: {
-              labels: [
-                "予約制バース\n(ABCフーズ)",
-                "パレット化\n(東京物流)",
-                "時間帯分散\n(関東配送)",
-                "事前情報共有\n(サトウ食品)",
-              ],
-              datasets: [
-                {
-                  label: "導入前(分)",
-                  data: [142, 128, 110, 96],
-                  backgroundColor: "#ef444460",
-                  borderColor: "#ef4444",
-                  borderWidth: 1,
-                  borderRadius: 4,
-                },
-                {
-                  label: "導入後(分)",
-                  data: [98, 88, 95, 82],
-                  backgroundColor: S + "80",
-                  borderColor: S,
-                  borderWidth: 1,
-                  borderRadius: 4,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 14,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "分" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-              },
-            },
-          }),
-        );
+      // === RENDER ===
+      function timePill(min) {
+        if (min < 30) return `<span class="time-pill time-ok">${min}分</span>`;
+        if (min < 60)
+          return `<span class="time-pill time-warn">${min}分</span>`;
+        return `<span class="time-pill time-danger">${min}分</span>`;
       }
+
+      function renderLiveWaiting(containerId, data) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = data
+          .map((w) => {
+            const cls =
+              w.status === "danger"
+                ? "wait-danger"
+                : w.status === "warn"
+                  ? "wait-warn"
+                  : "wait-ok";
+            return `<div class="${cls} rounded-lg p-3 cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold">${w.driver.slice(0, 1)}</div>
+<div><div class="font-semibold text-sm">${w.driver}</div><div class="text-xs text-gray-500">${w.plate} — ${w.shipper} ${w.place}</div></div>
+</div>
+<div class="text-right">
+<div class="text-xs text-gray-500">荷待ち中</div>
+${timePill(w.elapsed)}
+</div>
+</div>
+</div>`;
+          })
+          .join("");
+      }
+
+      function renderRealtimeCards() {
+        const el = document.getElementById("realtime-cards");
+        el.innerHTML = waitingNow
+          .map((w) => {
+            const cls =
+              w.status === "danger"
+                ? "wait-danger"
+                : w.status === "warn"
+                  ? "wait-warn"
+                  : "wait-ok";
+            return `<div class="${cls} card p-4 cursor-pointer">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold">${w.driver.slice(0, 1)}</div><span class="font-semibold text-sm">${w.driver}</span></div>
+${timePill(w.elapsed)}
+</div>
+<div class="text-xs text-gray-500 mb-2">${w.plate}</div>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<div><span class="text-gray-400">荷主:</span> <strong>${w.shipper}</strong></div>
+<div><span class="text-gray-400">場所:</span> ${w.place}</div>
+<div><span class="text-gray-400">到着:</span> ${w.arrival}</div>
+<div><span class="text-gray-400">理由:</span> <span class="font-medium">${w.reason}</span></div>
+</div>
+${w.elapsed >= 60 ? '<div class="mt-2 text-xs font-semibold text-danger-600 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i>60分超過 — 拘束時間圧迫リスク</div>' : ""}
+</div>`;
+          })
+          .join("");
+      }
+
+      function renderRecords() {
+        document.getElementById("records-body").innerHTML = records
+          .map((r) => {
+            const totalCls =
+              r.total >= 120
+                ? "badge-red"
+                : r.total >= 60
+                  ? "badge-yellow"
+                  : "badge-green";
+            return `<tr><td class="text-xs">${r.date}</td><td class="text-xs">${r.plate}</td><td class="font-medium">${r.driver}</td><td>${r.shipper}</td><td class="text-xs">${r.place}</td><td class="text-xs">${r.arrival}</td><td class="text-xs">${r.start}</td><td>${timePill(r.wait)}</td><td class="text-xs">${r.work}分</td><td><span class="badge ${totalCls}">${r.total}分</span></td><td class="text-xs">${r.reason}</td></tr>`;
+          })
+          .join("");
+      }
+
+      function renderShipperCards() {
+        document.getElementById("shipper-cards").innerHTML = shippers
+          .map((s) => {
+            const scoreCls =
+              s.score === "A"
+                ? "score-a"
+                : s.score === "B"
+                  ? "score-b"
+                  : "score-c";
+            const trendIcon =
+              s.trend === "down"
+                ? "trending-down"
+                : s.trend === "up"
+                  ? "trending-up"
+                  : "minus";
+            const trendCls =
+              s.trend === "down"
+                ? "text-success-600"
+                : s.trend === "up"
+                  ? "text-danger-600"
+                  : "text-gray-400";
+            return `<div class="card p-5 cursor-pointer">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3"><div class="shipper-score ${scoreCls}">${s.score}</div><div><div class="font-bold text-sm">${s.name}</div><div class="text-xs text-gray-500">バース${s.berth}基 / 予約率${s.reservation}%</div></div></div>
+<div class="flex items-center gap-1 ${trendCls}"><i data-lucide="${trendIcon}" class="w-4 h-4"></i></div>
+</div>
+<div class="grid grid-cols-3 gap-2 text-xs">
+<div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-500">平均荷待ち</div><div class="font-bold text-base mt-0.5">${s.avg}分</div></div>
+<div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-500">月間件数</div><div class="font-bold text-base mt-0.5">${s.count}</div></div>
+<div class="bg-gray-50 rounded-lg p-2 text-center"><div class="text-gray-500">2h超過</div><div class="font-bold text-base mt-0.5 ${s.over2h > 0 ? "text-danger-600" : ""}">${s.over2h}件</div></div>
+</div>
+</div>`;
+          })
+          .join("");
+      }
+
+      function renderAlerts() {
+        document.getElementById("dash-alerts").innerHTML = alerts
+          .map((a) => {
+            const bg =
+              a.level === "danger"
+                ? "bg-danger-50 border-danger-200"
+                : a.level === "warn"
+                  ? "bg-warn-50 border-warn-200"
+                  : "bg-gray-50 border-gray-200";
+            const icon =
+              a.level === "danger"
+                ? "alert-triangle"
+                : a.level === "warn"
+                  ? "alert-circle"
+                  : "info";
+            const iconCls =
+              a.level === "danger"
+                ? "text-danger-500"
+                : a.level === "warn"
+                  ? "text-warn-500"
+                  : "text-gray-400";
+            return `<div class="${bg} border rounded-lg p-3 flex items-start gap-2">
+<i data-lucide="${icon}" class="w-4 h-4 ${iconCls} mt-0.5 flex-shrink-0"></i>
+<div><div class="text-xs font-medium">${a.text}</div><div class="text-[10px] text-gray-400 mt-0.5">${a.time}</div></div>
+</div>`;
+          })
+          .join("");
+      }
+
+      // === CHARTS ===
+      const chartInstances = {};
+      function initPageCharts(pg) {
+        if (pg === "shipper" && !chartInstances.shipperTrend) {
+          const months = ["10月", "11月", "12月", "1月", "2月", "3月"];
+          chartInstances.shipperTrend = new Chart(
+            document.getElementById("chart-shipper-trend"),
+            {
+              type: "line",
+              data: {
+                labels: months,
+                datasets: [
+                  {
+                    label: "ABCフーズ",
+                    data: [105, 98, 92, 85, 78, 72],
+                    borderColor: "#ef4444",
+                    backgroundColor: "rgba(239,68,68,.1)",
+                    fill: false,
+                    tension: 0.4,
+                  },
+                  {
+                    label: "東日本物産",
+                    data: [55, 48, 42, 40, 37, 35],
+                    borderColor: "#0d9488",
+                    backgroundColor: "rgba(13,148,136,.1)",
+                    fill: false,
+                    tension: 0.4,
+                  },
+                  {
+                    label: "サクラ食品",
+                    data: [62, 58, 55, 52, 50, 48],
+                    borderColor: "#f59e0b",
+                    backgroundColor: "rgba(245,158,11,.1)",
+                    fill: false,
+                    tension: 0.4,
+                  },
+                  {
+                    label: "大和建材",
+                    data: [32, 28, 24, 22, 20, 18],
+                    borderColor: "#22c55e",
+                    fill: false,
+                    tension: 0.4,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+                scales: {
+                  y: { min: 0, max: 120, ticks: { callback: (v) => v + "分" } },
+                },
+              },
+            },
+          );
+        }
+        if (pg === "cost" && !chartInstances.costTrend) {
+          chartInstances.costTrend = new Chart(
+            document.getElementById("chart-cost-trend"),
+            {
+              type: "bar",
+              data: {
+                labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+                datasets: [
+                  {
+                    label: "荷待ちコスト(万円)",
+                    data: [342, 310, 275, 238, 209, 186],
+                    backgroundColor: "#f97316",
+                    borderRadius: 6,
+                  },
+                  {
+                    label: "回収済(万円)",
+                    data: [120, 135, 152, 140, 128, 115],
+                    backgroundColor: "#0d9488",
+                    borderRadius: 6,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+                scales: { y: { ticks: { callback: (v) => v + "万" } } },
+              },
+            },
+          );
+          chartInstances.costShipper = new Chart(
+            document.getElementById("chart-cost-shipper"),
+            {
+              type: "doughnut",
+              data: {
+                labels: [
+                  "ABCフーズ",
+                  "東日本物産",
+                  "サクラ食品",
+                  "大和建材",
+                  "関東ロジ",
+                  "その他",
+                ],
+                datasets: [
+                  {
+                    data: [68, 32, 28, 15, 18, 25],
+                    backgroundColor: [
+                      "#ef4444",
+                      "#0d9488",
+                      "#f59e0b",
+                      "#22c55e",
+                      "#3b82f6",
+                      "#94a3b8",
+                    ],
+                    borderWidth: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                cutout: "60%",
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+              },
+            },
+          );
+        }
+        if (pg === "compliance" && !chartInstances.twoHrDist) {
+          chartInstances.twoHrDist = new Chart(
+            document.getElementById("chart-2hr-dist"),
+            {
+              type: "bar",
+              data: {
+                labels: [
+                  "0-30分",
+                  "30-60分",
+                  "60-90分",
+                  "90-120分",
+                  "120-150分",
+                  "150分+",
+                ],
+                datasets: [
+                  {
+                    label: "件数",
+                    data: [58, 52, 35, 18, 5, 2],
+                    backgroundColor: [
+                      "#22c55e",
+                      "#22c55e",
+                      "#f59e0b",
+                      "#f59e0b",
+                      "#ef4444",
+                      "#ef4444",
+                    ],
+                    borderRadius: 6,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } },
+              },
+            },
+          );
+        }
+      }
+
+      function initDashboardCharts() {
+        new Chart(document.getElementById("chart-daily"), {
+          type: "bar",
+          data: {
+            labels: ["3/5", "3/6", "3/7", "3/8", "3/9", "3/10", "3/11"],
+            datasets: [
+              {
+                label: "平均荷待ち(分)",
+                data: [52, 48, 55, 42, 50, 45, 47],
+                backgroundColor: "#f97316",
+                borderRadius: 6,
+              },
+              {
+                label: "目標(30分)",
+                data: [30, 30, 30, 30, 30, 30, 30],
+                type: "line",
+                borderColor: "#0d9488",
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { boxWidth: 10, font: { size: 11 } },
+              },
+            },
+            scales: {
+              y: { min: 0, max: 80, ticks: { callback: (v) => v + "分" } },
+            },
+          },
+        });
+
+        new Chart(document.getElementById("chart-shipper-worst"), {
+          type: "bar",
+          data: {
+            labels: shippers.sort((a, b) => b.avg - a.avg).map((s) => s.name),
+            datasets: [
+              {
+                label: "平均荷待ち(分)",
+                data: shippers.map((s) => s.avg),
+                backgroundColor: shippers.map((s) =>
+                  s.avg >= 60 ? "#ef4444" : s.avg >= 30 ? "#f59e0b" : "#22c55e",
+                ),
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { callback: (v) => v + "分" } } },
+          },
+        });
+
+        new Chart(document.getElementById("chart-hourly"), {
+          type: "bar",
+          data: {
+            labels: [
+              "6時",
+              "7時",
+              "8時",
+              "9時",
+              "10時",
+              "11時",
+              "12時",
+              "13時",
+              "14時",
+              "15時",
+              "16時",
+            ],
+            datasets: [
+              {
+                label: "発生件数",
+                data: [3, 12, 18, 15, 8, 6, 4, 7, 10, 9, 5],
+                backgroundColor: "#3b82f6",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      }
+
+      // === INIT ===
+      document.getElementById("current-date").textContent =
+        new Date().toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        });
+      document.getElementById("berth-date").value = "2026-03-11";
+
+      renderLiveWaiting("dash-live-waiting", waitingNow);
+      renderRealtimeCards();
+      renderRecords();
+      renderShipperCards();
+      renderAlerts();
+      initDashboardCharts();
+      lucide.createIcons();
     </script>
   </body>
 </html>
