@@ -3,18 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>BillExpress — 運送業向け自動請求管理システム | SRD</title>
+    <title>
+      FreightBill Pro — 運送業向け請求自動化・経理DXシステム | SRD MVP Demo
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              navy: {
+                50: "#eef2ff",
+                100: "#e0e7ff",
+                200: "#c7d2fe",
+                400: "#818cf8",
+                500: "#6366f1",
+                600: "#4f46e5",
+                700: "#4338ca",
+                800: "#3730a3",
+                900: "#312e81",
+              },
+              emerald: {
+                50: "#ecfdf5",
+                100: "#d1fae5",
+                500: "#10b981",
+                600: "#059669",
+                700: "#047857",
+              },
+              danger: {
+                50: "#fef2f2",
+                100: "#fee2e2",
+                500: "#ef4444",
+                600: "#dc2626",
+              },
+              warn: {
+                50: "#fffbeb",
+                100: "#fef3c7",
+                500: "#f59e0b",
+                600: "#d97706",
+              },
+              sky: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                500: "#0ea5e9",
+                600: "#0284c7",
+              },
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', '"Noto Sans JP"', "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
     <style>
       * {
-        font-family:
-          "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+        box-sizing: border-box;
       }
       .page {
         display: none;
@@ -22,10 +72,6 @@
       .page.active {
         display: block;
         animation: fadeIn 0.25s ease-out;
-      }
-      .nav-item.active {
-        background: rgba(255, 255, 255, 0.15);
-        font-weight: 600;
       }
       @keyframes fadeIn {
         from {
@@ -36,6 +82,16 @@
           opacity: 1;
           transform: none;
         }
+      }
+      .nav-item {
+        transition: all 0.15s;
+      }
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 700;
+      }
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
       }
       ::-webkit-scrollbar {
         width: 5px;
@@ -48,16 +104,11 @@
         background: #fff;
         border-radius: 12px;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         transition: box-shadow 0.2s;
       }
       .card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      }
-      input,
-      select,
-      textarea {
-        font-family: inherit;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
       }
       .badge {
         display: inline-flex;
@@ -65,2897 +116,2099 @@
         padding: 2px 10px;
         border-radius: 9999px;
         font-size: 11px;
-        font-weight: 500;
+        font-weight: 600;
       }
-      .badge-creating {
+      .badge-green {
+        background: #d1fae5;
+        color: #047857;
+      }
+      .badge-yellow {
         background: #fef3c7;
         color: #92400e;
       }
-      .badge-issued {
+      .badge-red {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .badge-blue {
         background: #dbeafe;
         color: #1e40af;
       }
-      .badge-paid {
-        background: #d1fae5;
-        color: #065f46;
+      .badge-gray {
+        background: #f3f4f6;
+        color: #374151;
       }
-      .badge-overdue {
-        background: #fee2e2;
-        color: #991b1b;
+      .badge-indigo {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
       }
       .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
+        background: #4f46e5;
         color: #fff;
-        background: #065f46;
-        transition: opacity 0.2s;
-        cursor: pointer;
       }
       .btn-primary:hover {
-        opacity: 0.9;
+        background: #4338ca;
       }
-      .btn-outline {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #065f46;
-        border: 1px solid #065f46;
-        transition: background 0.2s;
-        cursor: pointer;
+      .btn-secondary {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
       }
-      .btn-outline:hover {
-        background: #f0fdf4;
+      .btn-secondary:hover {
+        background: #e2e8f0;
       }
-      .btn-ghost {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #6b7280;
-        border: 1px solid #d1d5db;
-        transition: background 0.2s;
-        cursor: pointer;
+      .btn-success {
+        background: #059669;
+        color: #fff;
       }
-      .btn-ghost:hover {
-        background: #f9fafb;
+      .btn-success:hover {
+        background: #047857;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #b91c1c;
       }
       .input {
         width: 100%;
         padding: 8px 12px;
-        font-size: 13px;
         border: 1px solid #d1d5db;
         border-radius: 8px;
+        font-size: 13px;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
         outline: none;
-        transition: ring 0.2s;
+        background: #fff;
+        font-family: inherit;
       }
       .input:focus {
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-        border-color: #10b981;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
       }
-      .label {
-        display: block;
-        font-size: 12px;
+      select.input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+      }
+      .stat-card {
+        background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+        border-radius: 14px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+      }
+      .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+      }
+      .tab {
+        padding: 8px 16px;
+        font-size: 13px;
         font-weight: 500;
-        color: #4b5563;
-        margin-bottom: 6px;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
       }
-      .th {
-        padding: 10px 16px;
+      .tab.active {
+        color: #4f46e5;
+        border-bottom-color: #4f46e5;
+        font-weight: 600;
+      }
+      .tab:hover {
+        color: #4338ca;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      th {
         text-align: left;
+        padding: 10px 16px;
         font-size: 11px;
         font-weight: 600;
-        color: #6b7280;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        cursor: pointer;
-        user-select: none;
-        white-space: nowrap;
+        color: #64748b;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
       }
-      .th:hover {
-        color: #111827;
-      }
-      .td {
-        padding: 10px 16px;
-        font-size: 13px;
-        color: #374151;
-        white-space: nowrap;
-      }
-      .td-num {
-        font-variant-numeric: tabular-nums;
-      }
-      tbody tr {
-        border-bottom: 1px solid #f3f4f6;
-        transition: background 0.15s;
-      }
-      tbody tr:hover {
-        background: #f9fafb;
-      }
-      .alert-card {
-        border-left: 4px solid #ef4444;
-        background: #fef2f2;
-        border-radius: 8px;
+      td {
         padding: 12px 16px;
+        font-size: 13px;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
       }
-      .kpi-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+      tr:hover td {
+        background: #fafbfd;
+      }
+      .yen {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        z-index: 200;
+        animation: fadeIn 0.3s;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+      .invoice-preview {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 24px;
+        background: #fff;
+      }
+      .inv-header {
+        border-bottom: 2px solid #4f46e5;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
       }
     </style>
   </head>
-  <body class="bg-gray-50">
+  <body class="bg-gray-50 text-gray-900 font-sans">
     <div class="flex h-screen overflow-hidden">
       <!-- Sidebar -->
       <aside
-        class="w-[232px] flex flex-col text-white shrink-0 overflow-hidden"
-        style="background: #0c4a6e"
+        class="w-[220px] bg-gradient-to-b from-navy-800 to-navy-900 text-white flex flex-col flex-shrink-0"
       >
-        <div class="p-4 border-b border-white/10">
-          <div class="flex items-center gap-3">
+        <div class="p-5 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
             <div
-              class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center shrink-0"
+              class="w-8 h-8 bg-navy-500 rounded-lg flex items-center justify-center"
             >
-              <i data-lucide="receipt" class="w-5 h-5"></i>
+              <i data-lucide="receipt" class="w-4 h-4"></i>
             </div>
-            <div class="min-w-0">
-              <p class="font-bold text-[14px] truncate">BillExpress</p>
-              <p class="text-[10px] opacity-50 truncate">
-                自動請求管理システム
-              </p>
+            <div>
+              <div class="font-extrabold text-sm tracking-tight">
+                FreightBill Pro
+              </div>
+              <div class="text-[10px] text-navy-300">請求自動化・経理DX</div>
             </div>
           </div>
         </div>
-        <nav class="flex-1 p-2.5 space-y-0.5 overflow-y-auto">
-          <a
+        <nav
+          class="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto text-[13px]"
+          id="nav"
+        >
+          <div
+            class="nav-item active flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="dashboard"
-            class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('dashboard')"
           >
-            <i
-              data-lucide="layout-dashboard"
-              class="w-[18px] h-[18px] shrink-0"
-            ></i
-            ><span class="truncate">ダッシュボード</span></a
-          >
-          <a
+            <i data-lucide="layout-dashboard" class="w-4 h-4 opacity-70"></i
+            >ダッシュボード
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="create"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('create')"
           >
-            <i data-lucide="file-plus" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">請求書作成</span></a
-          >
-          <a
+            <i data-lucide="file-plus" class="w-4 h-4 opacity-70"></i>請求書作成
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="invoices"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('invoices')"
           >
-            <i data-lucide="file-text" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">請求一覧</span></a
-          >
-          <a
+            <i data-lucide="files" class="w-4 h-4 opacity-70"></i>請求一覧
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="rates"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('rates')"
           >
-            <i data-lucide="calculator" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">運賃計算</span></a
-          >
-          <a
+            <i data-lucide="calculator" class="w-4 h-4 opacity-70"></i
+            >運賃マスタ
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="payments"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('payments')"
           >
-            <i data-lucide="banknote" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">入金管理</span></a
+            <i data-lucide="banknote" class="w-4 h-4 opacity-70"></i>入金管理
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
+            data-page="cost"
           >
-          <a
-            data-page="analysis"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('analysis')"
+            <i data-lucide="pie-chart" class="w-4 h-4 opacity-70"></i>原価管理
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
+            data-page="clients"
           >
-            <i data-lucide="bar-chart-3" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">荷主別分析</span></a
-          >
-          <a
+            <i data-lucide="building-2" class="w-4 h-4 opacity-70"></i>荷主分析
+          </div>
+          <div
+            class="nav-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer"
             data-page="settings"
-            class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all hover:bg-white/10"
-            onclick="navigate('settings')"
           >
-            <i data-lucide="settings" class="w-[18px] h-[18px] shrink-0"></i
-            ><span class="truncate">設定</span></a
-          >
+            <i data-lucide="settings" class="w-4 h-4 opacity-70"></i>設定
+          </div>
         </nav>
         <div class="p-3 border-t border-white/10">
-          <div class="flex items-center gap-2 px-1">
+          <div class="flex items-center gap-2.5 px-3 py-2">
             <div
-              class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[11px]"
+              class="w-8 h-8 rounded-full bg-navy-600 flex items-center justify-center text-xs font-bold"
             >
-              経
+              鈴木
             </div>
-            <div class="min-w-0">
-              <p class="text-[11px] font-medium">経理担当</p>
-              <p class="text-[10px] opacity-40">billing@example.com</p>
+            <div>
+              <div class="text-xs font-semibold">鈴木 経理担当</div>
+              <div class="text-[10px] text-navy-300">経理権限</div>
             </div>
           </div>
         </div>
       </aside>
 
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Main -->
+      <main class="flex-1 overflow-y-auto">
         <header
-          class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0"
+          class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-3 flex items-center justify-between"
         >
           <div>
-            <h1 id="pageTitle" class="font-bold text-[15px] text-gray-800">
-              ダッシュボード
-            </h1>
-            <p id="pageDesc" class="text-[12px] text-gray-400 mt-0.5">
-              請求状況の全体概要
+            <h1 class="text-lg font-bold" id="page-title">ダッシュボード</h1>
+            <p class="text-xs text-gray-500" id="page-subtitle">
+              請求・入金の全体状況
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <span
-              class="text-[11px] px-2.5 py-1 rounded-full font-medium"
-              style="background: #d1fae5; color: #065f46"
-              >MVP Demo</span
+          <div class="flex items-center gap-3">
+            <div
+              class="text-xs text-gray-500 font-medium"
+              id="current-date"
+            ></div>
+            <button
+              class="relative p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
             >
-            <span class="text-[12px] text-gray-400">2026年3月</span>
+              <i data-lucide="bell" class="w-4 h-4 text-gray-500"></i
+              ><span
+                class="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full"
+              ></span>
+            </button>
           </div>
         </header>
 
-        <main class="flex-1 overflow-auto p-5">
-          <!-- ==================== PAGE 1: DASHBOARD ==================== -->
-          <div id="page-dashboard" class="page active">
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[12px] text-gray-500">今月請求額</span>
-                  <div class="kpi-icon" style="background: #065f4615">
+        <div class="p-6">
+          <!-- ===== DASHBOARD ===== -->
+          <div class="page active" id="page-dashboard">
+            <!-- Alert -->
+            <div
+              class="bg-danger-50 border border-danger-100 rounded-xl p-4 mb-6 flex items-start gap-3"
+            >
+              <div
+                class="w-8 h-8 bg-danger-500 rounded-lg flex items-center justify-center flex-shrink-0"
+              >
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-white"></i>
+              </div>
+              <div>
+                <div class="font-bold text-sm text-danger-600">要対応 4件</div>
+                <div class="text-xs text-gray-600 mt-1">
+                  請求漏れ検知2件 / 入金期限超過1件(大和運輸 ¥2,145,000) /
+                  運賃マスタ未更新1件(セイノー商事)
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-5 gap-4 mb-6">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >今月請求額</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-navy-100 rounded-lg flex items-center justify-center"
+                  >
                     <i
-                      data-lucide="japanese-yen"
-                      class="w-5 h-5"
-                      style="color: #065f46"
+                      data-lucide="file-text"
+                      class="w-4 h-4 text-navy-600"
                     ></i>
                   </div>
                 </div>
-                <div class="text-2xl font-bold" style="color: #065f46">
-                  1,847<span class="text-sm font-medium text-gray-400 ml-1"
-                    >万円</span
-                  >
+                <div class="text-2xl font-extrabold yen">
+                  2,184<span class="text-sm text-gray-400 ml-1">万円</span>
                 </div>
-                <div
-                  class="text-[11px] mt-2 text-emerald-600 flex items-center gap-1"
-                >
-                  <i data-lucide="trending-up" class="w-3 h-3"></i>前月比 +12.3%
+                <div class="text-xs text-emerald-600 font-medium mt-1">
+                  前月比 +8.4%
                 </div>
               </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[12px] text-gray-500">未請求件数</span>
-                  <div class="kpi-icon" style="background: #f59e0b15">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >請求漏れ</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-danger-100 rounded-lg flex items-center justify-center"
+                  >
                     <i
-                      data-lucide="alert-triangle"
-                      class="w-5 h-5"
-                      style="color: #f59e0b"
+                      data-lucide="alert-circle"
+                      class="w-4 h-4 text-danger-500"
                     ></i>
                   </div>
                 </div>
-                <div class="text-2xl font-bold" style="color: #f59e0b">
-                  7<span class="text-sm font-medium text-gray-400 ml-1"
-                    >件</span
-                  >
+                <div class="text-2xl font-extrabold text-danger-500">
+                  2<span class="text-sm text-gray-400 ml-1">件</span>
                 </div>
-                <div
-                  class="text-[11px] mt-2 text-red-500 flex items-center gap-1"
-                >
-                  <i data-lucide="trending-up" class="w-3 h-3"></i>先月比 +2件
+                <div class="text-xs text-emerald-600 font-medium mt-1">
+                  旧月平均5件比 -60%
                 </div>
               </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[12px] text-gray-500">入金済み率</span>
-                  <div class="kpi-icon" style="background: #10b98115">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >入金済み率</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center"
+                  >
                     <i
                       data-lucide="check-circle"
-                      class="w-5 h-5"
-                      style="color: #10b981"
+                      class="w-4 h-4 text-emerald-600"
                     ></i>
                   </div>
                 </div>
-                <div class="text-2xl font-bold" style="color: #10b981">
-                  87.3<span class="text-sm font-medium text-gray-400 ml-1"
-                    >%</span
-                  >
+                <div class="text-2xl font-extrabold">
+                  91.2<span class="text-sm text-gray-400 ml-1">%</span>
                 </div>
-                <div
-                  class="text-[11px] mt-2 text-emerald-600 flex items-center gap-1"
-                >
-                  <i data-lucide="trending-up" class="w-3 h-3"></i>前月比 +3.2pt
+                <div class="progress-bar mt-2">
+                  <div
+                    class="progress-fill bg-emerald-500"
+                    style="width: 91.2%"
+                  ></div>
                 </div>
               </div>
-              <div class="card p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-[12px] text-gray-500">請求漏れ検知</span>
-                  <div class="kpi-icon" style="background: #ef444415">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >計算ミス率</span
+                  >
+                  <div
+                    class="w-8 h-8 bg-navy-100 rounded-lg flex items-center justify-center"
+                  >
                     <i
-                      data-lucide="shield-alert"
-                      class="w-5 h-5"
-                      style="color: #ef4444"
+                      data-lucide="shield-check"
+                      class="w-4 h-4 text-navy-600"
                     ></i>
                   </div>
                 </div>
-                <div class="text-2xl font-bold" style="color: #ef4444">
-                  2<span class="text-sm font-medium text-gray-400 ml-1"
-                    >件</span
+                <div class="text-2xl font-extrabold text-navy-600">
+                  0<span class="text-sm text-gray-400 ml-1">件</span>
+                </div>
+                <div class="text-xs text-emerald-600 font-medium mt-1">
+                  自動計算で完全排除
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-gray-500"
+                    >経理工数</span
                   >
+                  <div
+                    class="w-8 h-8 bg-warn-100 rounded-lg flex items-center justify-center"
+                  >
+                    <i data-lucide="clock" class="w-4 h-4 text-warn-600"></i>
+                  </div>
                 </div>
-                <div
-                  class="text-[11px] mt-2 text-emerald-600 flex items-center gap-1"
-                >
-                  <i data-lucide="trending-down" class="w-3 h-3"></i>先月比 -3件
+                <div class="text-2xl font-extrabold">
+                  -68<span class="text-sm text-gray-400 ml-1">%</span>
                 </div>
+                <div class="text-xs text-gray-500 mt-1">月40h → 13h</div>
               </div>
             </div>
 
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-              <div class="card p-5 lg:col-span-2">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  月別請求額推移
-                </h3>
-                <div style="height: 280px">
-                  <canvas id="dashChart1"></canvas>
-                </div>
+            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">月別 請求額・入金額推移</h3>
+                <canvas id="chart-monthly" height="200"></canvas>
               </div>
               <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  荷主別請求構成
-                </h3>
-                <div style="height: 280px">
-                  <canvas id="dashChart2"></canvas>
+                <h3 class="font-bold text-sm mb-3">荷主別 請求構成（今月）</h3>
+                <canvas id="chart-client-pie" height="200"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">請求漏れ検知ログ</h3>
+                <div class="space-y-2">
+                  <div
+                    class="bg-danger-50 border border-danger-100 rounded-lg p-3"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="alert-triangle"
+                        class="w-3.5 h-3.5 text-danger-500"
+                      ></i
+                      ><span class="text-xs font-semibold text-danger-600"
+                        >未請求検知</span
+                      >
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">
+                      3/8 佐藤D 品川100あ1234 → 大和運輸 東京-横浜 ¥52,800
+                    </div>
+                    <div class="mt-2">
+                      <button
+                        class="btn btn-danger text-xs py-1 px-3"
+                        onclick="toast('請求書に追加しました')"
+                      >
+                        <i data-lucide="plus" class="w-3 h-3"></i>請求追加
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="bg-danger-50 border border-danger-100 rounded-lg p-3"
+                  >
+                    <div class="flex items-center gap-2">
+                      <i
+                        data-lucide="alert-triangle"
+                        class="w-3.5 h-3.5 text-danger-500"
+                      ></i
+                      ><span class="text-xs font-semibold text-danger-600"
+                        >未請求検知</span
+                      >
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">
+                      3/6 高橋D 足立200う9012 → 東京フード 東京-千葉 ¥38,500
+                    </div>
+                    <div class="mt-2">
+                      <button
+                        class="btn btn-danger text-xs py-1 px-3"
+                        onclick="toast('請求書に追加しました')"
+                      >
+                        <i data-lucide="plus" class="w-3 h-3"></i>請求追加
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center"
+                  >
+                    <div class="text-xs text-emerald-700 font-medium">
+                      仕組み:
+                      運行日報の実績と請求データを自動突合し、未請求を即時検知
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Overdue Alerts -->
-            <div class="card p-5">
-              <h3
-                class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
-              >
-                <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i
-                >未回収アラート
-              </h3>
-              <div class="space-y-3">
-                <div class="alert-card flex items-center justify-between">
-                  <div class="flex items-center gap-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        INV-2026-0089 / 大和運輸(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        請求額: 342万円 / 入金期日: 2026/02/28
-                      </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">未回収アラート</h3>
+                <div class="space-y-2" id="overdue-list"></div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">今月の自動化実績</h3>
+                <div class="space-y-3 mt-2">
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">日報→請求データ変換</span
+                      ><span class="font-bold text-emerald-600">自動</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-emerald-500"
+                        style="width: 100%"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">
+                      旧: 手書き日報を目視で読み取り手入力
                     </div>
                   </div>
-                  <div class="flex items-center gap-3">
-                    <span class="badge badge-overdue">10日超過</span>
-                    <button
-                      class="btn-outline text-[11px] py-1 px-3"
-                      onclick="showToast('督促メールを送信しました')"
-                    >
-                      督促送信
-                    </button>
-                  </div>
-                </div>
-                <div class="alert-card flex items-center justify-between">
-                  <div class="flex items-center gap-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        INV-2026-0076 / (株)セイノー商事
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        請求額: 187万円 / 入金期日: 2026/02/15
-                      </p>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">運賃計算</span
+                      ><span class="font-bold text-emerald-600">自動</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-emerald-500"
+                        style="width: 100%"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">
+                      旧: Excel料金表を参照しながら手計算
                     </div>
                   </div>
-                  <div class="flex items-center gap-3">
-                    <span class="badge badge-overdue">23日超過</span>
-                    <button
-                      class="btn-outline text-[11px] py-1 px-3"
-                      onclick="showToast('督促メールを送信しました')"
-                    >
-                      督促送信
-                    </button>
-                  </div>
-                </div>
-                <div class="alert-card flex items-center justify-between">
-                  <div class="flex items-center gap-4">
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        INV-2026-0062 / 東京フード(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        請求額: 98万円 / 入金期日: 2026/01/31
-                      </p>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">附帯料金加算</span
+                      ><span class="font-bold text-emerald-600">自動</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-emerald-500"
+                        style="width: 100%"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">
+                      待機時間料・荷役料・燃料SC自動計算
                     </div>
                   </div>
-                  <div class="flex items-center gap-3">
-                    <span class="badge badge-overdue">38日超過</span>
-                    <button
-                      class="btn-outline text-[11px] py-1 px-3"
-                      onclick="showToast('督促メールを送信しました')"
-                    >
-                      督促送信
-                    </button>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-600">インボイス対応</span
+                      ><span class="font-bold text-emerald-600">適合</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill bg-navy-500"
+                        style="width: 100%"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">
+                      適格請求書等保存方式 完全準拠
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ==================== PAGE 2: CREATE INVOICE ==================== -->
-          <div id="page-create" class="page">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Left: Form -->
-              <div>
-                <div class="card p-6 mb-5">
-                  <h3
-                    class="font-semibold text-[14px] text-gray-700 mb-5 flex items-center gap-2"
-                  >
-                    <i
-                      data-lucide="file-plus"
-                      class="w-4 h-4"
-                      style="color: #065f46"
-                    ></i
+          <!-- ===== CREATE INVOICE ===== -->
+          <div class="page" id="page-create">
+            <div class="grid grid-cols-3 gap-4">
+              <div class="col-span-2 space-y-4">
+                <div class="card p-5">
+                  <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                    <i data-lucide="file-plus" class="w-4 h-4 text-navy-600"></i
                     >請求情報
                   </h3>
-                  <div class="space-y-4">
+                  <div class="grid grid-cols-3 gap-3">
                     <div>
-                      <label class="label"
-                        >荷主 <span class="text-red-400">*</span></label
-                      >
-                      <select
-                        id="createClient"
-                        class="input"
-                        onchange="autoCalcInvoice()"
-                      >
-                        <option value="">荷主を選択してください</option>
-                        <option value="yamato">大和運輸(株)</option>
-                        <option value="seino">(株)セイノー商事</option>
-                        <option value="tokyofood">東京フード(株)</option>
-                        <option value="nippon">日本通商(株)</option>
-                        <option value="kanto">関東建材(株)</option>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >荷主</label
+                      ><select class="input" id="inv-client">
+                        <option>大和運輸</option>
+                        <option>セイノー商事</option>
+                        <option>東京フード</option>
+                        <option>日本通商</option>
+                        <option>関東建材</option>
                       </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="label">請求開始日</label>
-                        <input
-                          type="date"
-                          id="createFrom"
-                          class="input"
-                          value="2026-03-01"
-                        />
-                      </div>
-                      <div>
-                        <label class="label">請求終了日</label>
-                        <input
-                          type="date"
-                          id="createTo"
-                          class="input"
-                          value="2026-03-31"
-                        />
-                      </div>
+                    <div>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >請求期間（開始）</label
+                      ><input type="date" class="input" value="2026-03-01" />
                     </div>
                     <div>
-                      <label class="label">請求番号</label>
-                      <input
-                        type="text"
-                        class="input bg-gray-50"
-                        value="INV-2026-0102"
-                        readonly
-                      />
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >請求期間（終了）</label
+                      ><input type="date" class="input" value="2026-03-31" />
                     </div>
-                    <button
-                      class="btn-primary w-full justify-center"
-                      onclick="autoCalcInvoice()"
-                    >
+                  </div>
+                  <div class="mt-3 flex gap-2">
+                    <button class="btn btn-primary" onclick="generateInvoice()">
                       <i data-lucide="zap" class="w-4 h-4"></i
-                      >配送データから自動集計
+                      >運行実績から自動集計
                     </button>
+                    <button class="btn btn-secondary">
+                      <i data-lucide="upload" class="w-4 h-4"></i>CSV取込
+                    </button>
+                  </div>
+                </div>
+
+                <div class="card p-5">
+                  <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                    <i data-lucide="table" class="w-4 h-4 text-navy-600"></i
+                    >配送明細（自動集計結果）
+                  </h3>
+                  <div class="overflow-x-auto">
+                    <table class="text-xs">
+                      <thead>
+                        <tr>
+                          <th>日付</th>
+                          <th>車両</th>
+                          <th>ルート</th>
+                          <th>距離</th>
+                          <th>基本運賃</th>
+                          <th>待機料</th>
+                          <th>荷役料</th>
+                          <th>高速代</th>
+                          <th>燃料SC</th>
+                          <th class="text-right">小計</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>3/1</td>
+                          <td>品川100あ1234</td>
+                          <td>東京→横浜</td>
+                          <td>32km</td>
+                          <td class="yen">45,000</td>
+                          <td class="yen">3,780</td>
+                          <td class="yen">—</td>
+                          <td class="yen">1,320</td>
+                          <td class="yen">680</td>
+                          <td class="text-right yen">50,780</td>
+                        </tr>
+                        <tr>
+                          <td>3/3</td>
+                          <td>品川100い5678</td>
+                          <td>東京→名古屋</td>
+                          <td>350km</td>
+                          <td class="yen">180,000</td>
+                          <td class="yen">5,670</td>
+                          <td class="yen">4,360</td>
+                          <td class="yen">7,840</td>
+                          <td class="yen">5,280</td>
+                          <td class="text-right yen">203,150</td>
+                        </tr>
+                        <tr>
+                          <td>3/5</td>
+                          <td>品川100あ1234</td>
+                          <td>東京→横浜</td>
+                          <td>32km</td>
+                          <td class="yen">45,000</td>
+                          <td class="yen">—</td>
+                          <td class="yen">—</td>
+                          <td class="yen">1,320</td>
+                          <td class="yen">680</td>
+                          <td class="text-right yen">47,000</td>
+                        </tr>
+                        <tr>
+                          <td>3/7</td>
+                          <td>足立200う9012</td>
+                          <td>東京→埼玉</td>
+                          <td>45km</td>
+                          <td class="yen">38,000</td>
+                          <td class="yen">1,760</td>
+                          <td class="yen">2,100</td>
+                          <td class="yen">980</td>
+                          <td class="yen">820</td>
+                          <td class="text-right yen">43,660</td>
+                        </tr>
+                        <tr>
+                          <td>3/8</td>
+                          <td>品川100い5678</td>
+                          <td>東京→大阪</td>
+                          <td>510km</td>
+                          <td class="yen">250,000</td>
+                          <td class="yen">3,780</td>
+                          <td class="yen">4,360</td>
+                          <td class="yen">12,450</td>
+                          <td class="yen">7,690</td>
+                          <td class="text-right yen">278,280</td>
+                        </tr>
+                        <tr>
+                          <td>3/10</td>
+                          <td>品川100あ1234</td>
+                          <td>東京→横浜</td>
+                          <td>32km</td>
+                          <td class="yen">45,000</td>
+                          <td class="yen">1,890</td>
+                          <td class="yen">—</td>
+                          <td class="yen">1,320</td>
+                          <td class="yen">680</td>
+                          <td class="text-right yen">48,890</td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr class="bg-gray-50">
+                          <td colspan="9" class="text-right font-bold">小計</td>
+                          <td class="text-right yen font-bold">671,760</td>
+                        </tr>
+                        <tr class="bg-gray-50">
+                          <td colspan="9" class="text-right font-bold">
+                            消費税(10%)
+                          </td>
+                          <td class="text-right yen font-bold">67,176</td>
+                        </tr>
+                        <tr class="bg-navy-50">
+                          <td
+                            colspan="9"
+                            class="text-right font-extrabold text-navy-700"
+                          >
+                            合計（税込）
+                          </td>
+                          <td
+                            class="text-right yen font-extrabold text-navy-700 text-base"
+                          >
+                            738,936
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
                 </div>
               </div>
 
-              <!-- Right: Preview -->
-              <div>
-                <div class="card p-6" id="invoicePreview">
-                  <div class="flex items-center justify-between mb-5">
-                    <h3
-                      class="font-semibold text-[14px] text-gray-700 flex items-center gap-2"
-                    >
-                      <i
-                        data-lucide="eye"
-                        class="w-4 h-4"
-                        style="color: #065f46"
-                      ></i
-                      >請求書プレビュー
-                    </h3>
-                    <span class="text-[11px] text-gray-400">INV-2026-0102</span>
-                  </div>
-
-                  <div class="border rounded-lg overflow-hidden mb-4">
-                    <div class="bg-gray-50 px-3 py-2 border-b">
-                      <p class="text-[11px] font-semibold text-gray-500">
-                        請求先:
-                        <span id="previewClient" class="text-gray-700"
-                          >大和運輸(株)</span
-                        >
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        期間: 2026/03/01 〜 2026/03/31
-                      </p>
+              <div class="space-y-4">
+                <div class="card p-5 border-navy-200 bg-navy-50/30">
+                  <h3 class="font-bold text-sm mb-3 text-navy-800">
+                    請求書サマリー
+                  </h3>
+                  <div class="space-y-2.5 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">請求番号</span
+                      ><span class="font-bold">INV-2026-0115</span>
                     </div>
-                    <table class="w-full">
-                      <thead class="bg-gray-50/50">
-                        <tr>
-                          <th
-                            class="px-3 py-2 text-left text-[10px] font-semibold text-gray-500"
-                          >
-                            日付
-                          </th>
-                          <th
-                            class="px-3 py-2 text-left text-[10px] font-semibold text-gray-500"
-                          >
-                            車番
-                          </th>
-                          <th
-                            class="px-3 py-2 text-left text-[10px] font-semibold text-gray-500"
-                          >
-                            ルート
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            距離
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            基本運賃
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            待機料
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            高速代
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            付帯
-                          </th>
-                          <th
-                            class="px-3 py-2 text-right text-[10px] font-semibold text-gray-500"
-                          >
-                            小計
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody id="invoiceLines">
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/02
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            品川100あ12-34
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            東京→横浜
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            32km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            45,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            3,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            1,200
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            0
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            49,200
-                          </td>
-                        </tr>
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/05
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            品川100あ12-34
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            東京→大宮
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            45km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            52,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            6,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            2,400
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            5,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            65,400
-                          </td>
-                        </tr>
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/08
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            足立200か56-78
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            千葉→東京
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            38km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            48,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            0
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            1,800
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            3,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            52,800
-                          </td>
-                        </tr>
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/12
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            品川100あ12-34
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            東京→名古屋
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            350km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            180,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            9,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            8,500
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            12,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            209,500
-                          </td>
-                        </tr>
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/15
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            足立200か56-78
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            埼玉→群馬
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            95km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            78,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            3,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            3,200
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            0
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            84,200
-                          </td>
-                        </tr>
-                        <tr class="border-t border-gray-100">
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            03/19
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            品川100あ12-34
-                          </td>
-                          <td class="px-3 py-2 text-[11px] text-gray-600">
-                            横浜→静岡
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            160km
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            120,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            6,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            5,400
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] text-gray-600 text-right"
-                          >
-                            8,000
-                          </td>
-                          <td
-                            class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right"
-                          >
-                            139,400
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Totals -->
-                  <div class="space-y-2 text-right border-t pt-4">
-                    <div class="flex justify-end items-center gap-8">
-                      <span class="text-[12px] text-gray-500">小計</span>
-                      <span
-                        class="text-[13px] font-medium text-gray-700 w-28"
-                        id="previewSubtotal"
-                        >600,500円</span
-                      >
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">荷主</span
+                      ><span class="font-bold">大和運輸</span>
                     </div>
-                    <div class="flex justify-end items-center gap-8">
-                      <span class="text-[12px] text-gray-500"
-                        >消費税 (10%)</span
-                      >
-                      <span
-                        class="text-[13px] font-medium text-gray-700 w-28"
-                        id="previewTax"
-                        >60,050円</span
-                      >
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">配送件数</span
+                      ><span class="font-bold">6件</span>
                     </div>
-                    <div
-                      class="flex justify-end items-center gap-8 pt-2 border-t"
-                    >
-                      <span class="text-[13px] font-semibold text-gray-700"
-                        >請求額合計</span
-                      >
-                      <span
-                        class="text-[16px] font-bold w-28"
-                        style="color: #065f46"
-                        id="previewTotal"
-                        >660,550円</span
+                    <hr class="border-navy-200" />
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">基本運賃計</span
+                      ><span class="yen">603,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">待機時間料</span
+                      ><span class="yen">16,880</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">荷役料</span
+                      ><span class="yen">10,820</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">高速道路料金</span
+                      ><span class="yen">25,230</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">燃料SC</span
+                      ><span class="yen">15,830</span>
+                    </div>
+                    <hr class="border-navy-200" />
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">小計</span
+                      ><span class="yen">671,760</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">消費税(10%)</span
+                      ><span class="yen">67,176</span>
+                    </div>
+                    <div class="flex justify-between text-base">
+                      <span class="font-bold text-navy-800">合計</span
+                      ><span class="yen font-extrabold text-navy-700"
+                        >¥738,936</span
                       >
                     </div>
                   </div>
-
-                  <div class="flex gap-3 mt-5">
-                    <button
-                      class="btn-primary flex-1 justify-center"
-                      onclick="showToast('請求書を保存しました')"
-                    >
-                      <i data-lucide="save" class="w-4 h-4"></i>保存
-                    </button>
-                    <button
-                      class="btn-outline flex-1 justify-center"
-                      onclick="showToast('PDF出力を開始しました')"
-                    >
-                      <i data-lucide="download" class="w-4 h-4"></i>PDF出力
-                    </button>
+                </div>
+                <div class="card p-5">
+                  <h3 class="font-bold text-sm mb-3">自動チェック</h3>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      運賃マスタ単価 適用済
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      待機時間料 自動計算済
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      燃料SC (¥142/L基準) 適用済
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      高速道路料金 ETC明細突合済
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      インボイス記載事項 完備
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <div
+                        class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="w-3 h-3 text-emerald-600"
+                        ></i>
+                      </div>
+                      二重請求チェック 問題なし
+                    </div>
                   </div>
+                </div>
+                <div class="space-y-2">
+                  <button
+                    class="btn btn-primary w-full justify-center"
+                    onclick="toast('請求書を発行しました')"
+                  >
+                    <i data-lucide="send" class="w-4 h-4"></i>請求書発行
+                  </button>
+                  <button class="btn btn-secondary w-full justify-center">
+                    <i data-lucide="eye" class="w-4 h-4"></i>PDF プレビュー
+                  </button>
+                  <button class="btn btn-secondary w-full justify-center">
+                    <i data-lucide="save" class="w-4 h-4"></i>下書き保存
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ==================== PAGE 3: INVOICES LIST ==================== -->
-          <div id="page-invoices" class="page">
-            <!-- Filters -->
-            <div class="flex items-center justify-between mb-5 gap-3 flex-wrap">
-              <div class="flex items-center gap-3">
-                <div class="relative">
-                  <i
-                    data-lucide="search"
-                    class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  ></i>
-                  <input
-                    id="invoiceSearch"
-                    type="text"
-                    placeholder="請求番号・荷主名で検索..."
-                    class="input pl-10 w-64"
-                    oninput="filterInvoices()"
-                  />
-                </div>
+          <!-- ===== INVOICES LIST ===== -->
+          <div class="page" id="page-invoices">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex gap-2">
                 <select
-                  id="invoiceStatusFilter"
-                  class="input w-36"
-                  onchange="filterInvoices()"
+                  class="input"
+                  style="width: 120px"
+                  id="inv-status-filter"
                 >
                   <option value="">全ステータス</option>
-                  <option value="creating">作成中</option>
-                  <option value="issued">発行済</option>
-                  <option value="paid">入金済</option>
-                  <option value="overdue">遅延</option>
+                  <option>作成中</option>
+                  <option>発行済</option>
+                  <option>入金済</option>
+                  <option>遅延</option>
                 </select>
-                <select
-                  id="invoiceClientFilter"
-                  class="input w-40"
-                  onchange="filterInvoices()"
-                >
-                  <option value="">全荷主</option>
-                  <option value="大和運輸">大和運輸(株)</option>
-                  <option value="セイノー">(株)セイノー商事</option>
-                  <option value="東京フード">東京フード(株)</option>
-                  <option value="日本通商">日本通商(株)</option>
-                  <option value="関東建材">関東建材(株)</option>
+                <select class="input" style="width: 140px">
+                  <option>全荷主</option>
+                  <option>大和運輸</option>
+                  <option>セイノー商事</option>
+                  <option>東京フード</option>
+                  <option>日本通商</option>
+                  <option>関東建材</option>
                 </select>
+                <input
+                  type="text"
+                  class="input"
+                  style="width: 200px"
+                  placeholder="請求番号で検索"
+                />
               </div>
-              <button class="btn-primary" onclick="navigate('create')">
+              <button class="btn btn-primary" onclick="navigateTo('create')">
                 <i data-lucide="plus" class="w-4 h-4"></i>新規作成
               </button>
             </div>
-
-            <!-- Invoice Table -->
             <div class="card overflow-hidden">
-              <div class="overflow-x-auto">
-                <table id="invoiceTbl" class="w-full">
-                  <thead class="bg-gray-50/80 border-b">
-                    <tr>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 0)">
-                        請求番号 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 1)">
-                        荷主名 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 2)">
-                        請求期間 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 3)">
-                        金額 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 4)">
-                        発行日 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 5)">
-                        入金期日 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('invoiceTbl', 6)">
-                        ステータス <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="invoiceTbody"></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="flex items-center justify-between mt-4">
-              <span class="text-[12px] text-gray-400" id="invoiceCount"
-                >15件表示</span
-              >
+              <table>
+                <thead>
+                  <tr>
+                    <th>請求番号</th>
+                    <th>荷主</th>
+                    <th>請求期間</th>
+                    <th class="text-right">金額(税込)</th>
+                    <th>発行日</th>
+                    <th>入金期日</th>
+                    <th>ステータス</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="invoice-table"></tbody>
+              </table>
             </div>
           </div>
 
-          <!-- ==================== PAGE 4: RATES ==================== -->
-          <div id="page-rates" class="page">
+          <!-- ===== RATE MASTER ===== -->
+          <div class="page" id="page-rates">
             <div class="flex items-center justify-between mb-5">
               <div>
-                <h3 class="text-[14px] font-semibold text-gray-700">
-                  運賃マスタ
+                <h3 class="font-bold text-sm">
+                  運賃マスタ（取引先別契約単価）
                 </h3>
-                <p class="text-[12px] text-gray-400 mt-0.5">
-                  ルート別運賃テーブルの管理
+                <p class="text-xs text-gray-400 mt-0.5">
+                  標準的運賃(2024年3月改定)ベース + 取引先別個別契約
                 </p>
               </div>
               <div class="flex gap-2">
-                <button
-                  class="btn-outline"
-                  onclick="showToast('一括更新モードを有効にしました')"
-                >
-                  <i data-lucide="upload" class="w-4 h-4"></i>一括更新
-                </button>
-                <button
-                  class="btn-primary"
-                  onclick="showToast('新規ルートを追加しました')"
-                >
+                <select class="input" style="width: 140px">
+                  <option>全荷主</option>
+                  <option>大和運輸</option>
+                  <option>セイノー商事</option>
+                </select>
+                <button class="btn btn-primary">
                   <i data-lucide="plus" class="w-4 h-4"></i>ルート追加
                 </button>
               </div>
             </div>
-
-            <!-- Rate Card Summary -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #065f4615">
-                  <i
-                    data-lucide="route"
-                    class="w-5 h-5"
-                    style="color: #065f46"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #065f46">24</p>
-                  <p class="text-[12px] text-gray-500">登録ルート数</p>
-                </div>
+            <div class="card overflow-hidden mb-5">
+              <table>
+                <thead>
+                  <tr>
+                    <th>荷主</th>
+                    <th>ルート</th>
+                    <th>車種</th>
+                    <th>距離</th>
+                    <th class="text-right">基本運賃</th>
+                    <th>運賃種別</th>
+                    <th>待機料/h</th>
+                    <th>深夜割増</th>
+                    <th>最終更新</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rate-table"></tbody>
+              </table>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">
+                  割増率一覧（標準的運賃準拠）
+                </h3>
+                <table class="text-xs">
+                  <thead>
+                    <tr>
+                      <th>種別</th>
+                      <th>割増率</th>
+                      <th>条件</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>休日割増</td>
+                      <td class="font-bold">2割以内</td>
+                      <td>日曜・祝日</td>
+                    </tr>
+                    <tr>
+                      <td>深夜・早朝割増</td>
+                      <td class="font-bold">2割以内</td>
+                      <td>22時〜5時</td>
+                    </tr>
+                    <tr>
+                      <td>速達割増</td>
+                      <td class="font-bold">2割以内</td>
+                      <td>通常より速い配達</td>
+                    </tr>
+                    <tr>
+                      <td>冬期割増</td>
+                      <td class="font-bold">2割以内</td>
+                      <td>12月〜3月 積雪地域</td>
+                    </tr>
+                    <tr>
+                      <td>特殊車両割増</td>
+                      <td class="font-bold">5割以内</td>
+                      <td>冷凍車・危険物車両</td>
+                    </tr>
+                    <tr>
+                      <td>品目別割増</td>
+                      <td class="font-bold">5割以内</td>
+                      <td>ガラス・精密機器等</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #10b98115">
-                  <i
-                    data-lucide="truck"
-                    class="w-5 h-5"
-                    style="color: #10b981"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #10b981">5</p>
-                  <p class="text-[12px] text-gray-500">車種カテゴリ</p>
-                </div>
-              </div>
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #f59e0b15">
-                  <i
-                    data-lucide="clock"
-                    class="w-5 h-5"
-                    style="color: #f59e0b"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #f59e0b">
-                    2026/03/01
-                  </p>
-                  <p class="text-[12px] text-gray-500">最終更新日</p>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">燃料サーチャージ設定</h3>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">基準価格</span
+                    ><span class="font-bold">120円/L</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">現在の軽油価格</span
+                    ><span class="font-bold text-warn-600">142円/L</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">上昇額</span
+                    ><span class="font-bold">+22円/L（第5段階）</span>
+                  </div>
+                  <hr />
+                  <div class="text-xs text-gray-500">
+                    計算式: 走行距離(km) / 燃費(km/L) × 上昇額(22円/L)
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    例: 350km / 4.5km/L × 22円 = 1,711円
+                  </div>
+                  <div class="text-xs text-gray-400 mt-1">
+                    出典: 国交省 燃料サーチャージ計算式
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Rate Table -->
+          <!-- ===== PAYMENTS ===== -->
+          <div class="page" id="page-payments">
+            <div class="grid grid-cols-4 gap-4 mb-5">
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  今月入金済
+                </div>
+                <div class="text-xl font-extrabold yen">
+                  1,992<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  入金待ち
+                </div>
+                <div class="text-xl font-extrabold yen">
+                  192<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  期限超過
+                </div>
+                <div class="text-xl font-extrabold text-danger-500 yen">
+                  215<span class="text-sm text-gray-400 ml-1">万円</span>
+                </div>
+                <div class="text-xs text-danger-600 mt-1">1件</div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xs font-semibold text-gray-500 mb-1">
+                  回収率
+                </div>
+                <div class="text-xl font-extrabold">
+                  91.2<span class="text-sm text-gray-400 ml-1">%</span>
+                </div>
+                <div class="progress-bar mt-2">
+                  <div
+                    class="progress-fill bg-emerald-500"
+                    style="width: 91.2%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">入金消込</h3>
+                <div class="card overflow-hidden">
+                  <table class="text-xs">
+                    <thead>
+                      <tr>
+                        <th>入金日</th>
+                        <th>荷主</th>
+                        <th>請求番号</th>
+                        <th class="text-right">請求額</th>
+                        <th class="text-right">入金額</th>
+                        <th>差額</th>
+                        <th>状態</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>3/10</td>
+                        <td>日本通商</td>
+                        <td>INV-0098</td>
+                        <td class="text-right yen">412,500</td>
+                        <td class="text-right yen">412,500</td>
+                        <td class="yen">0</td>
+                        <td><span class="badge badge-green">消込済</span></td>
+                      </tr>
+                      <tr>
+                        <td>3/10</td>
+                        <td>関東建材</td>
+                        <td>INV-0099</td>
+                        <td class="text-right yen">296,800</td>
+                        <td class="text-right yen">296,800</td>
+                        <td class="yen">0</td>
+                        <td><span class="badge badge-green">消込済</span></td>
+                      </tr>
+                      <tr>
+                        <td>3/8</td>
+                        <td>セイノー商事</td>
+                        <td>INV-0095</td>
+                        <td class="text-right yen">365,200</td>
+                        <td class="text-right yen">362,000</td>
+                        <td class="yen text-danger-500">-3,200</td>
+                        <td>
+                          <span class="badge badge-yellow">差額あり</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>—</td>
+                        <td>大和運輸</td>
+                        <td>INV-0087</td>
+                        <td class="text-right yen">2,145,000</td>
+                        <td class="text-right yen">—</td>
+                        <td>—</td>
+                        <td><span class="badge badge-red">超過30日</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">未回収エイジング分析</h3>
+                <canvas id="chart-aging" height="200"></canvas>
+                <div class="grid grid-cols-4 gap-2 mt-3 text-xs text-center">
+                  <div class="bg-emerald-50 rounded-lg p-2">
+                    <div class="text-gray-500">30日以内</div>
+                    <div class="font-bold text-emerald-600">192万</div>
+                  </div>
+                  <div class="bg-warn-50 rounded-lg p-2">
+                    <div class="text-gray-500">30-60日</div>
+                    <div class="font-bold text-warn-600">215万</div>
+                  </div>
+                  <div class="bg-danger-50 rounded-lg p-2">
+                    <div class="text-gray-500">60-90日</div>
+                    <div class="font-bold text-danger-600">0万</div>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-2">
+                    <div class="text-gray-500">90日超</div>
+                    <div class="font-bold">0万</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== COST MANAGEMENT ===== -->
+          <div class="page" id="page-cost">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-bold text-sm">車両別・案件別 原価管理</h3>
+              <div class="flex gap-2">
+                <select class="input" style="width: 130px">
+                  <option>2026年3月</option>
+                  <option>2026年2月</option>
+                </select>
+                <button class="btn btn-secondary">
+                  <i data-lucide="download" class="w-4 h-4"></i>CSV出力
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">原価構成比</h3>
+                <canvas id="chart-cost-breakdown" height="200"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">車両別 月間原価・収益</h3>
+                <canvas id="chart-vehicle-cost" height="200"></canvas>
+              </div>
+            </div>
             <div class="card overflow-hidden">
-              <div class="overflow-x-auto">
-                <table id="rateTbl" class="w-full">
-                  <thead class="bg-gray-50/80 border-b">
-                    <tr>
-                      <th class="th">ルート(発着地)</th>
-                      <th class="th">車種</th>
-                      <th class="th">距離(km)</th>
-                      <th class="th">基本運賃</th>
-                      <th class="th">待機料/h</th>
-                      <th class="th">付帯料金</th>
-                      <th class="th">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="td font-medium">東京 → 横浜</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">32</td>
-                      <td class="td td-num text-right">45,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">5,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → 大宮</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">45</td>
-                      <td class="td td-num text-right">52,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">5,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">千葉 → 東京</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">38</td>
-                      <td class="td td-num text-right">48,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → 名古屋</td>
-                      <td class="td">10t車</td>
-                      <td class="td td-num text-right">350</td>
-                      <td class="td td-num text-right">180,000</td>
-                      <td class="td td-num text-right">4,500</td>
-                      <td class="td td-num text-right">12,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">埼玉 → 群馬</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">95</td>
-                      <td class="td td-num text-right">78,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">5,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">横浜 → 静岡</td>
-                      <td class="td">10t車</td>
-                      <td class="td td-num text-right">160</td>
-                      <td class="td td-num text-right">120,000</td>
-                      <td class="td td-num text-right">4,500</td>
-                      <td class="td td-num text-right">8,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → 大阪</td>
-                      <td class="td">10t車</td>
-                      <td class="td td-num text-right">510</td>
-                      <td class="td td-num text-right">250,000</td>
-                      <td class="td td-num text-right">4,500</td>
-                      <td class="td td-num text-right">15,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">名古屋 → 大阪</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">180</td>
-                      <td class="td td-num text-right">130,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">8,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → 仙台</td>
-                      <td class="td">10t車</td>
-                      <td class="td td-num text-right">350</td>
-                      <td class="td td-num text-right">175,000</td>
-                      <td class="td td-num text-right">4,500</td>
-                      <td class="td td-num text-right">10,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → 新潟</td>
-                      <td class="td">4t車</td>
-                      <td class="td td-num text-right">330</td>
-                      <td class="td td-num text-right">165,000</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td td-num text-right">10,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">大阪 → 広島</td>
-                      <td class="td">10t車</td>
-                      <td class="td td-num text-right">330</td>
-                      <td class="td td-num text-right">170,000</td>
-                      <td class="td td-num text-right">4,500</td>
-                      <td class="td td-num text-right">10,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京 → つくば</td>
-                      <td class="td">2t車</td>
-                      <td class="td td-num text-right">65</td>
-                      <td class="td td-num text-right">38,000</td>
-                      <td class="td td-num text-right">2,500</td>
-                      <td class="td td-num text-right">3,000</td>
-                      <td class="td">
-                        <button
-                          class="text-[11px] text-blue-600 hover:underline"
-                          onclick="showToast('編集モードに切り替えました')"
-                        >
-                          編集
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <table>
+                <thead>
+                  <tr>
+                    <th>車両</th>
+                    <th>車種</th>
+                    <th>売上</th>
+                    <th>人件費</th>
+                    <th>燃料費</th>
+                    <th>高速料金</th>
+                    <th>車両維持費</th>
+                    <th>原価合計</th>
+                    <th>粗利</th>
+                    <th>粗利率</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="font-medium text-xs">品川100あ1234</td>
+                    <td class="text-xs">大型10t</td>
+                    <td class="yen">685,000</td>
+                    <td class="yen">312,000</td>
+                    <td class="yen">78,500</td>
+                    <td class="yen">24,800</td>
+                    <td class="yen">65,000</td>
+                    <td class="yen">480,300</td>
+                    <td class="yen text-emerald-600">204,700</td>
+                    <td><span class="badge badge-green">29.9%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium text-xs">品川100い5678</td>
+                    <td class="text-xs">大型10t</td>
+                    <td class="yen">892,000</td>
+                    <td class="yen">338,000</td>
+                    <td class="yen">105,200</td>
+                    <td class="yen">42,300</td>
+                    <td class="yen">65,000</td>
+                    <td class="yen">550,500</td>
+                    <td class="yen text-emerald-600">341,500</td>
+                    <td><span class="badge badge-green">38.3%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium text-xs">足立200う9012</td>
+                    <td class="text-xs">中型4t</td>
+                    <td class="yen">425,000</td>
+                    <td class="yen">285,000</td>
+                    <td class="yen">48,600</td>
+                    <td class="yen">12,500</td>
+                    <td class="yen">45,000</td>
+                    <td class="yen">391,100</td>
+                    <td class="yen text-warn-600">33,900</td>
+                    <td><span class="badge badge-yellow">8.0%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium text-xs">品川100え3456</td>
+                    <td class="text-xs">大型10t</td>
+                    <td class="yen">580,000</td>
+                    <td class="yen">310,000</td>
+                    <td class="yen">82,300</td>
+                    <td class="yen">28,700</td>
+                    <td class="yen">72,000</td>
+                    <td class="yen">492,000</td>
+                    <td class="yen text-emerald-600">88,000</td>
+                    <td><span class="badge badge-yellow">15.2%</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-4 card p-4 text-xs text-gray-500">
+              <strong>原価構成の業界平均:</strong> 人件費46% /
+              燃料油脂費7.7〜14.7% / 車両修繕費4.7% / 車両償却費5.3% /
+              保険料3.8% / 施設使用料等5.3%（出典: 全日本トラック協会
+              原価計算セミナーテキスト）
+            </div>
+          </div>
+
+          <!-- ===== CLIENT ANALYSIS ===== -->
+          <div class="page" id="page-clients">
+            <div class="card overflow-hidden mb-5">
+              <table>
+                <thead>
+                  <tr>
+                    <th>荷主</th>
+                    <th>月間件数</th>
+                    <th class="text-right">月間売上</th>
+                    <th class="text-right">平均単価</th>
+                    <th>支払サイト</th>
+                    <th>回収率</th>
+                    <th>与信枠</th>
+                    <th>評価</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="font-medium">大和運輸</td>
+                    <td>42件</td>
+                    <td class="text-right yen">5,760,000</td>
+                    <td class="text-right yen">137,143</td>
+                    <td>30日</td>
+                    <td><span class="font-bold text-warn-600">82.4%</span></td>
+                    <td class="yen">10,000,000</td>
+                    <td><span class="badge badge-yellow">要注意</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium">セイノー商事</td>
+                    <td>35件</td>
+                    <td class="text-right yen">3,650,000</td>
+                    <td class="text-right yen">104,286</td>
+                    <td>45日</td>
+                    <td><span class="font-bold text-warn-600">78.9%</span></td>
+                    <td class="yen">5,000,000</td>
+                    <td><span class="badge badge-red">要改善</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium">東京フード</td>
+                    <td>18件</td>
+                    <td class="text-right yen">1,980,000</td>
+                    <td class="text-right yen">110,000</td>
+                    <td>60日</td>
+                    <td><span class="font-bold text-warn-600">75.2%</span></td>
+                    <td class="yen">3,000,000</td>
+                    <td><span class="badge badge-red">要改善</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium">日本通商</td>
+                    <td>28件</td>
+                    <td class="text-right yen">4,120,000</td>
+                    <td class="text-right yen">147,143</td>
+                    <td>30日</td>
+                    <td>
+                      <span class="font-bold text-emerald-600">95.8%</span>
+                    </td>
+                    <td class="yen">8,000,000</td>
+                    <td><span class="badge badge-green">優良</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-medium">関東建材</td>
+                    <td>22件</td>
+                    <td class="text-right yen">2,960,000</td>
+                    <td class="text-right yen">134,545</td>
+                    <td>30日</td>
+                    <td>
+                      <span class="font-bold text-emerald-600">98.2%</span>
+                    </td>
+                    <td class="yen">5,000,000</td>
+                    <td><span class="badge badge-green">優良</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">荷主別 売上構成</h3>
+                <canvas id="chart-client-revenue" height="220"></canvas>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-3">回収率推移</h3>
+                <canvas id="chart-collection-rate" height="220"></canvas>
               </div>
             </div>
           </div>
 
-          <!-- ==================== PAGE 5: PAYMENTS ==================== -->
-          <div id="page-payments" class="page">
-            <!-- KPI Row -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #065f4615">
-                  <i
-                    data-lucide="circle-check"
-                    class="w-5 h-5"
-                    style="color: #065f46"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #065f46">
-                    1,612万
-                  </p>
-                  <p class="text-[12px] text-gray-500">今月入金済</p>
-                </div>
-              </div>
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #f59e0b15">
-                  <i
-                    data-lucide="clock"
-                    class="w-5 h-5"
-                    style="color: #f59e0b"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #f59e0b">235万</p>
-                  <p class="text-[12px] text-gray-500">入金待ち</p>
-                </div>
-              </div>
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #ef444415">
-                  <i
-                    data-lucide="alert-octagon"
-                    class="w-5 h-5"
-                    style="color: #ef4444"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #ef4444">627万</p>
-                  <p class="text-[12px] text-gray-500">未回収(超過)</p>
-                </div>
-              </div>
-              <div class="card p-4 flex items-center gap-4">
-                <div class="kpi-icon" style="background: #10b98115">
-                  <i
-                    data-lucide="percent"
-                    class="w-5 h-5"
-                    style="color: #10b981"
-                  ></i>
-                </div>
-                <div>
-                  <p class="text-xl font-bold" style="color: #10b981">87.3%</p>
-                  <p class="text-[12px] text-gray-500">回収率</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment Records Table -->
-            <div class="card overflow-hidden mb-6">
-              <div class="px-5 py-4 border-b flex items-center justify-between">
-                <h3 class="font-semibold text-[13px] text-gray-700">
-                  入金記録
-                </h3>
-                <button
-                  class="btn-primary text-[12px]"
-                  onclick="showToast('消込処理を開始しました')"
-                >
-                  <i data-lucide="check-square" class="w-4 h-4"></i>一括消込
-                </button>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead class="bg-gray-50/80 border-b">
-                    <tr>
-                      <th class="th">入金日</th>
-                      <th class="th">荷主</th>
-                      <th class="th">請求番号</th>
-                      <th class="th">請求額</th>
-                      <th class="th">入金額</th>
-                      <th class="th">差額</th>
-                      <th class="th">消込ステータス</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="td">2026/03/05</td>
-                      <td class="td">日本通商(株)</td>
-                      <td class="td font-medium">INV-2026-0095</td>
-                      <td class="td td-num text-right">1,250,000</td>
-                      <td class="td td-num text-right">1,250,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td">
-                        <span class="badge badge-paid">消込済</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">2026/03/05</td>
-                      <td class="td">関東建材(株)</td>
-                      <td class="td font-medium">INV-2026-0096</td>
-                      <td class="td td-num text-right">890,000</td>
-                      <td class="td td-num text-right">890,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td">
-                        <span class="badge badge-paid">消込済</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">2026/03/03</td>
-                      <td class="td">大和運輸(株)</td>
-                      <td class="td font-medium">INV-2026-0091</td>
-                      <td class="td td-num text-right">2,340,000</td>
-                      <td class="td td-num text-right">2,340,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td">
-                        <span class="badge badge-paid">消込済</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">2026/03/01</td>
-                      <td class="td">(株)セイノー商事</td>
-                      <td class="td font-medium">INV-2026-0088</td>
-                      <td class="td td-num text-right">1,780,000</td>
-                      <td class="td td-num text-right">1,780,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td">
-                        <span class="badge badge-paid">消込済</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">—</td>
-                      <td class="td">大和運輸(株)</td>
-                      <td class="td font-medium">INV-2026-0089</td>
-                      <td class="td td-num text-right">3,420,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td td-num text-right text-red-600">
-                        3,420,000
-                      </td>
-                      <td class="td">
-                        <span class="badge badge-overdue">未回収</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">—</td>
-                      <td class="td">(株)セイノー商事</td>
-                      <td class="td font-medium">INV-2026-0076</td>
-                      <td class="td td-num text-right">1,870,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td td-num text-right text-red-600">
-                        1,870,000
-                      </td>
-                      <td class="td">
-                        <span class="badge badge-overdue">未回収</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">—</td>
-                      <td class="td">東京フード(株)</td>
-                      <td class="td font-medium">INV-2026-0062</td>
-                      <td class="td td-num text-right">980,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td td-num text-right text-red-600">980,000</td>
-                      <td class="td">
-                        <span class="badge badge-overdue">未回収</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">—</td>
-                      <td class="td">日本通商(株)</td>
-                      <td class="td font-medium">INV-2026-0098</td>
-                      <td class="td td-num text-right">1,560,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td td-num text-right text-amber-600">
-                        1,560,000
-                      </td>
-                      <td class="td">
-                        <span class="badge badge-creating">入金待ち</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td">—</td>
-                      <td class="td">関東建材(株)</td>
-                      <td class="td font-medium">INV-2026-0100</td>
-                      <td class="td td-num text-right">790,000</td>
-                      <td class="td td-num text-right text-gray-400">0</td>
-                      <td class="td td-num text-right text-amber-600">
-                        790,000
-                      </td>
-                      <td class="td">
-                        <span class="badge badge-creating">入金待ち</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Aging + Chart Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <!-- Aging List -->
+          <!-- ===== SETTINGS ===== -->
+          <div class="page" id="page-settings">
+            <div class="grid grid-cols-2 gap-4">
               <div class="card p-5">
-                <h3
-                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="calendar-clock"
-                    class="w-4 h-4"
-                    style="color: #ef4444"
-                  ></i
-                  >未回収エイジング
-                </h3>
+                <h3 class="font-bold text-sm mb-4">インボイス制度設定</h3>
                 <div class="space-y-3">
-                  <div
-                    class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="text-[12px] font-semibold text-yellow-700 bg-yellow-200 px-2 py-0.5 rounded"
-                        >30日以内</span
-                      >
-                      <span class="text-[13px] text-gray-700">2件</span>
-                    </div>
-                    <span class="text-[13px] font-semibold text-gray-700"
-                      >235万円</span
-                    >
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-orange-50 rounded-lg"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="text-[12px] font-semibold text-orange-700 bg-orange-200 px-2 py-0.5 rounded"
-                        >30〜60日</span
-                      >
-                      <span class="text-[13px] text-gray-700">2件</span>
-                    </div>
-                    <span class="text-[13px] font-semibold text-gray-700"
-                      >529万円</span
-                    >
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="text-[12px] font-semibold text-red-700 bg-red-200 px-2 py-0.5 rounded"
-                        >60〜90日</span
-                      >
-                      <span class="text-[13px] text-gray-700">1件</span>
-                    </div>
-                    <span class="text-[13px] font-semibold text-gray-700"
-                      >98万円</span
-                    >
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-red-100 rounded-lg"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="text-[12px] font-semibold text-red-800 bg-red-300 px-2 py-0.5 rounded"
-                        >90日超過</span
-                      >
-                      <span class="text-[13px] text-gray-700">0件</span>
-                    </div>
-                    <span class="text-[13px] font-semibold text-gray-700"
-                      >0円</span
-                    >
-                  </div>
-                </div>
-              </div>
-              <!-- Collection Rate Chart -->
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  回収率推移
-                </h3>
-                <div style="height: 240px">
-                  <canvas id="payChart1"></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 6: ANALYSIS ==================== -->
-          <div id="page-analysis" class="page">
-            <!-- Client Summary Table -->
-            <div class="card overflow-hidden mb-6">
-              <div class="px-5 py-4 border-b">
-                <h3 class="font-semibold text-[13px] text-gray-700">
-                  荷主別パフォーマンス
-                </h3>
-              </div>
-              <div class="overflow-x-auto">
-                <table id="analysisTbl" class="w-full">
-                  <thead class="bg-gray-50/80 border-b">
-                    <tr>
-                      <th class="th" onclick="sortTbl('analysisTbl', 0)">
-                        荷主名 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('analysisTbl', 1)">
-                        月間取扱件数 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('analysisTbl', 2)">
-                        月間売上 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('analysisTbl', 3)">
-                        平均単価 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('analysisTbl', 4)">
-                        支払サイト <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th" onclick="sortTbl('analysisTbl', 5)">
-                        回収率 <span class="text-gray-300">&#8693;</span>
-                      </th>
-                      <th class="th">評価</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="td font-medium">大和運輸(株)</td>
-                      <td class="td td-num text-right">42</td>
-                      <td class="td td-num text-right">5,760,000</td>
-                      <td class="td td-num text-right">137,143</td>
-                      <td class="td td-num text-right">30日</td>
-                      <td class="td td-num text-right">82.4%</td>
-                      <td class="td">
-                        <span class="badge badge-creating">要注意</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">(株)セイノー商事</td>
-                      <td class="td td-num text-right">35</td>
-                      <td class="td td-num text-right">3,650,000</td>
-                      <td class="td td-num text-right">104,286</td>
-                      <td class="td td-num text-right">45日</td>
-                      <td class="td td-num text-right">78.9%</td>
-                      <td class="td">
-                        <span class="badge badge-overdue">要改善</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">東京フード(株)</td>
-                      <td class="td td-num text-right">18</td>
-                      <td class="td td-num text-right">1,980,000</td>
-                      <td class="td td-num text-right">110,000</td>
-                      <td class="td td-num text-right">60日</td>
-                      <td class="td td-num text-right">75.2%</td>
-                      <td class="td">
-                        <span class="badge badge-overdue">要改善</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">日本通商(株)</td>
-                      <td class="td td-num text-right">28</td>
-                      <td class="td td-num text-right">4,120,000</td>
-                      <td class="td td-num text-right">147,143</td>
-                      <td class="td td-num text-right">30日</td>
-                      <td class="td td-num text-right">95.8%</td>
-                      <td class="td">
-                        <span class="badge badge-paid">優良</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="td font-medium">関東建材(株)</td>
-                      <td class="td td-num text-right">22</td>
-                      <td class="td td-num text-right">2,960,000</td>
-                      <td class="td td-num text-right">134,545</td>
-                      <td class="td td-num text-right">30日</td>
-                      <td class="td td-num text-right">98.2%</td>
-                      <td class="td">
-                        <span class="badge badge-paid">優良</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  荷主別売上比較
-                </h3>
-                <div style="height: 280px">
-                  <canvas id="anaChart1"></canvas>
-                </div>
-              </div>
-              <div class="card p-5">
-                <h3 class="font-semibold text-[13px] text-gray-700 mb-4">
-                  収益性分析
-                </h3>
-                <div style="height: 280px">
-                  <canvas id="anaChart2"></canvas>
-                </div>
-              </div>
-            </div>
-
-            <!-- Rankings -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div class="card p-5">
-                <h3
-                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="trophy"
-                    class="w-4 h-4"
-                    style="color: #f59e0b"
-                  ></i
-                  >Top荷主 (売上順)
-                </h3>
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center text-[11px] font-bold"
-                        >1</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >大和運輸(株)</span
-                      >
-                    </div>
-                    <span
-                      class="text-[13px] font-semibold"
-                      style="color: #065f46"
-                      >576万円</span
-                    >
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-[11px] font-bold"
-                        >2</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >日本通商(株)</span
-                      >
-                    </div>
-                    <span
-                      class="text-[13px] font-semibold"
-                      style="color: #065f46"
-                      >412万円</span
-                    >
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center text-[11px] font-bold"
-                        >3</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >(株)セイノー商事</span
-                      >
-                    </div>
-                    <span
-                      class="text-[13px] font-semibold"
-                      style="color: #065f46"
-                      >365万円</span
-                    >
-                  </div>
-                </div>
-              </div>
-              <div class="card p-5">
-                <h3
-                  class="font-semibold text-[13px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="alert-triangle"
-                    class="w-4 h-4"
-                    style="color: #ef4444"
-                  ></i
-                  >要改善荷主 (回収率低順)
-                </h3>
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-[11px] font-bold"
-                        >1</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >東京フード(株)</span
-                      >
-                    </div>
-                    <span class="text-[13px] font-semibold text-red-600"
-                      >回収率 75.2%</span
-                    >
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-[11px] font-bold"
-                        >2</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >(株)セイノー商事</span
-                      >
-                    </div>
-                    <span class="text-[13px] font-semibold text-red-600"
-                      >回収率 78.9%</span
-                    >
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center text-[11px] font-bold"
-                        >3</span
-                      >
-                      <span class="text-[13px] font-medium text-gray-700"
-                        >大和運輸(株)</span
-                      >
-                    </div>
-                    <span class="text-[13px] font-semibold text-amber-600"
-                      >回収率 82.4%</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ==================== PAGE 7: SETTINGS ==================== -->
-          <div id="page-settings" class="page">
-            <div class="max-w-3xl">
-              <!-- Shipper Master -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="building-2"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >荷主マスタ
-                </h3>
-                <div class="space-y-3 mb-4">
-                  <div
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        大和運輸(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        東京都中央区日本橋1-2-3 / 支払サイト: 30日
-                      </p>
-                    </div>
-                    <button
-                      class="text-[11px] text-blue-600 hover:underline"
-                      onclick="showToast('編集画面を開きました')"
-                    >
-                      編集
-                    </button>
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        (株)セイノー商事
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        岐阜県大垣市田口町1 / 支払サイト: 45日
-                      </p>
-                    </div>
-                    <button
-                      class="text-[11px] text-blue-600 hover:underline"
-                      onclick="showToast('編集画面を開きました')"
-                    >
-                      編集
-                    </button>
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        東京フード(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        東京都品川区東品川4-5-6 / 支払サイト: 60日
-                      </p>
-                    </div>
-                    <button
-                      class="text-[11px] text-blue-600 hover:underline"
-                      onclick="showToast('編集画面を開きました')"
-                    >
-                      編集
-                    </button>
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        日本通商(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        大阪府大阪市北区梅田7-8-9 / 支払サイト: 30日
-                      </p>
-                    </div>
-                    <button
-                      class="text-[11px] text-blue-600 hover:underline"
-                      onclick="showToast('編集画面を開きました')"
-                    >
-                      編集
-                    </button>
-                  </div>
-                  <div
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p class="text-[13px] font-medium text-gray-700">
-                        関東建材(株)
-                      </p>
-                      <p class="text-[11px] text-gray-400">
-                        埼玉県さいたま市大宮区10-11 / 支払サイト: 30日
-                      </p>
-                    </div>
-                    <button
-                      class="text-[11px] text-blue-600 hover:underline"
-                      onclick="showToast('編集画面を開きました')"
-                    >
-                      編集
-                    </button>
-                  </div>
-                </div>
-                <button
-                  class="btn-outline w-full justify-center"
-                  onclick="showToast('荷主を追加しました')"
-                >
-                  <i data-lucide="plus" class="w-4 h-4"></i>荷主を追加
-                </button>
-              </div>
-
-              <!-- Rate Table Config -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="table"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >運賃テーブル設定
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="label">基本運賃計算方式</label>
-                    <select class="input">
-                      <option>距離ベース</option>
-                      <option>時間ベース</option>
-                      <option>重量ベース</option>
-                    </select>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >適格請求書発行事業者 登録番号</label
+                    ><input type="text" class="input" value="T1234567890123" />
                   </div>
                   <div>
-                    <label class="label">端数処理</label>
-                    <select class="input">
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >事業者名</label
+                    ><input
+                      type="text"
+                      class="input"
+                      value="株式会社サンプル運送"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >消費税率</label
+                    ><input type="text" class="input" value="10%" />
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >端数処理</label
+                    ><select class="input">
+                      <option>切り捨て</option>
                       <option>四捨五入</option>
                       <option>切り上げ</option>
-                      <option>切り捨て</option>
                     </select>
-                  </div>
-                  <div>
-                    <label class="label">待機料金 (1時間あたり)</label>
-                    <input type="text" class="input" value="3,000" />
-                  </div>
-                  <div>
-                    <label class="label">深夜割増率</label>
-                    <input type="text" class="input" value="25%" />
                   </div>
                 </div>
               </div>
-
-              <!-- Tax Settings -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="percent"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >消費税率
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="label">標準税率</label>
-                    <input type="text" class="input" value="10%" />
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-4">銀行口座設定</h3>
+                <div class="space-y-3">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >銀行名</label
+                      ><input type="text" class="input" value="三菱UFJ銀行" />
+                    </div>
+                    <div>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >支店名</label
+                      ><input type="text" class="input" value="東京営業部" />
+                    </div>
                   </div>
-                  <div>
-                    <label class="label">軽減税率</label>
-                    <input type="text" class="input" value="8%" />
-                  </div>
-                  <div>
-                    <label class="label">インボイス登録番号</label>
-                    <input type="text" class="input" value="T1234567890123" />
-                  </div>
-                  <div>
-                    <label class="label">適格請求書発行事業者名</label>
-                    <input
-                      type="text"
-                      class="input"
-                      value="BillExpress運送(株)"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Invoice Template -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="file-text"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >請求書テンプレート
-                </h3>
-                <div class="space-y-4">
-                  <div>
-                    <label class="label">テンプレート名</label>
-                    <select class="input">
-                      <option>標準テンプレート</option>
-                      <option>簡易テンプレート</option>
-                      <option>詳細テンプレート (明細付き)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="label">会社ロゴ</label>
-                    <div
-                      class="border-2 border-dashed rounded-lg p-6 text-center"
-                    >
-                      <i
-                        data-lucide="upload-cloud"
-                        class="w-8 h-8 mx-auto text-gray-300 mb-2"
-                      ></i>
-                      <p class="text-[12px] text-gray-400">
-                        クリックまたはドラッグ&ドロップ
-                      </p>
-                      <p class="text-[11px] text-gray-300 mt-1">
-                        PNG, JPG (最大2MB)
-                      </p>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >口座種別</label
+                      ><select class="input">
+                        <option>普通</option>
+                        <option>当座</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        class="text-xs font-semibold text-gray-500 block mb-1"
+                        >口座番号</label
+                      ><input type="text" class="input" value="1234567" />
                     </div>
                   </div>
                   <div>
-                    <label class="label">備考欄デフォルト文</label>
-                    <textarea
-                      class="input"
-                      rows="2"
-                      placeholder="お振込先は下記口座にお願いいたします。"
-                    >
-お振込先は下記口座にお願いいたします。振込手数料は貴社にてご負担ください。</textarea
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <!-- Bank Account -->
-              <div class="card p-5 mb-5">
-                <h3
-                  class="font-semibold text-[14px] text-gray-700 mb-4 flex items-center gap-2"
-                >
-                  <i
-                    data-lucide="landmark"
-                    class="w-4 h-4"
-                    style="color: #065f46"
-                  ></i
-                  >銀行口座
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="label">銀行名</label>
-                    <input type="text" class="input" value="三菱UFJ銀行" />
-                  </div>
-                  <div>
-                    <label class="label">支店名</label>
-                    <input type="text" class="input" value="東京営業部" />
-                  </div>
-                  <div>
-                    <label class="label">口座種別</label>
-                    <select class="input">
-                      <option>普通</option>
-                      <option>当座</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="label">口座番号</label>
-                    <input type="text" class="input" value="1234567" />
-                  </div>
-                  <div class="md:col-span-2">
-                    <label class="label">口座名義</label>
-                    <input
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >口座名義</label
+                    ><input
                       type="text"
                       class="input"
-                      value="ビルエクスプレスウンソウ（カ"
+                      value="カ）サンプルウンソウ"
                     />
                   </div>
                 </div>
               </div>
-
-              <div class="flex justify-end">
-                <button
-                  class="btn-primary"
-                  onclick="showToast('設定を保存しました')"
-                >
-                  <i data-lucide="save" class="w-4 h-4"></i>設定を保存
-                </button>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-4">請求書テンプレート</h3>
+                <div class="space-y-3">
+                  <div>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >テンプレート</label
+                    ><select class="input">
+                      <option>標準（詳細明細付き）</option>
+                      <option>簡易</option>
+                      <option>英語版</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >備考欄デフォルト文</label
+                    ><textarea class="input" rows="3">
+お支払期限までにお振込みをお願いいたします。振込手数料はご負担願います。</textarea
+                    >
+                  </div>
+                  <div>
+                    <label
+                      class="text-xs font-semibold text-gray-500 block mb-1"
+                      >運賃・料金の表示</label
+                    >
+                    <div class="flex gap-4 mt-1">
+                      <label
+                        class="flex items-center gap-2 text-sm cursor-pointer"
+                        ><input
+                          type="radio"
+                          name="display"
+                          checked
+                          class="accent-navy-600"
+                        />運賃と料金を別建て表示（2024年約款準拠）</label
+                      >
+                      <label
+                        class="flex items-center gap-2 text-sm cursor-pointer"
+                        ><input
+                          type="radio"
+                          name="display"
+                          class="accent-navy-600"
+                        />一括表示</label
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card p-5">
+                <h3 class="font-bold text-sm mb-4">電子帳簿保存法対応</h3>
+                <div class="space-y-3">
+                  <div
+                    class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium">電子取引データの保存</span
+                    ><span class="badge badge-green">対応済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium">タイムスタンプ付与</span
+                    ><span class="badge badge-green">対応済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium"
+                      >検索要件（日付・金額・取引先）</span
+                    ><span class="badge badge-green">対応済</span>
+                  </div>
+                  <div
+                    class="flex items-center justify-between p-3 bg-emerald-50 rounded-lg"
+                  >
+                    <span class="text-sm font-medium">訂正削除の記録</span
+                    ><span class="badge badge-green">対応済</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
 
     <!-- Toast -->
-    <div
-      id="toast"
-      class="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-xl text-[13px] shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2"
-    >
-      <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-      <span id="toastMsg">保存しました</span>
-    </div>
+    <div id="toast-container"></div>
 
     <script>
-      // ========== NAVIGATION ==========
-      const charts = [];
-      const pageConfig = [
+      // === DATA ===
+      const invoices = [
         {
-          id: "dashboard",
-          title: "ダッシュボード",
-          desc: "請求状況の全体概要",
+          id: "INV-2026-0115",
+          client: "大和運輸",
+          period: "3/1-3/10",
+          amount: 738936,
+          issued: "2026-03-11",
+          due: "2026-04-10",
+          status: "draft",
         },
         {
-          id: "create",
-          title: "請求書作成",
-          desc: "配送データから自動集計・請求書発行",
-        },
-        { id: "invoices", title: "請求一覧", desc: "全請求書のステータス管理" },
-        { id: "rates", title: "運賃計算", desc: "ルート別運賃マスタの管理" },
-        { id: "payments", title: "入金管理", desc: "入金消込・未回収管理" },
-        {
-          id: "analysis",
-          title: "荷主別分析",
-          desc: "荷主ごとのパフォーマンス分析",
+          id: "INV-2026-0114",
+          client: "日本通商",
+          period: "3/1-3/10",
+          amount: 524800,
+          issued: "2026-03-11",
+          due: "2026-04-10",
+          status: "issued",
         },
         {
-          id: "settings",
-          title: "設定",
-          desc: "マスタ・テンプレート・口座設定",
+          id: "INV-2026-0113",
+          client: "関東建材",
+          period: "3/1-3/10",
+          amount: 412300,
+          issued: "2026-03-11",
+          due: "2026-04-10",
+          status: "issued",
+        },
+        {
+          id: "INV-2026-0110",
+          client: "セイノー商事",
+          period: "2/16-2/28",
+          amount: 365200,
+          issued: "2026-03-01",
+          due: "2026-04-15",
+          status: "paid",
+        },
+        {
+          id: "INV-2026-0108",
+          client: "東京フード",
+          period: "2/16-2/28",
+          amount: 198500,
+          issued: "2026-03-01",
+          due: "2026-04-30",
+          status: "issued",
+        },
+        {
+          id: "INV-2026-0105",
+          client: "大和運輸",
+          period: "2/16-2/28",
+          amount: 892400,
+          issued: "2026-03-01",
+          due: "2026-03-31",
+          status: "paid",
+        },
+        {
+          id: "INV-2026-0099",
+          client: "関東建材",
+          period: "2/1-2/15",
+          amount: 296800,
+          issued: "2026-02-16",
+          due: "2026-03-15",
+          status: "paid",
+        },
+        {
+          id: "INV-2026-0098",
+          client: "日本通商",
+          period: "2/1-2/15",
+          amount: 412500,
+          issued: "2026-02-16",
+          due: "2026-03-15",
+          status: "paid",
+        },
+        {
+          id: "INV-2026-0095",
+          client: "セイノー商事",
+          period: "2/1-2/15",
+          amount: 365200,
+          issued: "2026-02-16",
+          due: "2026-03-31",
+          status: "paid",
+        },
+        {
+          id: "INV-2026-0087",
+          client: "大和運輸",
+          period: "1/16-1/31",
+          amount: 2145000,
+          issued: "2026-02-01",
+          due: "2026-02-28",
+          status: "overdue",
         },
       ];
 
-      function navigate(id) {
+      const rates = [
+        {
+          client: "大和運輸",
+          route: "東京→横浜",
+          type: "大型10t",
+          dist: "32km",
+          rate: 45000,
+          rateType: "距離制",
+          wait: 3780,
+          night: "20%",
+          updated: "2026-03-01",
+        },
+        {
+          client: "大和運輸",
+          route: "東京→名古屋",
+          type: "大型10t",
+          dist: "350km",
+          rate: 180000,
+          rateType: "距離制",
+          wait: 3780,
+          night: "20%",
+          updated: "2026-03-01",
+        },
+        {
+          client: "大和運輸",
+          route: "東京→大阪",
+          type: "大型10t",
+          dist: "510km",
+          rate: 250000,
+          rateType: "距離制",
+          wait: 3780,
+          night: "20%",
+          updated: "2026-03-01",
+        },
+        {
+          client: "セイノー商事",
+          route: "岐阜→東京",
+          type: "大型10t",
+          dist: "420km",
+          rate: 210000,
+          rateType: "距離制",
+          wait: 3780,
+          night: "20%",
+          updated: "2025-12-01",
+        },
+        {
+          client: "セイノー商事",
+          route: "岐阜→名古屋",
+          type: "中型4t",
+          dist: "45km",
+          rate: 38000,
+          rateType: "距離制",
+          wait: 3520,
+          night: "20%",
+          updated: "2025-12-01",
+        },
+        {
+          client: "東京フード",
+          route: "東京→千葉",
+          type: "中型4t(冷凍)",
+          dist: "55km",
+          rate: 58000,
+          rateType: "距離制",
+          wait: 3520,
+          night: "20%",
+          updated: "2026-02-01",
+        },
+        {
+          client: "日本通商",
+          route: "東京→横浜港",
+          type: "大型10t",
+          dist: "38km",
+          rate: 52000,
+          rateType: "車建",
+          wait: 3780,
+          night: "20%",
+          updated: "2026-03-01",
+        },
+        {
+          client: "関東建材",
+          route: "埼玉→都内",
+          type: "大型10t",
+          dist: "42km",
+          rate: 48000,
+          rateType: "車建",
+          wait: 3780,
+          night: "—",
+          updated: "2026-03-01",
+        },
+      ];
+
+      const overdue = [
+        {
+          client: "大和運輸",
+          id: "INV-0087",
+          amount: 2145000,
+          due: "2026-02-28",
+          days: 12,
+        },
+      ];
+
+      // === NAV ===
+      const pageTitles = {
+        dashboard: ["ダッシュボード", "請求・入金の全体状況"],
+        create: ["請求書作成", "運行実績から自動集計・発行"],
+        invoices: ["請求一覧", "全請求書のステータス管理"],
+        rates: ["運賃マスタ", "取引先別契約単価・割増率・燃料SC"],
+        payments: ["入金管理", "入金消込・未回収エイジング"],
+        cost: ["原価管理", "車両別・案件別の収益分析"],
+        clients: ["荷主分析", "取引先別パフォーマンス・与信管理"],
+        settings: ["設定", "インボイス・口座・テンプレート・電帳法"],
+      };
+
+      function navigateTo(pg) {
+        document.querySelectorAll(".nav-item").forEach((n) => {
+          n.classList.remove("active");
+          if (n.dataset.page === pg) n.classList.add("active");
+        });
         document
           .querySelectorAll(".page")
           .forEach((p) => p.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((n) => n.classList.remove("active"));
-        const el = document.getElementById("page-" + id);
-        if (el) el.classList.add("active");
-        document
-          .querySelector('[data-page="' + id + '"]')
-          ?.classList.add("active");
-        const cfg = pageConfig.find((p) => p.id === id);
-        if (cfg) {
-          document.getElementById("pageTitle").textContent = cfg.title;
-          document.getElementById("pageDesc").textContent = cfg.desc;
-        }
-        history.replaceState(null, null, "#" + id);
-        setTimeout(() => {
-          charts.forEach((c) => c.resize());
-          if (typeof lucide !== "undefined") lucide.createIcons();
-        }, 60);
+        document.getElementById("page-" + pg).classList.add("active");
+        const t = pageTitles[pg];
+        document.getElementById("page-title").textContent = t[0];
+        document.getElementById("page-subtitle").textContent = t[1];
+        initPageCharts(pg);
       }
-      window.addEventListener("hashchange", () =>
-        navigate(location.hash.slice(1)),
-      );
+      document
+        .querySelectorAll(".nav-item")
+        .forEach((item) =>
+          item.addEventListener("click", () => navigateTo(item.dataset.page)),
+        );
 
-      // ========== TOAST ==========
-      function showToast(msg) {
-        const t = document.getElementById("toast");
-        document.getElementById("toastMsg").textContent = msg;
-        t.style.transform = "translateY(0)";
-        t.style.opacity = "1";
-        setTimeout(() => {
-          t.style.transform = "translateY(20px)";
-          t.style.opacity = "0";
-        }, 2500);
+      // === RENDER ===
+      function yen(n) {
+        return n.toLocaleString();
       }
 
-      // ========== TABLE SORT ==========
-      function sortTbl(id, col) {
-        const t = document.getElementById(id);
-        const b = t.querySelector("tbody");
-        const rows = Array.from(b.querySelectorAll("tr"));
-        const asc = t.dataset.sc !== col + "a";
-        t.dataset.sc = asc ? col + "a" : col + "d";
-        rows.sort((a, b) => {
-          const av = a.cells[col]?.textContent.trim() || "";
-          const bv = b.cells[col]?.textContent.trim() || "";
-          const an = parseFloat(av.replace(/[^0-9.-]/g, ""));
-          const bn = parseFloat(bv.replace(/[^0-9.-]/g, ""));
-          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
-          return asc ? av.localeCompare(bv, "ja") : bv.localeCompare(av, "ja");
-        });
-        rows.forEach((r) => b.appendChild(r));
-      }
-
-      // ========== INVOICE DATA ==========
-      const invoiceData = [
-        {
-          no: "INV-2026-0102",
-          client: "大和運輸(株)",
-          period: "2026/03/01〜03/31",
-          amount: 660550,
-          issued: "2026/03/10",
-          due: "2026/04/10",
-          status: "creating",
-        },
-        {
-          no: "INV-2026-0101",
-          client: "日本通商(株)",
-          period: "2026/03/01〜03/31",
-          amount: 1250000,
-          issued: "2026/03/08",
-          due: "2026/04/08",
-          status: "issued",
-        },
-        {
-          no: "INV-2026-0100",
-          client: "関東建材(株)",
-          period: "2026/03/01〜03/31",
-          amount: 790000,
-          issued: "2026/03/05",
-          due: "2026/04/05",
-          status: "issued",
-        },
-        {
-          no: "INV-2026-0098",
-          client: "日本通商(株)",
-          period: "2026/02/01〜02/28",
-          amount: 1560000,
-          issued: "2026/03/01",
-          due: "2026/03/31",
-          status: "issued",
-        },
-        {
-          no: "INV-2026-0096",
-          client: "関東建材(株)",
-          period: "2026/02/01〜02/28",
-          amount: 890000,
-          issued: "2026/02/28",
-          due: "2026/03/31",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0095",
-          client: "日本通商(株)",
-          period: "2026/02/01〜02/28",
-          amount: 1250000,
-          issued: "2026/02/28",
-          due: "2026/03/31",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0093",
-          client: "大和運輸(株)",
-          period: "2026/02/01〜02/28",
-          amount: 3420000,
-          issued: "2026/02/28",
-          due: "2026/03/31",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0091",
-          client: "大和運輸(株)",
-          period: "2026/01/01〜01/31",
-          amount: 2340000,
-          issued: "2026/01/31",
-          due: "2026/02/28",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0089",
-          client: "大和運輸(株)",
-          period: "2026/01/16〜01/31",
-          amount: 3420000,
-          issued: "2026/02/01",
-          due: "2026/02/28",
-          status: "overdue",
-        },
-        {
-          no: "INV-2026-0088",
-          client: "(株)セイノー商事",
-          period: "2026/01/01〜01/31",
-          amount: 1780000,
-          issued: "2026/01/31",
-          due: "2026/03/15",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0085",
-          client: "東京フード(株)",
-          period: "2026/02/01〜02/28",
-          amount: 1980000,
-          issued: "2026/02/28",
-          due: "2026/04/30",
-          status: "issued",
-        },
-        {
-          no: "INV-2026-0076",
-          client: "(株)セイノー商事",
-          period: "2025/12/16〜12/31",
-          amount: 1870000,
-          issued: "2026/01/05",
-          due: "2026/02/15",
-          status: "overdue",
-        },
-        {
-          no: "INV-2026-0062",
-          client: "東京フード(株)",
-          period: "2025/12/01〜12/31",
-          amount: 980000,
-          issued: "2026/01/05",
-          due: "2026/01/31",
-          status: "overdue",
-        },
-        {
-          no: "INV-2026-0058",
-          client: "関東建材(株)",
-          period: "2025/12/01〜12/31",
-          amount: 1450000,
-          issued: "2025/12/31",
-          due: "2026/01/31",
-          status: "paid",
-        },
-        {
-          no: "INV-2026-0052",
-          client: "(株)セイノー商事",
-          period: "2025/12/01〜12/15",
-          amount: 2100000,
-          issued: "2025/12/20",
-          due: "2026/01/31",
-          status: "paid",
-        },
-      ];
-
-      const statusLabel = {
-        creating: "作成中",
-        issued: "発行済",
-        paid: "入金済",
-        overdue: "遅延",
-      };
-      const statusBadge = {
-        creating: "badge-creating",
-        issued: "badge-issued",
-        paid: "badge-paid",
-        overdue: "badge-overdue",
-      };
-
-      function renderInvoices(data) {
-        const tb = document.getElementById("invoiceTbody");
-        tb.innerHTML = data
-          .map(
-            (inv) => `<tr>
-<td class="td font-medium">${inv.no}</td>
-<td class="td">${inv.client}</td>
-<td class="td">${inv.period}</td>
-<td class="td td-num text-right">${inv.amount.toLocaleString()}円</td>
-<td class="td">${inv.issued}</td>
-<td class="td">${inv.due}</td>
-<td class="td"><span class="badge ${statusBadge[inv.status]}">${statusLabel[inv.status]}</span></td>
-<td class="td"><button class="text-[11px] text-blue-600 hover:underline" onclick="showToast('請求書 ${inv.no} を表示します')">詳細</button></td>
-</tr>`,
-          )
-          .join("");
-        document.getElementById("invoiceCount").textContent =
-          data.length + "件表示";
-      }
-
-      function filterInvoices() {
-        const q = document.getElementById("invoiceSearch").value.toLowerCase();
-        const st = document.getElementById("invoiceStatusFilter").value;
-        const cl = document.getElementById("invoiceClientFilter").value;
-        let d = invoiceData;
-        if (q)
-          d = d.filter(
-            (i) =>
-              i.no.toLowerCase().includes(q) ||
-              i.client.toLowerCase().includes(q),
-          );
-        if (st) d = d.filter((i) => i.status === st);
-        if (cl) d = d.filter((i) => i.client.includes(cl));
-        renderInvoices(d);
-      }
-
-      // ========== AUTO CALC ==========
-      const clientInvoiceData = {
-        yamato: {
-          name: "大和運輸(株)",
-          lines: [
-            {
-              date: "03/02",
-              truck: "品川100あ12-34",
-              route: "東京→横浜",
-              dist: "32km",
-              base: 45000,
-              wait: 3000,
-              toll: 1200,
-              extra: 0,
-            },
-            {
-              date: "03/05",
-              truck: "品川100あ12-34",
-              route: "東京→大宮",
-              dist: "45km",
-              base: 52000,
-              wait: 6000,
-              toll: 2400,
-              extra: 5000,
-            },
-            {
-              date: "03/08",
-              truck: "足立200か56-78",
-              route: "千葉→東京",
-              dist: "38km",
-              base: 48000,
-              wait: 0,
-              toll: 1800,
-              extra: 3000,
-            },
-            {
-              date: "03/12",
-              truck: "品川100あ12-34",
-              route: "東京→名古屋",
-              dist: "350km",
-              base: 180000,
-              wait: 9000,
-              toll: 8500,
-              extra: 12000,
-            },
-            {
-              date: "03/15",
-              truck: "足立200か56-78",
-              route: "埼玉→群馬",
-              dist: "95km",
-              base: 78000,
-              wait: 3000,
-              toll: 3200,
-              extra: 0,
-            },
-            {
-              date: "03/19",
-              truck: "品川100あ12-34",
-              route: "横浜→静岡",
-              dist: "160km",
-              base: 120000,
-              wait: 6000,
-              toll: 5400,
-              extra: 8000,
-            },
-          ],
-        },
-        seino: {
-          name: "(株)セイノー商事",
-          lines: [
-            {
-              date: "03/01",
-              truck: "岐阜300さ11-22",
-              route: "岐阜→名古屋",
-              dist: "50km",
-              base: 42000,
-              wait: 3000,
-              toll: 1500,
-              extra: 0,
-            },
-            {
-              date: "03/06",
-              truck: "岐阜300さ11-22",
-              route: "名古屋→大阪",
-              dist: "180km",
-              base: 130000,
-              wait: 6000,
-              toll: 6800,
-              extra: 8000,
-            },
-            {
-              date: "03/10",
-              truck: "岐阜300さ11-22",
-              route: "大阪→神戸",
-              dist: "35km",
-              base: 38000,
-              wait: 0,
-              toll: 900,
-              extra: 0,
-            },
-            {
-              date: "03/18",
-              truck: "名古屋400た33-44",
-              route: "名古屋→東京",
-              dist: "350km",
-              base: 185000,
-              wait: 9000,
-              toll: 8200,
-              extra: 15000,
-            },
-          ],
-        },
-        tokyofood: {
-          name: "東京フード(株)",
-          lines: [
-            {
-              date: "03/03",
-              truck: "品川100あ12-34",
-              route: "東京→千葉",
-              dist: "40km",
-              base: 35000,
-              wait: 3000,
-              toll: 1200,
-              extra: 5000,
-            },
-            {
-              date: "03/09",
-              truck: "足立200か56-78",
-              route: "東京→横浜",
-              dist: "32km",
-              base: 28000,
-              wait: 0,
-              toll: 1000,
-              extra: 0,
-            },
-            {
-              date: "03/14",
-              truck: "品川100あ12-34",
-              route: "東京→埼玉",
-              dist: "45km",
-              base: 38000,
-              wait: 6000,
-              toll: 1500,
-              extra: 3000,
-            },
-          ],
-        },
-        nippon: {
-          name: "日本通商(株)",
-          lines: [
-            {
-              date: "03/02",
-              truck: "大阪500な55-66",
-              route: "大阪→名古屋",
-              dist: "180km",
-              base: 135000,
-              wait: 4500,
-              toll: 6200,
-              extra: 10000,
-            },
-            {
-              date: "03/07",
-              truck: "大阪500な55-66",
-              route: "大阪→広島",
-              dist: "330km",
-              base: 170000,
-              wait: 9000,
-              toll: 9500,
-              extra: 12000,
-            },
-            {
-              date: "03/13",
-              truck: "大阪500な55-66",
-              route: "大阪→東京",
-              dist: "510km",
-              base: 250000,
-              wait: 6000,
-              toll: 12800,
-              extra: 15000,
-            },
-          ],
-        },
-        kanto: {
-          name: "関東建材(株)",
-          lines: [
-            {
-              date: "03/04",
-              truck: "大宮600は77-88",
-              route: "埼玉→群馬",
-              dist: "95km",
-              base: 78000,
-              wait: 3000,
-              toll: 3200,
-              extra: 5000,
-            },
-            {
-              date: "03/11",
-              truck: "大宮600は77-88",
-              route: "埼玉→千葉",
-              dist: "65km",
-              base: 55000,
-              wait: 0,
-              toll: 2100,
-              extra: 0,
-            },
-            {
-              date: "03/17",
-              truck: "大宮600は77-88",
-              route: "埼玉→東京",
-              dist: "35km",
-              base: 32000,
-              wait: 6000,
-              toll: 800,
-              extra: 3000,
-            },
-          ],
-        },
-      };
-
-      function autoCalcInvoice() {
-        const sel = document.getElementById("createClient").value;
-        const data = clientInvoiceData[sel] || clientInvoiceData.yamato;
-        document.getElementById("previewClient").textContent = data.name;
-        const tb = document.getElementById("invoiceLines");
-        let subtotal = 0;
-        tb.innerHTML = data.lines
-          .map((l) => {
-            const st = l.base + l.wait + l.toll + l.extra;
-            subtotal += st;
-            return `<tr class="border-t border-gray-100">
-<td class="px-3 py-2 text-[11px] text-gray-600">${l.date}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600">${l.truck}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600">${l.route}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600 text-right">${l.dist}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600 text-right">${l.base.toLocaleString()}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600 text-right">${l.wait.toLocaleString()}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600 text-right">${l.toll.toLocaleString()}</td>
-<td class="px-3 py-2 text-[11px] text-gray-600 text-right">${l.extra.toLocaleString()}</td>
-<td class="px-3 py-2 text-[11px] font-medium text-gray-700 text-right">${st.toLocaleString()}</td>
-</tr>`;
+      function renderInvoices() {
+        const tbody = document.getElementById("invoice-table");
+        const stMap = {
+          draft: ["作成中", "badge-yellow"],
+          issued: ["発行済", "badge-blue"],
+          paid: ["入金済", "badge-green"],
+          overdue: ["遅延", "badge-red"],
+        };
+        tbody.innerHTML = invoices
+          .map((inv) => {
+            const [label, cls] = stMap[inv.status];
+            return `<tr><td class="font-medium text-xs">${inv.id}</td><td>${inv.client}</td><td class="text-xs">${inv.period}</td><td class="text-right yen">¥${yen(inv.amount)}</td><td class="text-xs">${inv.issued}</td><td class="text-xs">${inv.due}</td><td><span class="badge ${cls}">${label}</span></td><td><button class="btn btn-secondary text-xs py-1 px-2.5 cursor-pointer">詳細</button></td></tr>`;
           })
           .join("");
-        const tax = Math.floor(subtotal * 0.1);
-        document.getElementById("previewSubtotal").textContent =
-          subtotal.toLocaleString() + "円";
-        document.getElementById("previewTax").textContent =
-          tax.toLocaleString() + "円";
-        document.getElementById("previewTotal").textContent =
-          (subtotal + tax).toLocaleString() + "円";
-        showToast("配送データを自動集計しました");
       }
 
-      // ========== INIT CHARTS ==========
-      document.addEventListener("DOMContentLoaded", () => {
-        navigate(location.hash.slice(1) || pageConfig[0].id);
-        if (typeof lucide !== "undefined") lucide.createIcons();
-        renderInvoices(invoiceData);
+      function renderRates() {
+        document.getElementById("rate-table").innerHTML = rates
+          .map((r) => {
+            const outdated = new Date(r.updated) < new Date("2026-01-01");
+            return `<tr><td class="font-medium">${r.client}</td><td class="text-xs">${r.route}</td><td class="text-xs">${r.type}</td><td class="text-xs">${r.dist}</td><td class="text-right yen">¥${yen(r.rate)}</td><td><span class="badge badge-indigo">${r.rateType}</span></td><td class="yen text-xs">¥${yen(r.wait)}/h</td><td class="text-xs">${r.night}</td><td class="text-xs ${outdated ? "text-danger-500 font-semibold" : ""}">${r.updated}${outdated ? " ⚠" : ""}}</td><td><button class="btn btn-secondary text-xs py-1 px-2 cursor-pointer">編集</button></td></tr>`;
+          })
+          .join("");
+      }
 
-        // Dashboard: Monthly billing bar chart
-        charts.push(
-          new Chart(document.getElementById("dashChart1"), {
+      function renderOverdue() {
+        document.getElementById("overdue-list").innerHTML = overdue.length
+          ? overdue
+              .map(
+                (
+                  o,
+                ) => `<div class="bg-danger-50 border border-danger-100 rounded-lg p-3 flex items-center justify-between">
+<div><div class="font-semibold text-sm">${o.client}</div><div class="text-xs text-gray-500">${o.id} / ¥${yen(o.amount)} / 期限: ${o.due}</div></div>
+<div class="flex items-center gap-2"><span class="badge badge-red">${o.days}日超過</span><button class="btn btn-secondary text-xs py-1 px-3 cursor-pointer">督促</button></div>
+</div>`,
+              )
+              .join("")
+          : '<div class="text-center text-gray-400 text-sm py-6">超過なし</div>';
+      }
+
+      // === CHARTS ===
+      const chartCache = {};
+      function initPageCharts(pg) {
+        if (pg === "payments" && !chartCache.aging) {
+          chartCache.aging = new Chart(document.getElementById("chart-aging"), {
             type: "bar",
             data: {
-              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+              labels: ["30日以内", "30-60日", "60-90日", "90日超"],
               datasets: [
                 {
-                  label: "請求額(万円)",
-                  data: [1520, 1680, 1890, 1740, 1650, 1847],
-                  backgroundColor: "#065f46",
-                  borderRadius: 4,
-                },
-                {
-                  label: "入金額(万円)",
-                  data: [1480, 1620, 1810, 1690, 1580, 1612],
-                  backgroundColor: "#10b981",
-                  borderRadius: 4,
+                  label: "金額(万円)",
+                  data: [192, 215, 0, 0],
+                  backgroundColor: ["#10b981", "#f59e0b", "#ef4444", "#94a3b8"],
+                  borderRadius: 6,
                 },
               ],
             },
             options: {
               responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 14,
-                  },
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-              },
-            },
-          }),
-        );
-
-        // Dashboard: Client composition doughnut
-        charts.push(
-          new Chart(document.getElementById("dashChart2"), {
-            type: "doughnut",
-            data: {
-              labels: [
-                "大和運輸",
-                "セイノー商事",
-                "東京フード",
-                "日本通商",
-                "関東建材",
-              ],
-              datasets: [
-                {
-                  data: [576, 365, 198, 412, 296],
-                  backgroundColor: [
-                    "#065f46",
-                    "#10b981",
-                    "#34d399",
-                    "#6ee7b7",
-                    "#a7f3d0",
-                  ],
-                  borderWidth: 0,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: {
-                    font: { size: 11, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 10,
-                  },
-                },
-              },
-            },
-          }),
-        );
-
-        // Payments: Collection rate trend
-        charts.push(
-          new Chart(document.getElementById("payChart1"), {
-            type: "line",
-            data: {
-              labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
-              datasets: [
-                {
-                  label: "回収率(%)",
-                  data: [82.1, 84.5, 86.2, 85.8, 84.9, 87.3],
-                  borderColor: "#065f46",
-                  backgroundColor: "#065f4620",
-                  fill: true,
-                  tension: 0.4,
-                  pointRadius: 4,
-                  pointBackgroundColor: "#065f46",
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
               plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  min: 70,
-                  max: 100,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+              scales: { y: { ticks: { callback: (v) => v + "万" } } },
+            },
+          });
+        }
+        if (pg === "cost" && !chartCache.costBreak) {
+          chartCache.costBreak = new Chart(
+            document.getElementById("chart-cost-breakdown"),
+            {
+              type: "doughnut",
+              data: {
+                labels: [
+                  "人件費",
+                  "燃料費",
+                  "高速料金",
+                  "車両維持費",
+                  "保険料",
+                  "その他",
+                ],
+                datasets: [
+                  {
+                    data: [46, 12, 5, 8, 4, 25],
+                    backgroundColor: [
+                      "#4f46e5",
+                      "#f97316",
+                      "#0ea5e9",
+                      "#8b5cf6",
+                      "#10b981",
+                      "#94a3b8",
+                    ],
+                    borderWidth: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                cutout: "60%",
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
                 },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
               },
             },
-          }),
-        );
+          );
+          chartCache.vCost = new Chart(
+            document.getElementById("chart-vehicle-cost"),
+            {
+              type: "bar",
+              data: {
+                labels: [
+                  "品川あ1234",
+                  "品川い5678",
+                  "足立う9012",
+                  "品川え3456",
+                ],
+                datasets: [
+                  {
+                    label: "売上",
+                    data: [68.5, 89.2, 42.5, 58.0],
+                    backgroundColor: "#4f46e5",
+                    borderRadius: 6,
+                  },
+                  {
+                    label: "原価",
+                    data: [48.0, 55.1, 39.1, 49.2],
+                    backgroundColor: "#e0e7ff",
+                    borderRadius: 6,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+                scales: { y: { ticks: { callback: (v) => v + "万" } } },
+              },
+            },
+          );
+        }
+        if (pg === "clients" && !chartCache.clientRev) {
+          chartCache.clientRev = new Chart(
+            document.getElementById("chart-client-revenue"),
+            {
+              type: "doughnut",
+              data: {
+                labels: [
+                  "大和運輸",
+                  "日本通商",
+                  "セイノー商事",
+                  "関東建材",
+                  "東京フード",
+                ],
+                datasets: [
+                  {
+                    data: [576, 412, 365, 296, 198],
+                    backgroundColor: [
+                      "#4f46e5",
+                      "#10b981",
+                      "#f59e0b",
+                      "#0ea5e9",
+                      "#8b5cf6",
+                    ],
+                    borderWidth: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                cutout: "60%",
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+              },
+            },
+          );
+          chartCache.collRate = new Chart(
+            document.getElementById("chart-collection-rate"),
+            {
+              type: "line",
+              data: {
+                labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+                datasets: [
+                  {
+                    label: "全体回収率",
+                    data: [82, 84, 86, 88, 90, 91.2],
+                    borderColor: "#4f46e5",
+                    tension: 0.4,
+                    fill: false,
+                  },
+                  {
+                    label: "大和運輸",
+                    data: [78, 76, 80, 79, 81, 82.4],
+                    borderColor: "#ef4444",
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: false,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 10, font: { size: 11 } },
+                  },
+                },
+                scales: {
+                  y: { min: 70, max: 100, ticks: { callback: (v) => v + "%" } },
+                },
+              },
+            },
+          );
+        }
+      }
 
-        // Analysis: Client revenue comparison bar
-        charts.push(
-          new Chart(document.getElementById("anaChart1"), {
-            type: "bar",
-            data: {
-              labels: [
-                "大和運輸",
-                "セイノー商事",
-                "東京フード",
-                "日本通商",
-                "関東建材",
-              ],
-              datasets: [
-                {
-                  label: "月間売上(万円)",
-                  data: [576, 365, 198, 412, 296],
-                  backgroundColor: [
-                    "#065f46",
-                    "#10b981",
-                    "#34d399",
-                    "#065f46",
-                    "#10b981",
-                  ],
-                  borderRadius: 4,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "万" },
-                },
-                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      function initDashboardCharts() {
+        new Chart(document.getElementById("chart-monthly"), {
+          type: "bar",
+          data: {
+            labels: ["10月", "11月", "12月", "1月", "2月", "3月"],
+            datasets: [
+              {
+                label: "請求額(万)",
+                data: [1650, 1720, 1890, 1940, 2015, 2184],
+                backgroundColor: "#4f46e5",
+                borderRadius: 6,
+              },
+              {
+                label: "入金額(万)",
+                data: [1520, 1610, 1750, 1820, 1885, 1992],
+                backgroundColor: "#10b981",
+                borderRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { boxWidth: 10, font: { size: 11 } },
               },
             },
-          }),
-        );
+            scales: { y: { ticks: { callback: (v) => v + "万" } } },
+          },
+        });
+        new Chart(document.getElementById("chart-client-pie"), {
+          type: "doughnut",
+          data: {
+            labels: [
+              "大和運輸",
+              "日本通商",
+              "セイノー商事",
+              "関東建材",
+              "東京フード",
+            ],
+            datasets: [
+              {
+                data: [576, 412, 365, 296, 198],
+                backgroundColor: [
+                  "#4f46e5",
+                  "#10b981",
+                  "#f59e0b",
+                  "#0ea5e9",
+                  "#8b5cf6",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            cutout: "60%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { boxWidth: 10, font: { size: 11 } },
+              },
+            },
+          },
+        });
+      }
 
-        // Analysis: Profitability scatter/bubble (using bubble chart)
-        charts.push(
-          new Chart(document.getElementById("anaChart2"), {
-            type: "scatter",
-            data: {
-              datasets: [
-                {
-                  label: "大和運輸",
-                  data: [{ x: 42, y: 82.4 }],
-                  backgroundColor: "#065f46",
-                  pointRadius: 12,
-                },
-                {
-                  label: "セイノー商事",
-                  data: [{ x: 35, y: 78.9 }],
-                  backgroundColor: "#10b981",
-                  pointRadius: 10,
-                },
-                {
-                  label: "東京フード",
-                  data: [{ x: 18, y: 75.2 }],
-                  backgroundColor: "#34d399",
-                  pointRadius: 8,
-                },
-                {
-                  label: "日本通商",
-                  data: [{ x: 28, y: 95.8 }],
-                  backgroundColor: "#059669",
-                  pointRadius: 11,
-                },
-                {
-                  label: "関東建材",
-                  data: [{ x: 22, y: 98.2 }],
-                  backgroundColor: "#047857",
-                  pointRadius: 9,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: {
-                    font: { size: 10, family: "Inter" },
-                    usePointStyle: true,
-                    padding: 10,
-                  },
-                },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) =>
-                      `${ctx.dataset.label}: 取扱${ctx.parsed.x}件 / 回収率${ctx.parsed.y}%`,
-                  },
-                },
-              },
-              scales: {
-                x: {
-                  title: {
-                    display: true,
-                    text: "月間取扱件数",
-                    font: { size: 11 },
-                  },
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 } },
-                },
-                y: {
-                  title: {
-                    display: true,
-                    text: "回収率(%)",
-                    font: { size: 11 },
-                  },
-                  min: 70,
-                  max: 100,
-                  grid: { color: "#f3f4f6" },
-                  ticks: { font: { size: 11 }, callback: (v) => v + "%" },
-                },
-              },
-            },
-          }),
-        );
-      });
+      // === ACTIONS ===
+      function generateInvoice() {
+        toast("6件の運行実績を自動集計しました", "success");
+      }
+      function toast(msg, type = "success") {
+        const el = document.createElement("div");
+        el.className = `toast ${type === "success" ? "bg-emerald-600 text-white" : "bg-danger-600 text-white"}`;
+        el.innerHTML = `<div class="flex items-center gap-2"><i data-lucide="${type === "success" ? "check-circle" : "alert-circle"}" class="w-4 h-4"></i>${msg}</div>`;
+        document.getElementById("toast-container").appendChild(el);
+        lucide.createIcons();
+        setTimeout(() => el.remove(), 2500);
+      }
+
+      // === INIT ===
+      document.getElementById("current-date").textContent =
+        new Date().toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        });
+      renderInvoices();
+      renderRates();
+      renderOverdue();
+      initDashboardCharts();
+      lucide.createIcons();
     </script>
   </body>
 </html>
